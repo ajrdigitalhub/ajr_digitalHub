@@ -1,0 +1,287 @@
+<div class="min-h-screen bg-app-bg flex">
+      <!-- Sidebar -->
+      <aside 
+        class="bg-app-bg text-app-text transition-all duration-300 flex flex-col fixed md:sticky top-0 h-screen z-40"
+        [class.w-64]="isSidebarOpen()"
+        [class.w-20]="!isSidebarOpen()"
+        [class.-translate-x-full]="!isSidebarOpen() && isMobile"
+        [class.translate-x-0]="isSidebarOpen() || !isMobile"
+      >
+        <div class="h-16 flex items-center justify-between px-4 border-b border-app-border">
+          <a routerLink="/" class="flex items-center gap-2 text-app-text font-bold tracking-tight overflow-hidden whitespace-nowrap" [class.opacity-0]="!isSidebarOpen()">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shrink-0">
+              <mat-icon class="text-[20px] w-[20px] h-[20px]">hub</mat-icon>
+            </div>
+            AJR DIGITAL HUB
+          </a>
+          <button (click)="toggleSidebar()" class="text-app-muted hover:text-app-text transition-colors hidden md:block shrink-0" aria-label="Toggle sidebar">
+            <mat-icon>{{ isSidebarOpen() ? 'menu_open' : 'menu' }}</mat-icon>
+          </button>
+        </div>
+
+        <div class="flex-grow py-6 overflow-y-auto overflow-x-hidden">
+          <div class="px-4 mb-2 text-xs font-semibold text-app-muted uppercase tracking-wider" [class.hidden]="!isSidebarOpen()">Menu</div>
+          <nav class="space-y-1 px-2">
+            <a routerLink="/dashboard" routerLinkActive="bg-indigo-600 text-app-text" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors" [class.text-app-text]="true">dashboard</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Dashboard</span>
+            </a>
+            <a routerLink="/invoice-builder" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors">receipt_long</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Invoices</span>
+            </a>
+            <a routerLink="/themes" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors">palette</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Themes</span>
+            </a>
+            <a routerLink="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors">people</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Clients</span>
+            </a>
+            <a routerLink="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors">inventory_2</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Products</span>
+            </a>
+          </nav>
+
+          <div class="px-4 mt-8 mb-2 text-xs font-semibold text-app-muted uppercase tracking-wider" [class.hidden]="!isSidebarOpen()">Settings</div>
+          <nav class="space-y-1 px-2">
+            <a routerLink="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors">settings</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Account</span>
+            </a>
+            <a routerLink="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-app-card transition-colors group">
+              <mat-icon class="text-app-muted group-hover:text-app-text transition-colors">credit_card</mat-icon>
+              <span class="font-medium whitespace-nowrap" [class.hidden]="!isSidebarOpen()">Billing</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-app-border">
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/user1/100/100" alt="User" class="w-10 h-10 rounded-full border border-app-border shrink-0" referrerpolicy="no-referrer">
+            <div class="overflow-hidden" [class.hidden]="!isSidebarOpen()">
+              <p class="text-sm font-medium text-app-text truncate">AJR DIGITAL HUB</p>
+              <p class="text-xs text-app-muted truncate">Pro Plan</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="flex-grow flex flex-col min-w-0">
+        <!-- Topbar -->
+        <header class="h-16 bg-app-card border-b border-app-border flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-30">
+          <div class="flex items-center gap-4">
+            <button (click)="toggleSidebar()" class="md:hidden text-app-muted hover:text-app-text" aria-label="Toggle mobile menu">
+              <mat-icon>menu</mat-icon>
+            </button>
+            <h1 class="text-xl font-semibold text-app-text">Dashboard</h1>
+          </div>
+          <div class="flex items-center gap-4">
+            <button class="relative p-2 text-app-muted hover:text-app-muted transition-colors" aria-label="View notifications">
+              <mat-icon>notifications</mat-icon>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+            </button>
+            <a routerLink="/invoice-builder" class="hidden sm:flex items-center gap-2 bg-indigo-600 text-app-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-600/20">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">add</mat-icon>
+              Create Invoice
+            </a>
+          </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="flex-grow p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          
+          <!-- Greeting -->
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-app-text">Welcome back, AJR DIGITAL HUB! 👋</h2>
+            <p class="text-app-muted mt-1">Here's what's happening with your business today.</p>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-app-card p-6 rounded-2xl border border-app-border shadow-sm relative overflow-hidden group">
+              <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <mat-icon class="text-6xl text-indigo-600">account_balance_wallet</mat-icon>
+              </div>
+              <p class="text-sm font-medium text-app-muted mb-1">Total Revenue</p>
+              <h3 class="text-3xl font-bold text-app-text mb-2">₹24,500</h3>
+              <div class="flex items-center text-sm font-medium text-emerald-600">
+                <mat-icon class="text-[16px] w-[16px] h-[16px] mr-1">trending_up</mat-icon>
+                +12.5% this month
+              </div>
+            </div>
+
+            <div class="bg-app-card p-6 rounded-2xl border border-app-border shadow-sm relative overflow-hidden group">
+              <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <mat-icon class="text-6xl text-emerald-600">receipt_long</mat-icon>
+              </div>
+              <p class="text-sm font-medium text-app-muted mb-1">Invoices Sent</p>
+              <h3 class="text-3xl font-bold text-app-text mb-2">142</h3>
+              <div class="flex items-center text-sm font-medium text-emerald-600">
+                <mat-icon class="text-[16px] w-[16px] h-[16px] mr-1">trending_up</mat-icon>
+                +8 this week
+              </div>
+            </div>
+
+            <div class="bg-app-card p-6 rounded-2xl border border-app-border shadow-sm relative overflow-hidden group">
+              <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <mat-icon class="text-6xl text-amber-600">pending_actions</mat-icon>
+              </div>
+              <p class="text-sm font-medium text-app-muted mb-1">Outstanding</p>
+              <h3 class="text-3xl font-bold text-app-text mb-2">₹3,240</h3>
+              <div class="flex items-center text-sm font-medium text-amber-600">
+                <mat-icon class="text-[16px] w-[16px] h-[16px] mr-1">schedule</mat-icon>
+                5 invoices pending
+              </div>
+            </div>
+
+            <div class="bg-app-card p-6 rounded-2xl border border-app-border shadow-sm relative overflow-hidden group">
+              <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <mat-icon class="text-6xl text-purple-600">people</mat-icon>
+              </div>
+              <p class="text-sm font-medium text-app-muted mb-1">Total Clients</p>
+              <h3 class="text-3xl font-bold text-app-text mb-2">48</h3>
+              <div class="flex items-center text-sm font-medium text-emerald-600">
+                <mat-icon class="text-[16px] w-[16px] h-[16px] mr-1">add</mat-icon>
+                2 new this month
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts & Quick Actions -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- Chart -->
+            <div class="lg:col-span-2 bg-app-card p-6 rounded-2xl border border-app-border shadow-sm">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-app-text">Revenue Overview</h3>
+                <select class="text-sm border-app-border rounded-lg text-app-muted focus:ring-indigo-500 focus:border-indigo-500">
+                  <option>Last 6 Months</option>
+                  <option>This Year</option>
+                </select>
+              </div>
+              <!-- Mock Chart -->
+              <div class="h-64 flex items-end justify-between gap-2">
+                <div class="w-full bg-indigo-100 rounded-t-md relative group"><div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-md h-[40%] group-hover:bg-indigo-600 transition-colors"></div></div>
+                <div class="w-full bg-indigo-100 rounded-t-md relative group"><div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-md h-[60%] group-hover:bg-indigo-600 transition-colors"></div></div>
+                <div class="w-full bg-indigo-100 rounded-t-md relative group"><div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-md h-[45%] group-hover:bg-indigo-600 transition-colors"></div></div>
+                <div class="w-full bg-indigo-100 rounded-t-md relative group"><div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-md h-[80%] group-hover:bg-indigo-600 transition-colors"></div></div>
+                <div class="w-full bg-indigo-100 rounded-t-md relative group"><div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-md h-[65%] group-hover:bg-indigo-600 transition-colors"></div></div>
+                <div class="w-full bg-indigo-100 rounded-t-md relative group"><div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-md h-[90%] group-hover:bg-indigo-600 transition-colors"></div></div>
+              </div>
+              <div class="flex justify-between mt-4 text-xs text-app-muted font-medium">
+                <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span>
+              </div>
+            </div>
+
+            <!-- Quick Actions & Gamification -->
+            <div class="space-y-6">
+              <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-app-text shadow-lg shadow-indigo-600/20">
+                <h3 class="text-lg font-semibold mb-2">Pro Plan Usage</h3>
+                <p class="text-indigo-100 text-sm mb-4">You've used 45 of unlimited invoices this month.</p>
+                <div class="w-full bg-indigo-900/50 rounded-full h-2.5 mb-2">
+                  <div class="bg-emerald-400 h-2.5 rounded-full" style="width: 45%"></div>
+                </div>
+                <p class="text-xs text-indigo-200 text-right">Great job!</p>
+              </div>
+
+              <div class="bg-app-card p-6 rounded-2xl border border-app-border shadow-sm">
+                <h3 class="text-lg font-semibold text-app-text mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                  <a routerLink="/invoice-builder" class="flex items-center gap-3 p-3 rounded-xl hover:bg-app-bg border border-transparent hover:border-app-border transition-all group cursor-pointer">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <mat-icon>add</mat-icon>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-app-text">Create Invoice</p>
+                      <p class="text-xs text-app-muted">Start a new blank invoice</p>
+                    </div>
+                  </a>
+                  <a routerLink="/dashboard" class="flex items-center gap-3 p-3 rounded-xl hover:bg-app-bg border border-transparent hover:border-app-border transition-all group cursor-pointer">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <mat-icon>person_add</mat-icon>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-app-text">Add Client</p>
+                      <p class="text-xs text-app-muted">Save a new customer profile</p>
+                    </div>
+                  </a>
+                  <a routerLink="/themes" class="flex items-center gap-3 p-3 rounded-xl hover:bg-app-bg border border-transparent hover:border-app-border transition-all group cursor-pointer">
+                    <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <mat-icon>palette</mat-icon>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-app-text">Change Theme</p>
+                      <p class="text-xs text-app-muted">Customize your invoice look</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Invoices -->
+          <div class="bg-app-card rounded-2xl border border-app-border shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-app-border flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-app-text">Recent Invoices</h3>
+              <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">View All</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-app-bg text-app-muted text-xs uppercase tracking-wider">
+                    <th class="px-6 py-4 font-medium">Invoice</th>
+                    <th class="px-6 py-4 font-medium">Client</th>
+                    <th class="px-6 py-4 font-medium">Amount</th>
+                    <th class="px-6 py-4 font-medium">Date</th>
+                    <th class="px-6 py-4 font-medium">Status</th>
+                    <th class="px-6 py-4 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 text-sm">
+                  <tr class="hover:bg-app-bg transition-colors">
+                    <td class="px-6 py-4 font-medium text-app-text">INV-2026-042</td>
+                    <td class="px-6 py-4 text-app-muted">Globex Corporation</td>
+                    <td class="px-6 py-4 font-medium text-app-text">₹1,250.00</td>
+                    <td class="px-6 py-4 text-app-muted">Mar 24, 2026</td>
+                    <td class="px-6 py-4">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Paid</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button class="text-app-muted hover:text-indigo-600 transition-colors"><mat-icon class="text-[20px] w-[20px] h-[20px]">more_vert</mat-icon></button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-app-bg transition-colors">
+                    <td class="px-6 py-4 font-medium text-app-text">INV-2026-041</td>
+                    <td class="px-6 py-4 text-app-muted">Soylent Corp</td>
+                    <td class="px-6 py-4 font-medium text-app-text">₹850.00</td>
+                    <td class="px-6 py-4 text-app-muted">Mar 22, 2026</td>
+                    <td class="px-6 py-4">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Pending</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button class="text-app-muted hover:text-indigo-600 transition-colors"><mat-icon class="text-[20px] w-[20px] h-[20px]">more_vert</mat-icon></button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-app-bg transition-colors">
+                    <td class="px-6 py-4 font-medium text-app-text">INV-2026-040</td>
+                    <td class="px-6 py-4 text-app-muted">Initech</td>
+                    <td class="px-6 py-4 font-medium text-app-text">₹3,400.00</td>
+                    <td class="px-6 py-4 text-app-muted">Mar 15, 2026</td>
+                    <td class="px-6 py-4">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">Overdue</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button class="text-app-muted hover:text-indigo-600 transition-colors"><mat-icon class="text-[20px] w-[20px] h-[20px]">more_vert</mat-icon></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>

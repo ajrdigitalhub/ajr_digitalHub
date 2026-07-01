@@ -1,0 +1,4 @@
+<div id="status-badge-container" [class]="getBadgeClasses()" class="flex items-center gap-1.5 px-2.5 py-1 rounded border font-mono text-[10px] font-black tracking-wider uppercase shadow-xs">
+  <span [class]="getDotClasses()" class="w-1.5 h-1.5 rounded-full"></span>
+  <span>{{ status() }}</span>
+</div>

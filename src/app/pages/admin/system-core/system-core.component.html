@@ -1,0 +1,385 @@
+<app-system-core-layout>
+  
+  <!-- TITLE & GLOBAL STATUS INDICATOR HEADER -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-app-border pb-5">
+    <div>
+      <span class="text-[9px] font-mono font-bold text-app-muted uppercase tracking-widest block">MONITORING_DASHBOARD</span>
+      <h2 class="text-3xl font-black text-app-text uppercase tracking-wider font-mono mt-1 flex items-center gap-3">
+        SYSTEM CORE: APP MONITOR
+      </h2>
+    </div>
+
+    <!-- Uptime status display -->
+    <div class="flex items-center gap-3.5 bg-app-card border border-app-border rounded px-4 py-2.5 font-mono">
+      <div class="flex flex-col items-end">
+        <span class="text-[8px] text-app-muted font-bold tracking-widest uppercase">SYSTEM_UPTIME</span>
+        <span class="text-lg font-black text-[#00f0ff] tracking-tight drop-shadow-[0_0_8px_rgba(0,240,255,0.4)]">
+          {{ service.globalTelemetry().uptimePercent | number:'1.3-3' }}%
+        </span>
+      </div>
+      <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>
+    </div>
+  </div>
+
+  <!-- TAB SELECTOR -->
+  <div class="flex flex-wrap border-b border-app-border/40 mt-6 mb-8 font-mono text-xs">
+    <button 
+      (click)="setTab('telemetry')" 
+      [class.border-cyan-500]="activeTab() === 'telemetry'"
+      [class.text-cyan-400]="activeTab() === 'telemetry'"
+      class="px-6 py-3 border-b-2 border-transparent text-app-muted hover:text-app-text font-bold tracking-widest uppercase transition-all duration-300 flex items-center gap-2 cursor-pointer bg-transparent outline-none">
+      <mat-icon class="!w-4 !h-4 !text-[16px]">query_stats</mat-icon> Local Telemetry Metrics
+    </button>
+    <button 
+      (click)="setTab('firebase')" 
+      [class.border-orange-500]="activeTab() === 'firebase'"
+      [class.text-orange-400]="activeTab() === 'firebase'"
+      class="px-6 py-3 border-b-2 border-transparent text-app-muted hover:text-app-text font-bold tracking-widest uppercase transition-all duration-300 flex items-center gap-2 cursor-pointer bg-transparent outline-none">
+      <mat-icon class="!w-4 !h-4 !text-[16px] text-orange-500">sync</mat-icon> Firebase NOC Gateway
+    </button>
+  </div>
+
+  @if (activeTab() === 'telemetry') {
+    <!-- APPLICATIONS CARDS GRID -->
+    <div class="space-y-4">
+      <h3 class="text-xs font-black text-app-muted uppercase font-mono tracking-widest">ACTIVE CLUSTERS ({{ appsTelemetry().length }})</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (app of appsTelemetry(); track app.appId) {
+          <app-app-monitor-card [telemetry]="app"></app-app-monitor-card>
+        }
+      </div>
+    </div>
+
+    <!-- SYSTEM TELEMETRY FEED (CHART AND LIVE GRAPH) -->
+    <app-telemetry-chart></app-telemetry-chart>
+
+    <!-- ADVANCED TELEMETRY METRIC BENCHES (REDIS / ENDPOINTS / RATE LIMITER) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- API Monitoring & Endpoints -->
+      <div class="metrics-card backdrop-blur-md p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] font-mono border border-app-border rounded-xl">
+        <div class="flex items-center justify-between border-b border-app-border pb-3 mb-4">
+          <h4 class="text-[11px] font-black text-app-text tracking-widest uppercase">ENDPOINT TELEMETRY</h4>
+          <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase">LIVE</span>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+          <!-- endpoint 1 -->
+          <div class="flex items-center justify-between p-2 rounded bg-app-bg border border-app-border">
+            <span class="text-cyan-400 font-bold text-[11px]">/api/checkout</span>
+            <div class="flex items-center gap-3">
+              <span class="text-app-text font-bold">12.4K <span class="text-[9px] text-app-muted">/min</span></span>
+              <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+            </div>
+          </div>
+
+          <!-- endpoint 2 -->
+          <div class="flex items-center justify-between p-2 rounded bg-app-bg border border-app-border">
+            <span class="text-indigo-400 font-bold text-[11px]">/api/auth</span>
+            <div class="flex items-center gap-3">
+              <span class="text-app-text font-bold">542 <span class="text-[9px] text-app-muted">/min</span></span>
+              <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+            </div>
+          </div>
+
+          <!-- endpoint 3 -->
+          <div class="flex items-center justify-between p-2 rounded bg-app-bg border border-app-border">
+            <span class="text-purple-400 font-bold text-[11px]">/api/sync</span>
+            <div class="flex items-center gap-3">
+              <span class="text-app-text font-bold">1.2K <span class="text-[9px] text-app-muted">/min</span></span>
+              <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span>
+            </div>
+          </div>
+
+          <!-- Blocked endpoint telemetry -->
+          <div class="flex items-center justify-between p-2 rounded bg-app-bg border border-app-border">
+            <span class="text-rose-500 font-bold text-[11px]">API_BLOCKED_REQUESTS</span>
+            <div class="flex items-center gap-3">
+              <span class="text-rose-400 font-bold">24 <span class="text-[9px] text-rose-500/40">/hr</span></span>
+              <span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Central Rate Limiter -->
+      <div class="metrics-card backdrop-blur-md p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] font-mono border border-app-border rounded-xl">
+        <div class="flex items-center justify-between border-b border-app-border pb-3 mb-4">
+          <h4 class="text-[11px] font-black text-app-text tracking-widest uppercase">RATE LIMITER STATUS</h4>
+          <span class="text-[9px] text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 font-bold uppercase">ACTIVE</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-app-bg border border-app-border p-3.5 rounded flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-[9px] text-app-muted font-bold uppercase tracking-wider">CURRENT DEMAND</span>
+              <span class="text-md font-black text-app-text mt-1">
+                {{ service.globalTelemetry().cpuLoad * 12 + 640 | number }} <span class="text-[10px] text-app-muted">REQ/M</span>
+              </span>
+            </div>
+            <div class="w-px h-8 bg-app-border"></div>
+            <div class="flex flex-col items-end">
+              <span class="text-[9px] text-app-muted font-bold uppercase tracking-wider">RPM CEILING</span>
+              <span class="text-md font-black text-cyan-400 mt-1">100,000 <span class="text-[10px] text-app-muted">MAX</span></span>
+            </div>
+          </div>
+
+          <!-- Progress to rate limiter action -->
+          <div>
+            <div class="flex items-center justify-between text-[9px] font-bold tracking-wider text-app-text mb-1">
+              <span>THRESHOLD TRAFFIC BUFFER</span>
+              <span class="text-cyan-400">{{ (service.globalTelemetry().cpuLoad * 0.45 + 12).toFixed(1) }}% USED</span>
+            </div>
+            <div class="h-1 bg-app-bg rounded-full overflow-hidden p-[1px]">
+              <div [style.width.%]="service.globalTelemetry().cpuLoad * 0.45 + 12" class="h-full bg-cyan-500 rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Health summary metrics -->
+          <div class="flex items-center justify-between text-[10px] text-app-muted pt-1">
+            <span>ALERTS TRIGGERED: <strong class="text-rose-500">0</strong></span>
+            <span>PROTECTION CAP: <strong class="text-emerald-400">OPTIMAL</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Redis Cache Cluster -->
+      <div class="metrics-card backdrop-blur-md p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] font-mono border border-app-border rounded-xl">
+        <div class="flex items-center justify-between border-b border-app-border pb-3 mb-4">
+          <h4 class="text-[11px] font-black text-app-text tracking-widest uppercase">REDIS MEMORY CACHE</h4>
+          <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase">CONNECTED</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-app-bg border border-app-border p-2.5 rounded flex flex-col">
+              <span class="text-[8px] text-app-muted font-bold">TOTAL CACHED REQS</span>
+              <span class="text-sm font-black text-indigo-400 mt-1">
+                {{ service.globalTelemetry().cpuLoad * 45 + 1240 | number }}
+              </span>
+            </div>
+            <div class="bg-app-bg border border-app-border p-2.5 rounded flex flex-col">
+              <span class="text-[8px] text-app-muted font-bold font-mono">NODE HIT RATE</span>
+              <span class="text-sm font-black text-emerald-400 mt-1">99.85%</span>
+            </div>
+          </div>
+
+          <!-- Memory Consumption -->
+          <div>
+            <div class="flex items-center justify-between text-[9px] font-bold tracking-wider text-app-text mb-1">
+              <span>CACHED DATA VOLUME</span>
+              <span class="text-indigo-400">
+                {{ (service.globalTelemetry().memoryUsed * 0.12 * 72 + 115).toFixed(1) }} MB / 1024 MB
+              </span>
+            </div>
+            <div class="h-1 bg-app-bg rounded-full overflow-hidden p-[1px]">
+              <div [style.width.%]="(service.globalTelemetry().memoryUsed * 0.12 * 72 + 115) / 10.24" class="h-full bg-indigo-500 rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Bottom status stats -->
+          <div class="flex items-center justify-between text-[9px] text-app-muted pt-1">
+            <span>NODE: <strong class="text-app-text">REDIS_01_WEST</strong></span>
+            <span>TTL CLEANUP: <strong class="text-cyan-400 font-bold">ACTIVE</strong></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  @if (activeTab() === 'firebase') {
+    <!-- Connection Status Banner -->
+    <div class="metrics-card backdrop-blur-md p-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] font-mono border border-app-border rounded-2xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+      <div class="flex items-center gap-4">
+        <div class="relative flex items-center justify-center w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/35">
+          <mat-icon class="text-orange-500 !w-6 !h-6 !text-[24px]">cloud_sync</mat-icon>
+          <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-app-bg animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+        </div>
+        <div>
+          <span class="text-[9px] text-app-muted font-bold tracking-widest uppercase">FIRESTORE_GATEWAY_CONNECTION</span>
+          <h4 class="text-md font-black text-app-text tracking-wide mt-0.5">ACTIVE LIVE SYNC TUNNEL</h4>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs w-full md:w-auto">
+        <div class="flex flex-col bg-black/20 border border-app-border/40 px-4 py-2.5 rounded-lg">
+          <span class="text-[8px] text-app-muted font-bold uppercase tracking-widest mb-1">PROJECT_ID</span>
+          <span class="font-bold text-orange-400">ajrdigitalhubb</span>
+        </div>
+        <div class="flex flex-col bg-black/20 border border-app-border/40 px-4 py-2.5 rounded-lg">
+          <span class="text-[8px] text-app-muted font-bold uppercase tracking-widest mb-1">DATABASE_ID</span>
+          <span class="font-bold text-cyan-400 truncate max-w-[120px]">ai-studio-2e3411...</span>
+        </div>
+        <div class="flex flex-col bg-black/20 border border-app-border/40 px-4 py-2.5 rounded-lg">
+          <span class="text-[8px] text-app-muted font-bold uppercase tracking-widest mb-1">CONNECTED_NODES</span>
+          <span class="font-bold text-emerald-400">{{ service.firebaseApps().length }} SYNCED APPS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Synced Applications Grid -->
+    <div class="space-y-4 mb-8">
+      <h3 class="text-xs font-black text-app-muted uppercase font-mono tracking-widest">FIREBASE SYNCED GATEWAYS ({{ service.firebaseApps().length }})</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono">
+        @for (app of service.firebaseApps(); track app.id) {
+          <div class="relative bg-app-bg/40 backdrop-blur-md border border-app-border rounded-xl p-5 shadow-[0_4px_24px_rgba(0,0,0,0.6)] hover:border-orange-500/30 transition-all duration-300 flex flex-col justify-between h-[360px]">
+            <!-- Ambient glow -->
+            <div class="absolute -right-20 -top-20 w-40 h-40 rounded-full blur-[80px] opacity-10 bg-orange-500"></div>
+            
+            <div>
+              <div class="flex justify-between items-start gap-3">
+                <div class="truncate">
+                  <h4 class="text-sm font-black text-app-text uppercase truncate">{{ app.name }}</h4>
+                  <span class="text-[8px] text-app-muted uppercase tracking-wider block mt-1">UUID: {{ app.id }}</span>
+                </div>
+                <span [class]="app.status === 'active' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-rose-400 bg-rose-500/10 border-rose-500/20'" 
+                      class="text-[9px] font-bold px-2 py-0.5 rounded border uppercase">
+                  {{ app.status }}
+                </span>
+              </div>
+              
+              <!-- Domain link -->
+              <div class="text-[10px] text-orange-400/80 font-bold tracking-wider mt-2 truncate">
+                https://{{ app.domain }}
+              </div>
+
+              <!-- Synced Configuration Summary -->
+              <div class="mt-4 border-t border-app-border/40 pt-4 space-y-2.5 text-xs">
+                <div class="flex justify-between items-center bg-black/15 p-2 rounded">
+                  <span class="text-app-muted text-[10px] uppercase">Theme Engine</span>
+                  <span class="text-indigo-400 uppercase font-bold">{{ app.config?.theme || 'None' }}</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-black/15 p-2 rounded">
+                  <span class="text-app-muted text-[10px] uppercase">Rate Limiter</span>
+                  <span class="text-cyan-400 font-bold">
+                    {{ app.rateLimits?.rpm || 0 }} RPM / {{ app.rateLimits?.rph || 0 }} RPH
+                  </span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-black/15 p-2 rounded">
+                  <span class="text-app-muted text-[10px] uppercase">Billing Spent</span>
+                  <span class="text-emerald-400 font-bold">${{ app.billing?.amount || 0.00 | number:'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <!-- Enabled Integrations -->
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                @if (app.config?.features?.['whatsapp']) {
+                  <span class="text-[8px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded uppercase">WhatsApp</span>
+                }
+                @if (app.config?.features?.['email']) {
+                  <span class="text-[8px] font-bold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded uppercase">Email/SMTP</span>
+                }
+                @if (app.config?.features?.['stripe']) {
+                  <span class="text-[8px] font-bold bg-orange-500/10 border border-orange-500/20 text-orange-400 px-2 py-0.5 rounded uppercase">Stripe</span>
+                }
+              </div>
+            </div>
+
+            <!-- Synced Time Stamp -->
+            <div class="border-t border-app-border/40 pt-3.5 mt-4 flex justify-between items-center text-[9px] text-app-muted">
+              <span>LAST SYNCED STATE</span>
+              <span class="text-app-text font-bold">{{ app.syncedAt | date:'mediumTime' }}</span>
+            </div>
+          </div>
+        }
+        @if (service.firebaseApps().length === 0) {
+          <div class="col-span-full text-center text-app-muted py-12 text-sm bg-app-bg/25 border border-app-border rounded-xl">
+            No synchronized configurations in Firestore. Run "Sync Database to Firebase" in application integrations.
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Live Deployments and Logs section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-mono">
+      <!-- Deployments pipeline -->
+      <div class="metrics-card backdrop-blur-md p-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] border border-app-border rounded-xl flex flex-col justify-between h-[420px]">
+        <div>
+          <div class="flex items-center justify-between border-b border-app-border pb-3 mb-4">
+            <h4 class="text-[11px] font-black text-app-text tracking-widest uppercase flex items-center gap-2">
+              <mat-icon class="text-orange-500 !w-4 !h-4 !text-[16px]">cloud_queue</mat-icon>
+              DEPLOYMENTS (FIRESTORE)
+            </h4>
+            <span class="text-[8px] text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 font-bold uppercase animate-pulse">STREAMING</span>
+          </div>
+
+          <div class="space-y-3.5 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
+            @for (dep of service.firebaseDeployments(); track dep.id) {
+              <div class="p-3 bg-app-bg/50 border border-app-border/60 rounded-lg flex items-center justify-between text-xs hover:bg-black/10 transition">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-app-text">{{ dep.version }}</span>
+                    <span class="text-[9px] text-app-muted">App: {{ dep.appId.substring(0, 8) }}...</span>
+                  </div>
+                  @if (dep.status === 'building') {
+                    <div class="mt-2 w-48 h-1 bg-black/40 rounded-full overflow-hidden p-[0.5px]">
+                      <div [style.width.%]="dep.progress" class="h-full bg-orange-500 rounded-full"></div>
+                    </div>
+                  }
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <span [class]="dep.status === 'success' ? 'text-emerald-400' : (dep.status === 'building' ? 'text-orange-400 animate-pulse' : 'text-rose-400')"
+                        class="text-[9px] font-bold uppercase tracking-wider">
+                    {{ dep.status }}
+                  </span>
+                  <span class="text-[8px] text-app-muted">{{ dep.timestamp | date:'mediumTime' }}</span>
+                </div>
+              </div>
+            }
+            @if (service.firebaseDeployments().length === 0) {
+              <div class="text-center text-app-muted py-12 text-xs">No deployments synced.</div>
+            }
+          </div>
+        </div>
+        <div class="text-[8px] text-app-muted text-right mt-2">REAL-TIME FIRESTORE SUBSCRIPTION CHANNEL</div>
+      </div>
+
+      <!-- Request logs terminal -->
+      <div class="metrics-card backdrop-blur-md p-6 shadow-[0_4px_24px_rgba(0,0,0,0.6)] border border-app-border rounded-xl flex flex-col justify-between h-[420px]">
+        <div>
+          <div class="flex items-center justify-between border-b border-app-border pb-3 mb-4">
+            <h4 class="text-[11px] font-black text-app-text tracking-widest uppercase flex items-center gap-2">
+              <mat-icon class="text-cyan-400 !w-4 !h-4 !text-[16px]">list_alt</mat-icon>
+              REQUEST LOGS (FIRESTORE)
+            </h4>
+            <span class="text-[8px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase animate-ping">●</span>
+          </div>
+
+          <!-- MONOSPACE TERMINAL VIEW -->
+          <div class="bg-black/80 rounded-lg p-4 font-mono text-[10px] h-[300px] overflow-y-auto space-y-2 custom-scrollbar border border-app-border/60">
+            @for (log of service.firebaseLogs(); track log.id) {
+              <div class="flex justify-between items-start gap-4 hover:bg-white/5 p-1 rounded transition">
+                <div class="flex items-center gap-2 text-app-muted truncate">
+                  <span class="text-slate-500 font-bold">[{{ log.timestamp | date:'HH:mm:ss' }}]</span>
+                  <span [class]="log.method === 'POST' ? 'text-indigo-400' : 'text-cyan-400'" class="font-black text-[9px]">{{ log.method }}</span>
+                  <span class="text-amber-400 font-bold truncate max-w-[150px]">{{ log.endpoint }}</span>
+                  <span class="text-[8px] text-slate-500 font-normal">({{ log.appId.substring(0, 6) }})</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <span [class]="log.statusCode >= 400 ? 'text-rose-400' : 'text-emerald-400'" class="font-bold font-mono">
+                    {{ log.statusCode }}
+                  </span>
+                  <span class="text-app-text text-[9px] font-bold tabular-nums">
+                    {{ log.responseTime }}ms
+                  </span>
+                </div>
+              </div>
+            }
+            @if (service.firebaseLogs().length === 0) {
+              <div class="text-center text-app-muted py-12">No requests recorded in Firestore yet.</div>
+            }
+          </div>
+        </div>
+        <div class="text-[8px] text-app-muted text-right mt-2">LIVE SCROLLING DATABASE TELEMETRY FEED</div>
+      </div>
+    </div>
+  }
+
+</app-system-core-layout>

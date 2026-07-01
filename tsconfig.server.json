@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2022",
+    "lib": ["es2022"],
+    "strict": false,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true
+  },
+  "files": [
+    "src/server.ts"
+  ],
+  "include": [
+    "src/server.ts"
+  ]
+}

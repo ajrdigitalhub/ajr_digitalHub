@@ -1,0 +1,215 @@
+@if (!isServicesFeatureActive()) {
+  <div class="min-h-screen bg-app-bg flex flex-col items-center justify-center pt-24 px-4 text-center">
+    <div class="max-w-md bg-app-card border border-app-border rounded-2xl p-8 shadow-sm">
+      <mat-icon class="text-indigo-600 !w-16 !h-16 !text-[64px] mb-4">lock_outline</mat-icon>
+      <h2 class="text-xl font-bold text-app-text uppercase tracking-wider mb-4">Module Temporarily Inactive</h2>
+      <p class="text-app-muted text-xs leading-relaxed mb-6 font-sans">
+        The Creative Services platform module is temporarily disabled. The Portal administrator has toggled this section off. For any inquiries, please contact our support team.
+      </p>
+      <button routerLink="/" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-app-text font-semibold text-xs rounded-xl uppercase tracking-wider transition cursor-pointer">
+        Return to Home
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="min-h-screen bg-app-bg pt-24 pb-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="text-center max-w-3xl mx-auto mb-20">
+          <h1 class="text-4xl md:text-5xl font-bold text-app-text tracking-tight mb-6">Custom Digital Solutions</h1>
+          <p class="text-xl text-app-muted">We build scalable, high-performance web applications tailored to your unique business needs.</p>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+          <!-- Service 1 -->
+          <div class="bg-app-card rounded-2xl p-8 border border-app-border shadow-sm hover:shadow-xl transition-all duration-300 group">
+            <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-app-text transition-colors duration-300">
+              <mat-icon class="text-3xl">language</mat-icon>
+            </div>
+            <h3 class="text-xl font-bold text-app-text mb-4">Web Development</h3>
+            <p class="text-app-muted mb-6 leading-relaxed">Full-stack web applications built with modern frameworks like Angular, React, and Node.js. We focus on performance, security, and scalability.</p>
+            <ul class="space-y-3">
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Single Page Applications (SPAs)</li>
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Progressive Web Apps (PWAs)</li>
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Server-Side Rendering (SSR)</li>
+            </ul>
+          </div>
+
+          <!-- Service 2 -->
+          <div class="bg-app-card rounded-2xl p-8 border border-app-border shadow-sm hover:shadow-xl transition-all duration-300 group">
+            <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-app-text transition-colors duration-300">
+              <mat-icon class="text-3xl">shopping_cart</mat-icon>
+            </div>
+            <h3 class="text-xl font-bold text-app-text mb-4">E-commerce Solutions</h3>
+            <p class="text-app-muted mb-6 leading-relaxed">Robust online stores designed to maximize conversions. We integrate secure payment gateways and inventory management systems.</p>
+            <ul class="space-y-3">
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Custom Storefronts</li>
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Payment Integration</li>
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Inventory Management</li>
+            </ul>
+          </div>
+
+          <!-- Service 3 -->
+          <div class="bg-app-card rounded-2xl p-8 border border-app-border shadow-sm hover:shadow-xl transition-all duration-300 group">
+            <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-6 text-amber-600 group-hover:bg-amber-600 group-hover:text-app-text transition-colors duration-300">
+              <mat-icon class="text-3xl">design_services</mat-icon>
+            </div>
+            <h3 class="text-xl font-bold text-app-text mb-4">UI/UX Design</h3>
+            <p class="text-app-muted mb-6 leading-relaxed">User-centric design that looks beautiful and functions flawlessly. We create intuitive interfaces that engage your audience.</p>
+            <ul class="space-y-3">
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Wireframing & Prototyping</li>
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> User Research</li>
+              <li class="flex items-center text-app-text"><mat-icon class="text-emerald-500 mr-2 text-sm">check_circle</mat-icon> Design Systems</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Process Section -->
+        <div class="bg-app-bg rounded-3xl p-8 md:p-16 text-app-text mb-24 relative overflow-hidden">
+          <div class="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+          <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-emerald-500 rounded-full blur-3xl opacity-20"></div>
+          
+          <div class="relative z-10">
+            <h2 class="text-3xl font-bold mb-12 text-center">Our Development Process</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div class="text-center">
+                <div class="w-16 h-16 bg-indigo-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                  <span class="text-2xl font-bold text-indigo-400">1</span>
+                </div>
+                <h4 class="text-lg font-semibold mb-2">Discovery</h4>
+                <p class="text-app-muted text-sm">We learn about your business goals, target audience, and technical requirements.</p>
+              </div>
+              
+              <div class="text-center relative">
+                <div class="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-app-card -z-10"></div>
+                <div class="w-16 h-16 bg-indigo-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                  <span class="text-2xl font-bold text-indigo-400">2</span>
+                </div>
+                <h4 class="text-lg font-semibold mb-2">Design</h4>
+                <p class="text-app-muted text-sm">Creating wireframes and high-fidelity prototypes for your approval.</p>
+              </div>
+              
+              <div class="text-center relative">
+                <div class="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-app-card -z-10"></div>
+                <div class="w-16 h-16 bg-indigo-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                  <span class="text-2xl font-bold text-indigo-400">3</span>
+                </div>
+                <h4 class="text-lg font-semibold mb-2">Development</h4>
+                <p class="text-app-muted text-sm">Writing clean, scalable code using modern frameworks and best practices.</p>
+              </div>
+              
+              <div class="text-center relative">
+                <div class="hidden md:block absolute top-8 left-1/2 w-full h-0.5 bg-app-card -z-10"></div>
+                <div class="w-16 h-16 bg-indigo-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                  <span class="text-2xl font-bold text-indigo-400">4</span>
+                </div>
+                <h4 class="text-lg font-semibold mb-2">Launch</h4>
+                <p class="text-app-muted text-sm">Rigorous testing, deployment, and ongoing support to ensure success.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculator Section -->
+        <div class="mb-24 bg-app-card rounded-3xl border border-app-border overflow-hidden shadow-sm">
+          <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- Controls -->
+            <div class="p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-app-border bg-app-bg/50">
+              <h2 class="text-2xl font-bold text-app-text mb-8 flex items-center gap-2">
+                <mat-icon class="text-indigo-600">calculate</mat-icon>
+                Project Cost Estimator
+              </h2>
+              
+              <div class="space-y-8">
+                <!-- Pages -->
+                  <label class="flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm font-bold text-app-text uppercase tracking-wider">Number of Pages</span>
+                      <span class="text-2xl font-black text-indigo-600">{{ pages() }}</span>
+                    </div>
+                    <input type="range" min="1" max="50" [ngModel]="pages()" (ngModelChange)="updatePages($event)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                  </label>
+                  <div class="flex justify-between mt-2 text-[10px] font-bold text-app-muted uppercase tracking-widest">
+                    <span>1 Page</span>
+                    <span>50 Pages</span>
+                  </div>
+
+                <!-- Complexity -->
+                <div>
+                  <span class="block text-sm font-bold text-app-text uppercase tracking-wider mb-4">Project Complexity</span>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button (click)="complexity.set('standard')" [class]="complexity() === 'standard' ? 'bg-indigo-600 text-app-text shadow-lg shadow-indigo-600/20 border-indigo-600' : 'bg-app-card text-app-muted border-app-border hover:border-indigo-300'" class="p-4 rounded-xl border-2 text-center transition-all">
+                      <div class="text-sm font-bold mb-1">Standard</div>
+                      <div class="text-[10px] opacity-80 font-medium">Simple UI / UX</div>
+                    </button>
+                    <button (click)="complexity.set('premium')" [class]="complexity() === 'premium' ? 'bg-indigo-600 text-app-text shadow-lg shadow-indigo-600/20 border-indigo-600' : 'bg-app-card text-app-muted border-app-border hover:border-indigo-300'" class="p-4 rounded-xl border-2 text-center transition-all">
+                      <div class="text-sm font-bold mb-1">Premium</div>
+                      <div class="text-[10px] opacity-80 font-medium">Advanced Motion</div>
+                    </button>
+                    <button (click)="complexity.set('enterprise')" [class]="complexity() === 'enterprise' ? 'bg-indigo-600 text-app-text shadow-lg shadow-indigo-600/20 border-indigo-600' : 'bg-app-card text-app-muted border-app-border hover:border-indigo-300'" class="p-4 rounded-xl border-2 text-center transition-all">
+                      <div class="text-sm font-bold mb-1">Enterprise</div>
+                      <div class="text-[10px] opacity-80 font-medium">Complex Logic</div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Addons -->
+                <div class="flex flex-wrap gap-12 pt-4">
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <span class="text-sm font-bold text-app-muted group-hover:text-app-text transition-colors">Third-party Integrations</span>
+                    <div class="relative">
+                      <input type="checkbox" [(ngModel)]="integrations" class="peer sr-only">
+                      <div class="w-10 h-5 bg-slate-200 rounded-full transition-colors peer-checked:bg-emerald-500"></div>
+                      <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-app-card rounded-full transition-transform peer-checked:translate-x-5"></div>
+                    </div>
+                  </label>
+
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <span class="text-sm font-bold text-app-muted group-hover:text-app-text transition-colors">Express Delivery (7 days)</span>
+                    <div class="relative">
+                      <input type="checkbox" [(ngModel)]="fastDelivery" class="peer sr-only">
+                      <div class="w-10 h-5 bg-slate-200 rounded-full transition-colors peer-checked:bg-rose-500"></div>
+                      <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-app-card rounded-full transition-transform peer-checked:translate-x-5"></div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Result -->
+            <div class="p-8 md:p-12 flex flex-col justify-center items-center text-center bg-indigo-600 text-app-text relative">
+              <!-- Grid background -->
+              <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+              
+              <div class="relative z-10">
+                <span class="text-indigo-200 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Estimated Investment</span>
+                <div class="text-6xl md:text-7xl font-black mb-6 tracking-tighter tabular-nums">
+                  <span class="text-indigo-300 text-3xl font-medium align-top mr-1 tracking-normal">₹</span>{{ estimatedPrice() | number }}
+                </div>
+                <p class="text-indigo-100 text-sm max-w-xs mx-auto mb-10 leading-relaxed">
+                  This estimate includes project management, quality assurance, and automated testing deployments.
+                </p>
+                <button class="px-8 py-4 bg-app-card text-indigo-600 font-bold rounded-2xl hover:bg-indigo-50 transition-all shadow-xl shadow-indigo-900/20 active:scale-95">
+                  Get a Detailed Quote
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="bg-indigo-50 rounded-3xl p-8 md:p-12 text-center border border-indigo-100">
+          <h2 class="text-3xl font-bold text-app-text mb-4">Have a project in mind?</h2>
+          <p class="text-lg text-app-muted mb-8 max-w-2xl mx-auto">Let's discuss how we can help you achieve your digital goals. Our team of experts is ready to bring your vision to life.</p>
+          <button class="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-xl text-app-text bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20">
+            Start a Conversation
+            <mat-icon class="ml-2 text-sm">send</mat-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+}

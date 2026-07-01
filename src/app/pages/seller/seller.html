@@ -1,0 +1,151 @@
+<div class="min-h-screen bg-app-bg pt-24 pb-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="mb-12 border-b border-app-border pb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <h1 class="text-4xl font-bold text-app-text tracking-tight mb-4">Seller Portal</h1>
+            <p class="text-lg text-app-muted max-w-2xl">Manage your digital assets, track sales, and grow your business on {{ siteName() || 'AJR DIGITAL HUB' }}.</p>
+          </div>
+          <button class="mt-6 md:mt-0 flex items-center gap-2 px-6 py-3 bg-indigo-600 text-app-text font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20">
+            <mat-icon>add</mat-icon>
+            Upload New Asset
+          </button>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <!-- Stat 1 -->
+          <div class="bg-app-card rounded-2xl p-6 border border-app-border shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-app-muted uppercase tracking-wider">Total Revenue</h3>
+              <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                <mat-icon>currency_rupee</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-app-text mb-2">₹12,450.00</div>
+            <div class="flex items-center text-sm font-medium text-emerald-600">
+              <mat-icon class="text-sm mr-1">trending_up</mat-icon>
+              +14.5% from last month
+            </div>
+          </div>
+
+          <!-- Stat 2 -->
+          <div class="bg-app-card rounded-2xl p-6 border border-app-border shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-app-muted uppercase tracking-wider">Total Sales</h3>
+              <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                <mat-icon>shopping_cart</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-app-text mb-2">342</div>
+            <div class="flex items-center text-sm font-medium text-emerald-600">
+              <mat-icon class="text-sm mr-1">trending_up</mat-icon>
+              +8.2% from last month
+            </div>
+          </div>
+
+          <!-- Stat 3 -->
+          <div class="bg-app-card rounded-2xl p-6 border border-app-border shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-app-muted uppercase tracking-wider">Active Assets</h3>
+              <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-app-text mb-2">15</div>
+            <div class="flex items-center text-sm font-medium text-app-muted">
+              <mat-icon class="text-sm mr-1">info</mat-icon>
+              2 pending review
+            </div>
+          </div>
+
+          <!-- Stat 4 -->
+          <div class="bg-app-card rounded-2xl p-6 border border-app-border shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-app-muted uppercase tracking-wider">Avg. Rating</h3>
+              <div class="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
+                <mat-icon>star</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-bold text-app-text mb-2">4.8</div>
+            <div class="flex items-center text-sm font-medium text-emerald-600">
+              <mat-icon class="text-sm mr-1">trending_up</mat-icon>
+              +0.2 from last month
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Form Mockup -->
+        <div class="bg-app-card rounded-2xl border border-app-border shadow-sm overflow-hidden mb-12">
+          <div class="px-6 py-5 border-b border-app-border bg-app-bg/50">
+            <h2 class="text-xl font-semibold text-app-text">Upload New Digital Asset</h2>
+            <p class="text-sm text-app-muted mt-1">Fill out the details below to submit your asset for review.</p>
+          </div>
+          
+          <div class="p-6 md:p-8">
+            <form class="space-y-8">
+              <!-- Basic Info -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label for="assetTitle" class="text-sm font-medium text-app-text">Asset Title</label>
+                  <input id="assetTitle" name="title" [(ngModel)]="product.title" type="text" placeholder="e.g., Modern E-commerce Theme" class="w-full px-4 py-3 border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                </div>
+                
+                <div class="space-y-2">
+                  <label for="assetCategory" class="text-sm font-medium text-app-text">Category</label>
+                  <select id="assetCategory" name="category" [(ngModel)]="product.category" class="w-full px-4 py-3 border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-app-card">
+                    <option>Design</option>
+                    <option>Code</option>
+                    <option>Content</option>
+                    <option>Services</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="space-y-2">
+                <label for="assetDescription" class="text-sm font-medium text-app-text">Description</label>
+                <textarea id="assetDescription" name="description" [(ngModel)]="product.description" rows="4" placeholder="Describe your asset, its features, and what makes it unique..." class="w-full px-4 py-3 border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+              </div>
+
+              <!-- Pricing & Files -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label for="assetPrice" class="text-sm font-medium text-app-text">Price (₹)</label>
+                  <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-app-muted">₹</span>
+                    <input id="assetPrice" name="price" [(ngModel)]="product.price" type="number" placeholder="49.00" class="w-full pl-8 pr-4 py-3 border border-app-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                  </div>
+                </div>
+                
+                <div class="space-y-2">
+                  <label for="assetFile" class="text-sm font-medium text-app-text">Upload File (.zip)</label>
+                  <div class="flex items-center justify-center w-full">
+                    <label for="assetFile" class="flex flex-col items-center justify-center w-full h-32 border-2 border-app-border border-dashed rounded-xl cursor-pointer bg-app-bg hover:bg-app-bg transition-colors">
+                      <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <mat-icon class="text-app-muted mb-2">cloud_upload</mat-icon>
+                        <p class="mb-2 text-sm text-app-muted"><span class="font-semibold text-indigo-600">Click to upload</span> or drag and drop</p>
+                        <p class="text-xs text-app-muted">ZIP, RAR (MAX. 500MB)</p>
+                      </div>
+                      <input id="assetFile" type="file" class="hidden" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex justify-end gap-4 pt-6 border-t border-app-border">
+                <button type="button" class="px-6 py-3 border border-app-border rounded-xl text-app-text font-medium hover:bg-app-bg transition-colors">
+                  Save Draft
+                </button>
+                <button type="button" (click)="submitAsset()" class="px-6 py-3 bg-indigo-600 text-app-text rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20">
+                  {{ isSubmitted() ? 'Submitted!' : 'Submit for Review' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>

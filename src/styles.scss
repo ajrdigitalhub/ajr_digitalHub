@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-primary: #ff6600; /* AJR Orange */
+  --color-secondary: #0066ff; /* AJR Blue */
+  --color-accent: #ff9900; /* Light Orange */
+
+  --color-app-bg: var(--app-bg);
+  --color-app-card: var(--app-card);
+  --color-app-text: var(--app-text);
+  --color-app-muted: var(--app-muted);
+  --color-app-border: var(--app-border);
+}
+
+:root {
+  /* Default is Dark Space aesthetic */
+  --bg: #000000;
+  --text: #f1f5f9;
+  --app-bg: var(--bg);
+  --app-card: #0a0a0a;
+  --app-card-rgb: 10, 10, 10;
+  --app-text: var(--text);
+  --app-muted: #94a3b8;
+  --app-border: rgba(255, 255, 255, 0.08);
+}
+
+.light-theme {
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --app-bg: var(--bg);
+  --app-card: #ffffff;
+  --app-card-rgb: 255, 255, 255;
+  --app-text: var(--text);
+  --app-muted: #64748b;
+  --app-border: #e2e8f0;
+}
+
+.dark-theme {
+  --bg: #000000;
+  --text: #f1f5f9;
+  --app-bg: var(--bg);
+  --app-card: #0a0a0a;
+  --app-card-rgb: 10, 10, 10;
+  --app-text: var(--text);
+  --app-muted: #94a3b8;
+  --app-border: rgba(255, 255, 255, 0.08);
+}
+
+.neon-theme {
+  --bg: #030308;
+  --text: #3dff12; /* Neon Green */
+  --app-bg: var(--bg);
+  --app-card: #080813;
+  --app-card-rgb: 8, 8, 19;
+  --app-text: var(--text);
+  --app-muted: #00f0ff; /* Neon Cyan */
+  --app-border: rgba(61, 255, 18, 0.25);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+}
+
+/* Premium Glassmorphism Cards */
+.glass {
+  background: rgba(var(--app-card-rgb), 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--app-border);
+}
+
+.glass-dark {
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+}
+
+/* Buttons System */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+  font-size: 0.875rem;
+  
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--app-card);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  font-size: 0.875rem;
+  
+  &:hover {
+    background-color: rgba(var(--app-card-rgb), 0.9);
+    border-color: var(--app-text);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--app-muted);
+  border-radius: 4px;
+  opacity: 0.4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--app-text);
+}
+
+/* Base custom classes */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 5px 10px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Layout overrides to respect custom variables */
+.bg-app-bg {
+  background-color: var(--app-bg) !important;
+}
+.bg-app-card {
+  background-color: var(--app-card) !important;
+}
+.text-app-text {
+  color: var(--app-text) !important;
+}
+.text-app-muted {
+  color: var(--app-muted) !important;
+}
+.border-app-border {
+  border-color: var(--app-border) !important;
+}
+
+/* Professional Invoice Printing Stylesheet */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    font-size: 12pt !important;
+  }
+
+  /* Hide everything on the page */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Expose only the invoice sheet preview */
+  #invoice-print-area,
+  #invoice-print-area * {
+    visibility: visible !important;
+  }
+
+  /* Place invoice at the top-left of printable page */
+  #invoice-print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Force background accent colors & text gradients to render */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide print buttons and inputs borders */
+  input, select, textarea {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    resize: none !important;
+  }
+
+  /* Hide buttons or other interactive helper tools on invoice */
+  .print-hide {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+

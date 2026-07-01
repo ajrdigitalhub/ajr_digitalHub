@@ -1,0 +1,10 @@
+{
+  "name": "Dynamic Form Builder & Sales Collection System",
+  "description": "A secure SaaS builder with drag-and-drop custom fields, response tables, and interactive analytics dashboards.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

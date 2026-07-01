@@ -1,0 +1,434 @@
+{
+  "users": [
+    {
+      "id": "admin-1",
+      "email": "admin@saas.com",
+      "passwordHash": "$2a$08$ebbPRSjg18svSzbbMgTZouH45pJtWWiwlHZdxONBTu9RL3M.5Zxha",
+      "role": "admin"
+    },
+    {
+      "id": "user-1",
+      "email": "owner@saas.com",
+      "passwordHash": "$2a$08$TPXLCZWOdDdSYlQQ6dfrA.jeWMmgc/jFBpvXRR2rIZ5NjeCX0XiAG",
+      "role": "user"
+    },
+    {
+      "id": "usr-1781751761676",
+      "email": "test123456@example.com",
+      "passwordHash": "$2a$08$VFqDHYCnRo/6v8gnzx.Ts.pg0M7NWE732Yqf2mlS1233K8CAvcgGK",
+      "role": "user"
+    },
+    {
+      "id": "usr-1781761355110",
+      "email": "newuser1@example.com",
+      "passwordHash": "$2a$08$hTz4q7uessxysXlex29daeMky2WIow/.kFd04Kbu6Kt1jRmvzekfu",
+      "role": "user"
+    }
+  ],
+  "forms": [
+    {
+      "id": "demo-form-id",
+      "name": "Sales Inquiry Lead Form",
+      "description": "Provide your company parameters to onboarding securely into our SaaS CRM portal.",
+      "fields": [
+        {
+          "id": "1",
+          "label": "Customer Name",
+          "type": "text",
+          "required": true,
+          "placeholder": "Jane Doe"
+        },
+        {
+          "id": "2",
+          "label": "Business Email",
+          "type": "email",
+          "required": true,
+          "placeholder": "jane@company.com"
+        },
+        {
+          "id": "3",
+          "label": "SaaS Plan Tier",
+          "type": "dropdown",
+          "required": true,
+          "placeholder": "",
+          "options": [
+            "Startup ($29/mo)",
+            "Enterprise ($199/mo)",
+            "Custom Quote"
+          ]
+        },
+        {
+          "id": "4",
+          "label": "Inbound Message",
+          "type": "textarea",
+          "required": false,
+          "placeholder": "Tell us about your organization..."
+        }
+      ],
+      "ownerId": "user-1",
+      "isActive": true
+    }
+  ],
+  "responses": [
+    {
+      "id": "seed-resp-7-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Leon Kennedy",
+        "2": "demo@company.com",
+        "3": "Startup ($29/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-11T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.17",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-6-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Chris Redfield",
+        "2": "demo@company.com",
+        "3": "Startup ($29/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-12T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.16",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-5-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-13T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.15",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-5-1",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-13T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.15",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-5-2",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Leon Kennedy",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-13T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.15",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-5-3",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Chris Redfield",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-13T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.15",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-4-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Chris Redfield",
+        "2": "demo@company.com",
+        "3": "Startup ($29/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-14T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.14",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-4-1",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Leon Kennedy",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-14T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.14",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-4-2",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Startup ($29/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-14T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.14",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-4-3",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-14T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.14",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-3-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-15T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.13",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-3-1",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-15T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.13",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-2-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-16T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.12",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-2-1",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Leon Kennedy",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-16T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.12",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-2-2",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Alex Mercer",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-16T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.12",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-2-3",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-16T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.12",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-1-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-17T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.11",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-1-1",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Startup ($29/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-17T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.11",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-0-0",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Chris Redfield",
+        "2": "demo@company.com",
+        "3": "Enterprise ($199/mo)",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-18T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.10",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    },
+    {
+      "id": "seed-resp-0-1",
+      "formId": "demo-form-id",
+      "responses": {
+        "1": "Claire Redfield",
+        "2": "demo@company.com",
+        "3": "Custom Quote",
+        "4": "We are extremely excited to integrate!"
+      },
+      "submittedAt": "2026-06-18T01:46:58.592Z",
+      "metadata": {
+        "ip": "192.168.1.10",
+        "device": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "sess-4i2kcfttg",
+      "userId": "usr-1781751761676",
+      "refreshToken": "ref-xtawgv8a3",
+      "expiresAt": "2026-06-25T03:02:50.327Z",
+      "createdAt": "2026-06-18T03:02:50.327Z"
+    },
+    {
+      "id": "sess-l6md9634n",
+      "userId": "admin-1",
+      "refreshToken": "ref-0l2yq9c5d",
+      "expiresAt": "2026-06-25T04:16:40.253Z",
+      "createdAt": "2026-06-18T04:16:40.253Z"
+    },
+    {
+      "id": "sess-5q4lig4tc",
+      "userId": "usr-1781761355110",
+      "refreshToken": "ref-7x828otp9",
+      "expiresAt": "2026-06-25T05:42:42.396Z",
+      "createdAt": "2026-06-18T05:42:42.396Z"
+    },
+    {
+      "id": "sess-9jz3ulant",
+      "userId": "admin-1",
+      "refreshToken": "ref-uqgomevrr",
+      "expiresAt": "2026-06-25T05:44:01.346Z",
+      "createdAt": "2026-06-18T05:44:01.347Z"
+    },
+    {
+      "id": "sess-0bxtsgb1a",
+      "userId": "admin-1",
+      "refreshToken": "ref-fn8sm2bas",
+      "expiresAt": "2026-06-25T05:52:26.583Z",
+      "createdAt": "2026-06-18T05:52:26.583Z"
+    }
+  ],
+  "purchases": [],
+  "products": [
+    {
+      "id": "22222222-2222-4222-a222-222222222222",
+      "title": "Premium SaaS Dashboard Template",
+      "description": "Enterprise grade dashboard containing clean navigation, pre-configured chart utilities, and dense metrics grids.",
+      "price": 149.99,
+      "category": "Software",
+      "html_content": "<div class=\"p-12 bg-slate-900 rounded-3xl text-white\"><h1>Master Admin</h1></div>",
+      "status": "active",
+      "image": "https://picsum.photos/seed/dashboard/800/600"
+    },
+    {
+      "id": "22222222-2222-4222-a222-222222222223",
+      "title": "E-Commerce Retail Toolkit",
+      "description": "Sleek frontend e-commerce system optimized for digital sales, complete with cart logic and checkout portals.",
+      "price": 89,
+      "category": "E-Commerce",
+      "html_content": "<div class=\"p-12 bg-white rounded-3xl text-slate-900\"><h1>Digital Checkout</h1></div>",
+      "status": "active",
+      "image": "https://picsum.photos/seed/shop/800/600"
+    }
+  ]
+}

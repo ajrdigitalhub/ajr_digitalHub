@@ -1,0 +1,825 @@
+<!-- ══════════════════════════════════════════════════════════════════════════
+  MAIN DASHBOARD VIEW — hidden when template detail is open
+══════════════════════════════════════════════════════════════════════════ -->
+@if (!selectedTemplateName()) {
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-300 pb-10 max-w-[1300px] space-y-6">
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <div class="wa-header-icon-wrapper w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-600">
+          <mat-icon class="text-white !text-[20px] !w-5 !h-5">chat</mat-icon>
+        </div>
+        <h2 class="text-2xl font-black text-app-text tracking-tight">WhatsApp Billing &amp; Analytics</h2>
+        <!-- Live indicator -->
+        <span class="wa-live-badge flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="wa-live-badge-dot w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-400"></span>
+          LIVE
+        </span>
+      </div>
+      <p class="text-xs text-app-muted ml-12">Realtime analytics from Meta Graph API + Firebase</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-4 flex-shrink-0">
+      <!-- Auto-refresh option -->
+      <label class="flex items-center gap-1.5 text-xs text-app-muted cursor-pointer">
+        <input type="checkbox" [checked]="isAutoRefreshEnabled()" (change)="toggleAutoRefresh($event)" class="rounded border-app-border bg-app-card text-indigo-500 w-3.5 h-3.5 cursor-pointer">
+        Auto-Refresh
+      </label>
+
+      @if (lastRefreshedTime()) {
+        <span class="text-xs text-app-muted font-mono">Last Updated: {{ lastRefreshedTime() }}</span>
+      }
+
+      <button (click)="refreshAll()"
+              [disabled]="isLoading()"
+              id="wa-refresh-btn"
+              class="wa-refresh-btn flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-all bg-indigo-600/10 text-indigo-400 border-indigo-500/20 hover:bg-indigo-600/20 disabled:opacity-50"
+              [class.opacity-50]="isLoading()">
+        <mat-icon class="!text-[15px] !w-[15px] !h-[15px]" [class.animate-spin]="isLoading()">refresh</mat-icon>
+        {{ isLoading() ? 'Refreshing…' : 'Refresh' }}
+      </button>
+      <button (click)="exportCSV()"
+              [disabled]="!templates() || templates().length === 0"
+              id="wa-export-csv-btn"
+              class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-app-card border border-app-border text-app-text hover:bg-app-bg transition-all">
+        <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">download</mat-icon>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- ── HIGH COST ALERT ─────────────────────────────────────────────────── -->
+  @if (summary() && (summary()!.estimatedCost > costAlertThreshold)) {
+    <div class="wa-cost-alert rounded-xl p-4 flex items-start gap-3 animate-in fade-in duration-300">
+      <mat-icon class="text-rose-400 shrink-0 !text-[22px]">warning_amber</mat-icon>
+      <div>
+        <div class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-0.5">High Cost Alert</div>
+        <div class="text-sm text-app-text">
+          Current {{ selectedDays() }}-day spend of
+          <span class="font-bold text-rose-300">{{ getCurrencySymbol() }}{{ summary()!.estimatedCost | number:'1.2-2' }}</span>
+          exceeds threshold. Projected monthly: <span class="font-bold text-rose-300">{{ getCurrencySymbol() }}{{ summary()!.monthlyEstimate | number:'1.2-2' }}</span>.
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── SUMMARY CARDS ───────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+
+    <!-- Messages Sent -->
+    <div class="wa-card-sent relative rounded-xl p-3.5 sm:p-5 overflow-hidden border transition-all hover:scale-[1.02] duration-200">
+      <div class="absolute -right-3 -top-3 opacity-[0.07]">
+        <mat-icon class="!text-[60px] md:!text-[80px] !w-16 md:!w-20 !h-16 md:!h-20 text-green-400">send</mat-icon>
+      </div>
+      <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Messages Sent</div>
+      @if (isLoading() && !summary()) {
+        <div class="h-6 md:h-8 w-16 md:w-20 rounded bg-app-card animate-pulse mb-2"></div>
+      } @else {
+        <div class="text-xl sm:text-2xl md:text-3xl font-black text-app-text font-mono tabular-nums truncate">
+          {{ (summary()?.messagesSent || 0) | number }}
+        </div>
+      }
+      <div class="text-[9px] md:text-[10px] text-app-muted mt-1.5">Last {{ selectedDays() }} days</div>
+      <div class="mt-2.5 h-1 rounded-full overflow-hidden bg-app-bg/50">
+        <div class="progress-bar-sent h-full rounded-full transition-all duration-700"
+             [style.width.%]="summary() ? 100 : 0"></div>
+      </div>
+    </div>
+
+    <!-- Delivered -->
+    <div class="wa-card-delivered relative rounded-xl p-3.5 sm:p-5 overflow-hidden border transition-all hover:scale-[1.02] duration-200">
+      <div class="absolute -right-3 -top-3 opacity-[0.07]">
+        <mat-icon class="!text-[60px] md:!text-[80px] !w-16 md:!w-20 !h-16 md:!h-20 text-indigo-400">done_all</mat-icon>
+      </div>
+      <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Delivered</div>
+      @if (isLoading() && !summary()) {
+        <div class="h-6 md:h-8 w-16 md:w-20 rounded bg-app-card animate-pulse mb-2"></div>
+      } @else {
+        <div class="text-xl sm:text-2xl md:text-3xl font-black text-app-text font-mono tabular-nums truncate">
+          {{ (summary()?.messagesDelivered || 0) | number }}
+        </div>
+      }
+      <div class="text-[9px] md:text-[10px] font-bold mt-1.5 truncate text-indigo-400">
+        {{ summary()?.deliveryRate || 0 }}% rate
+      </div>
+      <div class="mt-2.5 h-1 rounded-full overflow-hidden bg-app-bg/50">
+        <div class="progress-bar-delivered h-full rounded-full transition-all duration-700"
+             [style.width.%]="summary()?.deliveryRate || 0"></div>
+      </div>
+    </div>
+
+    <!-- Read Rate -->
+    <div class="wa-card-read relative rounded-xl p-3.5 sm:p-5 overflow-hidden border transition-all hover:scale-[1.02] duration-200">
+      <div class="absolute -right-3 -top-3 opacity-[0.07]">
+        <mat-icon class="!text-[60px] md:!text-[80px] !w-16 md:!w-20 !h-16 md:!h-20 text-amber-400">mark_email_read</mat-icon>
+      </div>
+      <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Read Rate</div>
+      @if (isLoading() && !summary()) {
+        <div class="h-6 md:h-8 w-16 md:w-20 rounded bg-app-card animate-pulse mb-2"></div>
+      } @else {
+        <!-- Circular progress -->
+        <div class="flex items-center gap-2 md:gap-3">
+          <div class="relative w-9 h-9 md:w-12 md:h-12 shrink-0">
+            <svg class="w-9 h-9 md:w-12 md:h-12 -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(251,191,36,0.15)" stroke-width="2.5"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#fbbf24" stroke-width="2.5"
+                      stroke-dasharray="100" [attr.stroke-dashoffset]="100 - (summary()?.readRate || 0)"
+                      stroke-linecap="round" style="transition: stroke-dashoffset 0.7s ease;"/>
+            </svg>
+            <span class="absolute inset-0 flex items-center justify-center text-[8px] md:text-[10px] font-black text-amber-400">
+              {{ summary()?.readRate || 0 }}%
+            </span>
+          </div>
+          <div class="text-xl sm:text-2xl md:text-3xl font-black text-app-text font-mono tabular-nums truncate">
+            {{ (summary()?.messagesRead || 0) | number }}
+          </div>
+        </div>
+      }
+      <div class="text-[9px] md:text-[10px] text-app-muted mt-1.5">Messages opened</div>
+    </div>
+
+    <!-- Estimated Cost -->
+    <div class="wa-card-cost relative rounded-xl p-3.5 sm:p-5 overflow-hidden border transition-all hover:scale-[1.02] duration-200">
+      <div class="absolute -right-3 -top-3 opacity-[0.07]">
+        <mat-icon class="!text-[60px] md:!text-[80px] !w-16 md:!w-20 !h-16 md:!h-20 text-orange-400">currency_rupee</mat-icon>
+      </div>
+      <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Est. Cost ({{ selectedDays() }}d)</div>
+      @if (isLoading() && !summary()) {
+        <div class="h-6 md:h-8 w-20 md:w-24 rounded bg-app-card animate-pulse mb-2"></div>
+      } @else {
+        <div class="text-xl sm:text-2xl md:text-3xl font-black font-mono tabular-nums truncate text-amber-500">
+          {{ getCurrencySymbol() }}{{ (summary()?.estimatedCost || 0) | number:'1.2-2' }}
+        </div>
+      }
+      <div class="text-[9px] md:text-[10px] text-app-muted mt-1.5 truncate">
+        ~{{ getCurrencySymbol() }}{{ (summary()?.monthlyEstimate || 0) | number:'1.0-0' }} proj.
+      </div>
+      <div class="mt-2.5 h-1 rounded-full overflow-hidden bg-app-bg/50">
+        <div class="progress-bar-cost h-full rounded-full transition-all duration-700"
+             [style.width.%]="Math.min(((summary()?.estimatedCost || 0) / (costAlertThreshold || 1)) * 100, 100)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI INSIGHTS ROW ─────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- AI Cost Prediction -->
+    <div class="wa-insight-predicted rounded-xl p-4 flex items-start gap-3">
+      <div class="wa-insight-predicted-icon w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+        <mat-icon class="!text-[16px] !w-4 !h-4 text-indigo-400">auto_awesome</mat-icon>
+      </div>
+      <div>
+        <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">AI Cost Prediction (8hr peak)</div>
+        <div class="text-xl font-black text-app-text">{{ getCurrencySymbol() }}{{ (summary()?.aiCostPrediction || 0) | number:'1.2-2' }}</div>
+        <div class="text-[10px] text-app-muted mt-1">Based on current period rate × 8hr peak factor</div>
+      </div>
+    </div>
+
+    <!-- Top Performing Template -->
+    <div class="wa-insight-top rounded-xl p-4 flex items-start gap-3">
+      <div class="wa-insight-top-icon w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+        <mat-icon class="!text-[16px] !w-4 !h-4 text-emerald-500">emoji_events</mat-icon>
+      </div>
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-wider mb-1 text-emerald-500">Top Template</div>
+        @if (topTemplate()) {
+          <div class="text-sm font-bold text-app-text font-mono">{{ topTemplate()!.templateName }}</div>
+          <div class="text-[10px] text-app-muted mt-1">
+            {{ topTemplate()!.sent + topTemplate()!.delivered + topTemplate()!.read | number }} msgs •
+            {{ topTemplate()!.readRate }}% read rate
+          </div>
+        } @else {
+          <div class="text-sm text-app-muted">No data yet</div>
+        }
+      </div>
+    </div>
+
+    <!-- Monthly Billing Estimate -->
+    <div class="wa-insight-monthly rounded-xl p-4 flex items-start gap-3">
+      <div class="wa-insight-monthly-icon w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+        <mat-icon class="!text-[16px] !w-4 !h-4 text-amber-400">calendar_month</mat-icon>
+      </div>
+      <div>
+        <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">Monthly Estimate</div>
+        <div class="text-xl font-black text-app-text">{{ getCurrencySymbol() }}{{ (summary()?.monthlyEstimate || 0) | number:'1.0-0' }}</div>
+        <div class="text-[10px] text-app-muted mt-1">Projected from {{ selectedDays() }}-day rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REALTIME GRAPH ──────────────────────────────────────────────────── -->
+  <div class="wa-chart-panel rounded-2xl border overflow-hidden">
+    <div class="wa-chart-header px-6 py-4 border-b flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="wa-live-badge-dot w-2 h-2 rounded-full animate-pulse"></div>
+        <h3 class="text-sm font-bold text-app-text">Messages vs Time (Last {{ selectedDays() }} Days)</h3>
+      </div>
+      <div class="flex items-center gap-4 text-[10px] font-semibold">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full inline-block bg-emerald-500"></span>Sent</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full inline-block bg-indigo-400"></span>Delivered</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full inline-block bg-amber-400"></span>Read</span>
+        <span class="flex items-center gap-1.5 text-orange-500">
+          <span class="w-2 h-2 rounded-full inline-block bg-orange-500"></span>Cost ({{ getCurrencySymbol() }})
+        </span>
+      </div>
+    </div>
+
+    <div class="p-6">
+      @if (graph()) {
+        <!-- SVG Chart -->
+        <div class="relative h-48 w-full">
+          <svg class="w-full h-full" [attr.viewBox]="'0 0 ' + chartWidth + ' 160'" preserveAspectRatio="none">
+            <!-- Grid lines -->
+            @for (line of [0,1,2,3]; track line) {
+              <line [attr.x1]="0" [attr.y1]="line * 40" [attr.x2]="chartWidth" [attr.y2]="line * 40"
+                    class="wa-chart-grid-line" stroke-width="1"/>
+            }
+
+            <!-- Sent line -->
+            <polyline [attr.points]="buildMultiLinePoints(graph()!.sent, getGlobalMax(graph()))"
+                      fill="none" class="wa-chart-sent-polyline" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <!-- Delivered line -->
+            <polyline [attr.points]="buildMultiLinePoints(graph()!.delivered, getGlobalMax(graph()))"
+                      fill="none" class="wa-chart-delivered-polyline" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <!-- Read line -->
+            <polyline [attr.points]="buildMultiLinePoints(graph()!.read, getGlobalMax(graph()))"
+                      fill="none" class="wa-chart-read-polyline" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+
+          <!-- X-axis labels -->
+          <div class="flex justify-between mt-2">
+            @for (label of graph()!.labels; track $index) {
+              @if ($index % 3 === 0 || $index === graph()!.labels.length - 1) {
+                <span class="text-[9px] text-app-muted font-mono">{{ label }}</span>
+              } @else {
+                <span class="text-[9px] opacity-0">{{ label }}</span>
+              }
+            }
+          </div>
+        </div>
+      } @else {
+        <!-- Skeleton graph -->
+        <div class="h-48 flex flex-col gap-2 justify-end">
+          @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
+            <div class="flex-1 rounded bg-app-card/40 animate-pulse"></div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── TEMPLATES TABLE ────────────────────────────────────────────────── -->
+  <div class="wa-table-panel rounded-2xl border overflow-hidden">
+    <div class="wa-table-header px-6 py-4 border-b flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3">
+        <mat-icon class="!text-[18px] !w-[18px] !h-[18px] text-emerald-500">table_chart</mat-icon>
+        <h3 class="text-sm font-bold text-app-text">Template Performance — Realtime</h3>
+        @if (templates().length > 0) {
+          <span class="wa-table-count-badge px-2 py-0.5 rounded text-[10px] font-bold">
+            {{ templates().length }} templates
+          </span>
+        }
+      </div>
+
+      <!-- Search + Days filter row -->
+      <div class="flex items-center gap-2">
+        <!-- Search filter -->
+        <div class="relative">
+          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 !text-[14px] !w-[14px] !h-[14px] text-app-muted">search</mat-icon>
+          <input [(ngModel)]="templateSearch" id="wa-template-search"
+                 placeholder="Filter templates…"
+                 class="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-app-bg border border-app-border text-app-text outline-none focus:border-indigo-500/50 transition w-40">
+        </div>
+
+        <!-- Days filter dropdown -->
+        <div class="wa-days-dropdown-container relative">
+          <button id="wa-days-filter-btn"
+                  (click)="toggleDaysDropdown($event)"
+                  class="wa-days-filter-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all">
+            <mat-icon class="!text-[13px] !w-[13px] !h-[13px]">date_range</mat-icon>
+            Last {{ selectedDays() }} days
+            <mat-icon class="!text-[12px] !w-[12px] !h-[12px] transition-transform duration-200"
+                      [class.rotate-180]="isDaysDropdownOpen()">expand_more</mat-icon>
+          </button>
+
+          @if (isDaysDropdownOpen()) {
+            <div class="wa-days-dropdown absolute right-0 top-full mt-1.5 z-30 rounded-xl border shadow-2xl animate-in fade-in slide-in-from-top-2 duration-150 min-w-[160px]">
+              <div class="p-2 space-y-0.5">
+                @for (opt of [7, 30, 60, 90]; track opt) {
+                  <button (click)="selectDays(opt)"
+                          class="wa-days-option w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+                          [class.wa-days-option-active]="selectedDays() === opt">
+                    <span>Last {{ opt }} days</span>
+                    @if (selectedDays() === opt) {
+                      <span class="wa-days-option-dot w-1.5 h-1.5 rounded-full inline-block"></span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="wa-table-row-head text-[10px] uppercase tracking-widest text-app-muted border-b">
+            <th class="px-5 py-3 font-semibold">Template</th>
+            <th class="px-4 py-3 font-semibold">Category</th>
+            <th class="px-4 py-3 font-semibold">Status</th>
+            <th class="px-4 py-3 font-semibold text-right">Sent</th>
+            <th class="px-4 py-3 font-semibold text-right">Delivered</th>
+            <th class="px-4 py-3 font-semibold text-right">Read %</th>
+            <th class="px-4 py-3 font-semibold text-right">Cost</th>
+            <th class="px-4 py-3 font-semibold text-center w-20">Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading() && templates().length === 0) {
+            @for (sk of [1,2,3,4,5]; track sk) {
+              <tr class="wa-table-row-skeleton border-b">
+                @for (col of [1,2,3,4,5,6,7,8]; track col) {
+                  <td class="px-4 py-3">
+                    <div class="wa-table-cell-skeleton h-4 rounded animate-pulse" [style.width.px]="col === 1 ? 120 : col < 4 ? 60 : 40"></div>
+                  </td>
+                }
+              </tr>
+            }
+          } @else if (filteredTemplates().length === 0) {
+            <tr>
+              <td colspan="8" class="px-5 py-12 text-center">
+                <div class="flex flex-col items-center gap-3 text-app-muted">
+                  <mat-icon class="!w-10 !h-10 !text-[40px] opacity-20">chat_bubble_outline</mat-icon>
+                  <div class="text-sm">No templates found</div>
+                  <div class="text-xs opacity-60">Configure WhatsApp integration to see live data</div>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (t of filteredTemplates(); track t.templateName) {
+              <tr class="wa-table-row border-b hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                  (click)="openTemplateDetail(t.templateName)">
+
+                <!-- Template Name -->
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-2">
+                    @if (isTopTemplate(t)) {
+                      <mat-icon class="!text-[14px] !w-[14px] !h-[14px] shrink-0 text-amber-400">emoji_events</mat-icon>
+                    }
+                    <span class="font-mono text-sm font-semibold text-app-text group-hover:text-green-400 transition-colors">{{ t.templateName }}</span>
+                  </div>
+                </td>
+
+                <!-- Category -->
+                <td class="px-4 py-3.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                        [ngClass]="{
+                          'bg-blue-500/10 text-blue-400 border border-blue-500/20': t.category === 'utility',
+                          'bg-purple-500/10 text-purple-400 border border-purple-500/20': t.category === 'marketing',
+                          'bg-amber-500/10 text-amber-400 border border-amber-500/20': t.category === 'authentication',
+                          'bg-slate-500/10 text-slate-400 border border-slate-500/20': !['utility','marketing','authentication'].includes(t.category)
+                        }">
+                    {{ t.category }}
+                  </span>
+                </td>
+
+                <!-- Status -->
+                <td class="px-4 py-3.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                          [ngClass]="{
+                            'bg-emerald-400': t.status === 'APPROVED' || t.status === 'ACTIVE',
+                            'bg-amber-400 animate-pulse': t.status === 'PENDING',
+                            'bg-rose-400': t.status === 'REJECTED',
+                            'bg-slate-400': !['APPROVED','ACTIVE','PENDING','REJECTED'].includes(t.status)
+                          }"></span>
+                    <span class="text-[10px] font-semibold text-app-muted">{{ t.status }}</span>
+                  </div>
+                </td>
+
+                <!-- Sent -->
+                <td class="px-4 py-3.5 text-right font-mono text-sm text-app-text">{{ t.sent | number }}</td>
+
+                <!-- Delivered -->
+                <td class="px-4 py-3.5 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <span class="font-mono text-sm text-app-text">{{ t.delivered | number }}</span>
+                    <div class="w-12 h-1.5 rounded-full overflow-hidden bg-app-bg">
+                      <div class="h-full rounded-full" style="background:#818cf8;" [style.width.%]="t.deliveryRate"></div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Read Rate -->
+                <td class="px-4 py-3.5 text-right">
+                  <span class="text-sm font-bold font-mono"
+                        [ngClass]="{
+                          'text-emerald-400': t.readRate >= 70,
+                          'text-amber-400': t.readRate >= 40 && t.readRate < 70,
+                          'text-rose-400': t.readRate < 40
+                        }">{{ t.readRate }}%</span>
+                </td>
+
+                <!-- Cost -->
+                <td class="px-4 py-3.5 text-right font-mono text-sm text-amber-400 font-semibold">
+                  {{ getCurrencySymbol() }}{{ t.cost | number:'1.2-2' }}
+                </td>
+
+                <!-- Detail button -->
+                <td class="px-4 py-3.5 text-center">
+                  <button (click)="openTemplateDetail(t.templateName); $event.stopPropagation()"
+                          class="wa-refresh-btn px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border transition opacity-0 group-hover:opacity-100">
+                    View
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+        @if (filteredTemplates().length > 0) {
+          <tfoot>
+            <tr class="wa-table-foot">
+              <td class="px-5 py-3 text-[10px] font-bold text-app-muted uppercase tracking-wider" colspan="3">TOTAL</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ totalSent() | number }}</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ totalDelivered() | number }}</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ avgReadRate() }}%</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-amber-400">{{ getCurrencySymbol() }}{{ totalCost() | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        }
+      </table>
+    </div>
+  </div>
+
+  <!-- ── DATA SOURCE BADGE ──────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between text-[10px] text-app-muted px-1">
+    <span>
+      Data source:
+      <span class="font-semibold"
+            [class.text-green-400]="summary()?.dataSource === 'firestore' || summary()?.dataSource === 'meta_api'"
+            [class.text-amber-400]="summary()?.dataSource === 'simulated'">
+        {{ summary()?.dataSource === 'meta_api' ? '🟢 Meta Cloud API (Live)' : (summary()?.dataSource === 'firestore' ? '🔥 Firestore (Live)' : '⚡ Simulated (Firestore offline)') }}
+      </span>
+    </span>
+    <span>Last updated: {{ summary()?.lastUpdated | date:'HH:mm:ss' }}</span>
+  </div>
+</div>
+}
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+  FULL-PAGE TEMPLATE DETAIL VIEW
+  Shown when a template row is clicked; replaces the main dashboard.
+══════════════════════════════════════════════════════════════════════════ -->
+@if (selectedTemplateName()) {
+<div class="animate-in fade-in slide-in-from-bottom-2 duration-300 pb-10 max-w-[1300px] space-y-6">
+
+  <!-- ── BACK NAV + HEADER ─────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3">
+    <button (click)="closeTemplateDetail()"
+            id="wa-detail-back-btn"
+            class="wa-detail-back-btn flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-all">
+      <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">arrow_back</mat-icon>
+      Back to templates list
+    </button>
+    <div class="wa-live-badge flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+      <span class="wa-live-badge-dot w-1 h-1 rounded-full animate-pulse"></span>
+      LIVE
+    </div>
+  </div>
+
+  <!-- Template title row -->
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <div class="text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1">Template Analytics</div>
+      <h2 class="text-2xl font-black text-app-text font-mono tracking-tight">{{ selectedTemplateName() }}</h2>
+      <p class="text-xs text-app-muted mt-1">{{ getDateRangeString() }}</p>
+    </div>
+
+    <!-- Metadata pills -->
+    @if (selectedTemplate()) {
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Status pill -->
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+              [ngClass]="{
+                'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': selectedTemplate()!.status === 'APPROVED' || selectedTemplate()!.status === 'ACTIVE',
+                'bg-amber-500/10 text-amber-400 border border-amber-500/20': selectedTemplate()!.status === 'PENDING',
+                'bg-rose-500/10 text-rose-400 border border-rose-500/20': selectedTemplate()!.status === 'REJECTED',
+                'bg-slate-500/10 text-slate-400 border border-slate-500/20': !['APPROVED','ACTIVE','PENDING','REJECTED'].includes(selectedTemplate()!.status)
+              }">
+          <span class="w-1.5 h-1.5 rounded-full inline-block"
+                [ngClass]="{
+                  'bg-emerald-400': selectedTemplate()!.status === 'APPROVED' || selectedTemplate()!.status === 'ACTIVE',
+                  'bg-amber-400': selectedTemplate()!.status === 'PENDING',
+                  'bg-rose-400': selectedTemplate()!.status === 'REJECTED',
+                  'bg-slate-400': !['APPROVED','ACTIVE','PENDING','REJECTED'].includes(selectedTemplate()!.status)
+                }"></span>
+          {{ selectedTemplate()!.status }}
+        </span>
+        <!-- Category pill -->
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          {{ selectedTemplate()!.category }}
+        </span>
+        <!-- Language pill -->
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-app-bg/80 text-app-muted border border-app-border">
+          {{ selectedTemplate()!.language }}
+        </span>
+        <!-- Quality score pill -->
+        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+              [ngClass]="{
+                'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': selectedTemplate()!.qualityScore === 'GREEN',
+                'bg-amber-500/10 text-amber-400 border border-amber-500/20': selectedTemplate()!.qualityScore === 'YELLOW',
+                'bg-rose-500/10 text-rose-400 border border-rose-500/20': selectedTemplate()!.qualityScore === 'RED'
+              }">
+          Quality: {{ selectedTemplate()!.qualityScore }}
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- ── LOADING STATE ──────────────────────────────────────────────────── -->
+  @if (isDetailLoading()) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="wa-table-cell-skeleton h-80 rounded-2xl animate-pulse"></div>
+      <div class="lg:col-span-2 space-y-4">
+        @for (i of [1,2,3]; track i) {
+          <div class="wa-table-cell-skeleton h-24 rounded-xl animate-pulse"></div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── MAIN DETAIL GRID ───────────────────────────────────────────────── -->
+  @if (!isDetailLoading() && selectedTemplate()) {
+
+    <!-- Two-column layout: WhatsApp preview (left) + Metrics (right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,35%)_minmax(0,65%)] gap-5 items-start">
+
+      <!-- ── LEFT: WhatsApp message preview ─────────────────────────────── -->
+      <div class="wa-preview-panel rounded-2xl p-5 border space-y-4">
+        <!-- Panel header -->
+        <div class="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
+          <div class="wa-preview-header-icon w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+            <mat-icon class="!text-[14px] !w-[14px] !h-[14px] text-white">chat</mat-icon>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-app-text">Template Preview</div>
+            <div class="text-[9px] text-app-muted">WhatsApp message preview</div>
+          </div>
+        </div>
+
+        <!-- WhatsApp-style phone frame area -->
+        <div class="wa-phone-frame rounded-2xl p-4 space-y-2">
+          <!-- Status bar mock -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 rounded-full wa-phone-avatar flex items-center justify-center shrink-0">
+                <mat-icon class="!text-[10px] !w-[10px] !h-[10px] text-white">store</mat-icon>
+              </div>
+              <div>
+                <div class="text-[10px] font-bold text-white/90">Business</div>
+                <div class="text-[8px] text-white/50">WhatsApp</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-white/50">notifications_none</mat-icon>
+            </div>
+          </div>
+
+          <!-- Message bubble -->
+          <div class="wa-message-bubble rounded-2xl rounded-tl-sm p-3.5 space-y-2 max-w-[95%]">
+
+            @if (selectedTemplate()!.headerText) {
+              <div class="text-sm font-black text-white leading-snug border-b border-white/10 pb-2 mb-2">
+                {{ selectedTemplate()!.headerText }}
+              </div>
+            }
+
+            @if (selectedTemplate()!.bodyText) {
+              <div class="text-xs text-white/90 leading-relaxed whitespace-pre-line">{{ selectedTemplate()!.bodyText }}</div>
+            } @else {
+              <div class="text-xs text-white/40 italic">No body text available</div>
+            }
+
+            @if (selectedTemplate()!.footerText) {
+              <div class="text-[9px] text-white/40 border-t border-white/10 pt-2 mt-2 whitespace-pre-line">
+                {{ selectedTemplate()!.footerText }}
+              </div>
+            }
+
+            <!-- Message meta -->
+            <div class="flex items-center justify-end gap-1 mt-1">
+              <span class="text-[8px] text-white/30">{{ selectedTemplate()!.lastUpdated | date:'h:mm a' }}</span>
+              <mat-icon class="!text-[10px] !w-[10px] !h-[10px] text-blue-400">done_all</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Breakdown -->
+        <div class="wa-cost-breakdown-detail rounded-xl p-4 border space-y-2.5">
+          <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Cost Breakdown</div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="text-app-muted">Total billable messages</span>
+              <span class="font-mono font-bold text-app-text">{{ selectedTemplate()!.metrics.total | number }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-app-muted">Rate ({{ selectedTemplate()!.category }})</span>
+              <span class="font-mono font-bold text-app-text">
+                {{ getCurrencySymbol() }}{{ selectedTemplate()!.metrics.costPerMessage | number:'1.2-4' }}/msg
+              </span>
+            </div>
+            <div class="wa-cost-total-row border-t pt-2 flex justify-between text-sm font-black">
+              <span class="text-app-text">Total Cost</span>
+              <span class="text-amber-400 font-mono">{{ getCurrencySymbol() }}{{ selectedTemplate()!.metrics.cost | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: Metrics + Chart ──────────────────────────────────────── -->
+      <div class="space-y-4">
+
+        <!-- 4 KPI cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <!-- Sent -->
+          <div class="wa-kpi-card-sent rounded-xl p-4 border flex flex-col gap-1">
+            <div class="text-[9px] font-bold text-app-muted uppercase tracking-widest">Sent</div>
+            <div class="text-2xl font-black font-mono text-emerald-400 tabular-nums">
+              {{ selectedTemplate()!.metrics.sent | number }}
+            </div>
+            <div class="text-[9px] text-app-muted">Messages</div>
+          </div>
+          <!-- Delivered -->
+          <div class="wa-kpi-card-delivered rounded-xl p-4 border flex flex-col gap-1">
+            <div class="text-[9px] font-bold text-app-muted uppercase tracking-widest">Delivered</div>
+            <div class="text-2xl font-black font-mono text-indigo-400 tabular-nums">
+              {{ selectedTemplate()!.metrics.delivered | number }}
+            </div>
+            <div class="text-[9px] text-indigo-400 font-semibold">{{ selectedTemplate()!.metrics.deliveryRate }}% rate</div>
+          </div>
+          <!-- Read -->
+          <div class="wa-kpi-card-read rounded-xl p-4 border flex flex-col gap-1">
+            <div class="text-[9px] font-bold text-app-muted uppercase tracking-widest">Read</div>
+            <div class="text-2xl font-black font-mono text-amber-400 tabular-nums">
+              {{ selectedTemplate()!.metrics.read | number }}
+            </div>
+            <div class="text-[9px] text-amber-400 font-semibold">{{ selectedTemplate()!.metrics.readRate }}% read</div>
+          </div>
+          <!-- Unique Replies -->
+          <div class="wa-kpi-card-replies rounded-xl p-4 border flex flex-col gap-1">
+            <div class="text-[9px] font-bold text-app-muted uppercase tracking-widest">Unique Replies</div>
+            <div class="text-2xl font-black font-mono text-cyan-400 tabular-nums">
+              {{ selectedTemplate()!.metrics.failed | number }}
+            </div>
+            <div class="text-[9px] text-app-muted">Interactions</div>
+          </div>
+        </div>
+
+        <!-- Trend Chart panel -->
+        @if (selectedTemplate()!.graph && selectedTemplate()!.graph.labels.length > 0) {
+          <div class="wa-detail-chart-panel rounded-2xl border overflow-hidden">
+            <div class="px-5 py-3.5 border-b flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="wa-live-badge-dot w-2 h-2 rounded-full animate-pulse"></div>
+                <h4 class="text-sm font-bold text-app-text">Performance Trend</h4>
+                <span class="text-[10px] text-app-muted">— {{ selectedTemplate()!.period }}</span>
+              </div>
+              <!-- Chart legend -->
+              <div class="flex items-center gap-3 text-[10px] font-semibold">
+                <span class="flex items-center gap-1"><span class="w-2 h-0.5 inline-block rounded bg-emerald-500"></span>Sent</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-0.5 inline-block rounded bg-indigo-400"></span>Delivered</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-0.5 inline-block rounded bg-amber-400"></span>Read</span>
+              </div>
+            </div>
+
+            <div class="p-5">
+              <div class="relative h-44">
+                <svg class="w-full h-full" [attr.viewBox]="'0 0 ' + chartWidth + ' 140'" preserveAspectRatio="none">
+                  <!-- Defs: gradient fills under lines -->
+                  <defs>
+                    <linearGradient id="grad-sent" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#25d366" stop-opacity="0.2"/>
+                      <stop offset="100%" stop-color="#25d366" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="grad-delivered" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.2"/>
+                      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="grad-read" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.2"/>
+                      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Grid lines -->
+                  @for (line of [0,1,2,3,4]; track line) {
+                    <line [attr.x1]="0" [attr.y1]="line * 28" [attr.x2]="chartWidth" [attr.y2]="line * 28"
+                          class="wa-chart-grid-line" stroke-width="1"/>
+                  }
+
+                  <!-- Sent area + line -->
+                  <polyline
+                    [attr.points]="buildMultiLinePoints(selectedTemplate()!.graph.sent, getGlobalMax(selectedTemplate()!.graph))"
+                    fill="none" class="wa-chart-sent-polyline" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+                  <!-- Delivered area + line -->
+                  <polyline
+                    [attr.points]="buildMultiLinePoints(selectedTemplate()!.graph.delivered, getGlobalMax(selectedTemplate()!.graph))"
+                    fill="none" class="wa-chart-delivered-polyline" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+                  <!-- Read area + line -->
+                  <polyline
+                    [attr.points]="buildMultiLinePoints(selectedTemplate()!.graph.read, getGlobalMax(selectedTemplate()!.graph))"
+                    fill="none" class="wa-chart-read-polyline" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                <!-- X-axis labels -->
+                <div class="flex justify-between mt-2">
+                  @for (label of selectedTemplate()!.graph.labels; track $index) {
+                    @if ($index === 0 || $index === selectedTemplate()!.graph.labels.length - 1 || $index % Math.ceil(selectedTemplate()!.graph.labels.length / 6) === 0) {
+                      <span class="text-[8px] text-app-muted font-mono">{{ label }}</span>
+                    } @else {
+                      <span class="text-[8px] opacity-0">{{ label }}</span>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Delivery funnel breakdown -->
+        <div class="wa-funnel-panel rounded-2xl border p-5 space-y-3">
+          <div class="text-xs font-bold text-app-text uppercase tracking-wider">Delivery Funnel</div>
+          @let t = selectedTemplate()!;
+          @let funnelTotal = Math.max(t.metrics.sent + t.metrics.delivered + t.metrics.read, 1);
+
+          <!-- Sent bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-app-muted font-semibold">Sent</span>
+              <span class="font-mono font-black text-emerald-400">{{ t.metrics.sent | number }}</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden bg-app-bg">
+              <div class="h-full rounded-full bg-emerald-500 transition-all duration-700"
+                   [style.width.%]="(t.metrics.sent / funnelTotal) * 100"></div>
+            </div>
+          </div>
+
+          <!-- Delivered bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-app-muted font-semibold">Delivered</span>
+              <span class="font-mono font-black text-indigo-400">{{ t.metrics.delivered | number }}</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden bg-app-bg">
+              <div class="h-full rounded-full bg-indigo-400 transition-all duration-700"
+                   [style.width.%]="(t.metrics.delivered / funnelTotal) * 100"></div>
+            </div>
+          </div>
+
+          <!-- Read bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-app-muted font-semibold">Read</span>
+              <span class="font-mono font-black text-amber-400">{{ t.metrics.read | number }}</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden bg-app-bg">
+              <div class="h-full rounded-full bg-amber-400 transition-all duration-700"
+                   [style.width.%]="(t.metrics.read / funnelTotal) * 100"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>
+}
+
+
+<!-- ── Toast notification ──────────────────────────────────────────────── -->
+@if (toast().visible) {
+  <div id="wa-toast"
+       class="wa-toast-panel fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-5 py-3 rounded-xl border shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <mat-icon class="!text-[20px] !w-5 !h-5 shrink-0"
+              [ngClass]="{
+                'text-emerald-400': toast().type === 'success',
+                'text-rose-400': toast().type === 'error',
+                'text-amber-400': toast().type === 'info'
+              }">
+      {{ toast().type === 'success' ? 'check_circle' : toast().type === 'error' ? 'error' : 'info' }}
+    </mat-icon>
+    <span class="text-sm font-medium text-app-text">{{ toast().message }}</span>
+  </div>
+}

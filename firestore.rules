@@ -1,0 +1,286 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: themes
+// Document ID: themeId
+// Fields:
+//   - id: string (required)
+//   - name: string (required)
+//   - category: string (required)
+//   - previewUrl: string (required)
+//   - price: number (required)
+//   - features: list (optional)
+//   - description: string (optional)
+//   - demoUrl: string (optional)
+//
+// Collection: orders
+// Document ID: orderId
+// Fields:
+//   - id: string (optional)
+//   - customerName: string (required)
+//   - businessName: string (required)
+//   - phone: string (required)
+//   - email: string (required)
+//   - items: list (required)
+//   - totalPrice: number (required)
+//   - status: string (required, enum: pending, processing, completed, cancelled)
+//   - createdAt: timestamp (required)
+//
+// Collection: users
+// Document ID: userId
+// Fields:
+//   - uid: string (required)
+//   - email: string (required)
+//   - role: string (required, enum: admin, shop_owner)
+//   - shopName: string (optional)
+//   - logoUrl: string (optional)
+//   - gstDetails: string (optional)
+//   - address: string (optional)
+//   - contactInfo: string (optional)
+//   - subscriptionPlanId: string (optional)
+//   - subscriptionStatus: string (optional, enum: active, inactive, cancelled)
+//   - invoicesGeneratedThisMonth: number (optional)
+//   - subscriptionValidUntil: string (optional)
+//   - createdAt: string (optional)
+//
+// Collection: subscriptionPlans
+// Document ID: planId
+// Fields:
+//   - id: string (required)
+//   - name: string (required)
+//   - invoiceLimit: number (required)
+//   - themeLimit: number (required)
+//   - priceMonthly: number (required)
+//   - priceYearly: number (required)
+//   - features: list (optional)
+//
+// Collection: invoices
+// Document ID: invoiceId
+// Fields:
+//   - id: string (required)
+//   - shopOwnerUid: string (required)
+//   - customerName: string (required)
+//   - customerEmail: string (optional)
+//   - customerAddress: string (optional)
+//   - items: list (required)
+//   - subtotal: number (required)
+//   - taxTotal: number (required)
+//   - total: number (required)
+//   - themeId: string (optional)
+//   - createdAt: string (required)
+//
+// Collection: products
+// Document ID: productId
+// Fields:
+//   - id: string (required)
+//   - shopOwnerUid: string (required)
+//   - name: string (required)
+//   - price: number (required)
+//   - taxRate: number (optional)
+//   - description: string (optional)
+//
+// Collection: customers
+// Document ID: customerId
+// Fields:
+//   - id: string (required)
+//   - shopOwnerUid: string (required)
+//   - name: string (required)
+//   - email: string (optional)
+//   - phone: string (optional)
+//   - address: string (optional)
+//
+// Collection: invoiceThemes
+// Document ID: themeId
+// Fields:
+//   - id: string (required)
+//   - name: string (required)
+//   - previewUrl: string (optional)
+//   - cssVariables: map (optional)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "jkjaikumar555@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(data, allowedFields) {
+      return data.keys().hasOnly(allowedFields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidTheme(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.category is string &&
+             data.previewUrl is string &&
+             data.price is number && data.price >= 0 &&
+             (!('description' in data) || data.description is string) &&
+             (!('demoUrl' in data) || data.demoUrl is string);
+    }
+
+    function isValidOrder(data) {
+      return data.customerName is string && data.customerName.size() > 0 && data.customerName.size() < 100 &&
+             data.businessName is string && data.businessName.size() > 0 && data.businessName.size() < 100 &&
+             data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 15 &&
+             isValidEmail(data.email) &&
+             data.items is list && data.items.size() > 0 &&
+             data.totalPrice is number && data.totalPrice >= 0 &&
+             data.status in ['pending', 'processing', 'completed', 'cancelled'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() > 0 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['admin', 'shop_owner'] &&
+             (!('shopName' in data) || (data.shopName is string && data.shopName.size() < 100)) &&
+             (!('logoUrl' in data) || data.logoUrl is string) &&
+             (!('gstDetails' in data) || data.gstDetails is string) &&
+             (!('address' in data) || data.address is string) &&
+             (!('contactInfo' in data) || data.contactInfo is string) &&
+             (!('subscriptionPlanId' in data) || data.subscriptionPlanId is string) &&
+             (!('subscriptionStatus' in data) || data.subscriptionStatus in ['active', 'inactive', 'cancelled']) &&
+             (!('invoicesGeneratedThisMonth' in data) || data.invoicesGeneratedThisMonth is number) &&
+             (!('subscriptionValidUntil' in data) || data.subscriptionValidUntil is string) &&
+             (!('createdAt' in data) || data.createdAt is string);
+    }
+
+    function isValidSubscriptionPlan(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 &&
+             data.invoiceLimit is number && data.invoiceLimit >= -1 &&
+             data.themeLimit is number && data.themeLimit >= 0 &&
+             data.priceMonthly is number && data.priceMonthly >= 0 &&
+             data.priceYearly is number && data.priceYearly >= 0 &&
+             (!('features' in data) || data.features is list);
+    }
+
+    function isValidInvoice(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.shopOwnerUid is string && data.shopOwnerUid == request.auth.uid &&
+             data.customerName is string && data.customerName.size() > 0 && data.customerName.size() < 100 &&
+             (!('customerEmail' in data) || data.customerEmail is string) &&
+             (!('customerAddress' in data) || data.customerAddress is string) &&
+             data.items is list && data.items.size() > 0 &&
+             data.subtotal is number && data.subtotal >= 0 &&
+             data.taxTotal is number && data.taxTotal >= 0 &&
+             data.total is number && data.total >= 0 &&
+             (!('themeId' in data) || data.themeId is string) &&
+             data.createdAt is string;
+    }
+
+    function isValidProduct(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.shopOwnerUid is string && data.shopOwnerUid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.price is number && data.price >= 0 &&
+             (!('taxRate' in data) || data.taxRate is number && data.taxRate >= 0) &&
+             (!('description' in data) || data.description is string);
+    }
+
+    function isValidCustomer(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.shopOwnerUid is string && data.shopOwnerUid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             (!('email' in data) || data.email is string) &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('address' in data) || data.address is string);
+    }
+
+    function isValidInvoiceTheme(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() > 0 &&
+             (!('previewUrl' in data) || data.previewUrl is string) &&
+             (!('cssVariables' in data) || data.cssVariables is map);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /themes/{themeId} {
+      allow read: if true; // Publicly readable
+      allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAdmin();
+      allow create: if isValidOrder(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'shop_owner' || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /subscriptionPlans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSubscriptionPlan(request.resource.data);
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated() && (resource.data.shopOwnerUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidInvoice(request.resource.data);
+      allow update: if isAuthenticated() && isValidInvoice(request.resource.data) && resource.data.shopOwnerUid == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.shopOwnerUid == request.auth.uid || isAdmin());
+    }
+
+    match /products/{productId} {
+      allow read: if isAuthenticated() && (resource.data.shopOwnerUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidProduct(request.resource.data);
+      allow update: if isAuthenticated() && isValidProduct(request.resource.data) && resource.data.shopOwnerUid == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.shopOwnerUid == request.auth.uid || isAdmin());
+    }
+
+    match /customers/{customerId} {
+      allow read: if isAuthenticated() && (resource.data.shopOwnerUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidCustomer(request.resource.data);
+      allow update: if isAuthenticated() && isValidCustomer(request.resource.data) && resource.data.shopOwnerUid == request.auth.uid;
+      allow delete: if isAuthenticated() && (resource.data.shopOwnerUid == request.auth.uid || isAdmin());
+    }
+
+    match /invoiceThemes/{themeId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidInvoiceTheme(request.resource.data);
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

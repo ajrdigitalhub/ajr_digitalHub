@@ -1,0 +1,318 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  WhatsApp Billing — Component SCSS
+//  All colours use CSS variables from styles.scss so they adapt to every
+//  installed theme (dark-space, light, neon, etc.).
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Shared helpers ────────────────────────────────────────────────────────
+%wa-card-base {
+  border: 1px solid var(--app-border);
+  background-color: var(--app-card);
+}
+
+// ── Header ────────────────────────────────────────────────────────────────
+
+.wa-header-icon-wrapper {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  flex-shrink: 0;
+}
+
+.wa-live-badge {
+  background: rgba(37, 211, 102, 0.12);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  color: #25d366;
+}
+
+.wa-live-badge-dot {
+  background: #25d366;
+}
+
+.wa-refresh-btn {
+  background: rgba(37, 211, 102, 0.08);
+  border-color: rgba(37, 211, 102, 0.3);
+  color: #25d366;
+
+  &:hover:not(:disabled) {
+    background: rgba(37, 211, 102, 0.15);
+  }
+}
+
+.wa-cost-alert {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+// ── Summary cards ─────────────────────────────────────────────────────────
+
+.wa-card-sent {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, transparent 60%, rgba(37, 211, 102, 0.07));
+  border-color: rgba(37, 211, 102, 0.2);
+}
+
+.wa-card-delivered {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, transparent 60%, rgba(99, 102, 241, 0.07));
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.wa-card-read {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, transparent 60%, rgba(251, 191, 36, 0.07));
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.wa-card-cost {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, transparent 60%, rgba(245, 158, 11, 0.07));
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.progress-bar-sent      { background: #25d366; }
+.progress-bar-delivered { background: #818cf8; }
+.progress-bar-read      { background: #fbbf24; }
+.progress-bar-cost      { background: #f59e0b; }
+
+// ── AI insight cards ──────────────────────────────────────────────────────
+
+.wa-insight-predicted {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+}
+.wa-insight-predicted-icon {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.wa-insight-top {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(37, 211, 102, 0.05), transparent);
+  border: 1px solid rgba(37, 211, 102, 0.18);
+}
+.wa-insight-top-icon {
+  background: rgba(37, 211, 102, 0.15);
+}
+
+.wa-insight-monthly {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(245, 158, 11, 0.05), transparent);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+}
+.wa-insight-monthly-icon {
+  background: rgba(245, 158, 11, 0.15);
+}
+
+// ── Realtime chart ────────────────────────────────────────────────────────
+
+.wa-chart-panel {
+  background-color: var(--app-card);
+  border-color: var(--app-border);
+}
+.wa-chart-header {
+  border-color: var(--app-border);
+  background: transparent;
+}
+.wa-chart-grid-line { stroke: var(--app-border); }
+
+.wa-chart-sent-polyline {
+  stroke: #25d366;
+  filter: drop-shadow(0 0 4px rgba(37, 211, 102, 0.45));
+}
+.wa-chart-delivered-polyline {
+  stroke: #818cf8;
+  filter: drop-shadow(0 0 4px rgba(129, 140, 248, 0.45));
+}
+.wa-chart-read-polyline {
+  stroke: #fbbf24;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.45));
+}
+
+// ── Templates table ───────────────────────────────────────────────────────
+
+.wa-table-panel {
+  background-color: var(--app-card);
+  border-color: var(--app-border);
+}
+.wa-table-header {
+  border-color: var(--app-border);
+  background: transparent;
+}
+.wa-table-count-badge {
+  background: rgba(37, 211, 102, 0.12);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.25);
+}
+.wa-table-row {
+  border-color: var(--app-border);
+}
+.wa-table-row-head {
+  border-color: var(--app-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+.wa-table-row-skeleton {
+  border-color: var(--app-border);
+}
+.wa-table-cell-skeleton {
+  background: rgba(255, 255, 255, 0.06);
+}
+.wa-table-foot {
+  background: rgba(255, 255, 255, 0.015);
+  border-top: 1px solid var(--app-border);
+}
+
+// ── Days filter dropdown ──────────────────────────────────────────────────
+
+.wa-days-filter-btn {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.14);
+    border-color: rgba(99, 102, 241, 0.5);
+    color: #c7d2fe;
+  }
+}
+
+.wa-days-dropdown {
+  background-color: var(--app-card);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.08);
+}
+
+.wa-days-option {
+  color: var(--app-muted);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: #c7d2fe;
+  }
+
+  &.wa-days-option-active {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    font-weight: 700;
+  }
+}
+
+.wa-days-option-dot {
+  background: #818cf8;
+  box-shadow: 0 0 6px rgba(129, 140, 248, 0.7);
+}
+
+// ── Template Detail full-page view ────────────────────────────────────────
+
+.wa-detail-back-btn {
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: var(--app-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--app-text);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+// Left preview panel
+.wa-preview-panel {
+  background-color: var(--app-card);
+  border-color: var(--app-border);
+}
+
+.wa-preview-header-icon {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+}
+
+// Phone frame area
+.wa-phone-frame {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+}
+
+.wa-phone-avatar {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+}
+
+// WhatsApp-style message bubble
+.wa-message-bubble {
+  position: relative;
+  background: rgba(37, 211, 102, 0.08);
+  border: 1px solid rgba(37, 211, 102, 0.15);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+// Cost breakdown inside detail view
+.wa-cost-breakdown-detail {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+.wa-cost-total-row {
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+// KPI metric cards
+.wa-kpi-card-sent {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(37, 211, 102, 0.07), transparent);
+  border: 1px solid rgba(37, 211, 102, 0.15);
+}
+.wa-kpi-card-delivered {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.07), transparent);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+.wa-kpi-card-read {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(251, 191, 36, 0.07), transparent);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+}
+.wa-kpi-card-replies {
+  background-color: var(--app-card);
+  background-image: linear-gradient(135deg, rgba(34, 211, 238, 0.07), transparent);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+}
+
+// Trend chart panel
+.wa-detail-chart-panel {
+  background-color: var(--app-card);
+  border-color: var(--app-border);
+}
+
+// Delivery funnel panel
+.wa-funnel-panel {
+  background-color: var(--app-card);
+  border: 1px solid var(--app-border);
+}
+
+// ── Skeleton shimmer ──────────────────────────────────────────────────────
+//  Overrides Tailwind's animate-pulse to use theme-aware colours
+.wa-skeleton {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 0.375rem;
+  animation: wa-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes wa-shimmer {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+
+.wa-toast-panel {
+  background-color: var(--app-card);
+  border-color: var(--app-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}

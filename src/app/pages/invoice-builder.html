@@ -1,0 +1,830 @@
+<div class="min-h-screen bg-app-bg text-app-text flex flex-col font-sans select-none">
+  
+  <!-- Active Plan Evaluation Indicator & Switcher (Awesome Sandbox Testing UX) -->
+  <div class="bg-indigo-950 border-b border-indigo-500/20 px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs z-40 print-hide">
+    <div class="flex items-center gap-2 font-bold text-indigo-300">
+      <mat-icon class="!text-[16px] !w-[16px] !h-[16px] animate-pulse">lock_open</mat-icon>
+      SaaS Evaluation Mode:
+    </div>
+    
+    <div class="flex items-center bg-indigo-900/40 border border-indigo-500/25 rounded-lg p-0.5">
+      <button (click)="userPlan.set('free')" [class.bg-indigo-600]="userPlan() === 'free'" [class.text-white]="userPlan() === 'free'" class="px-3 py-1 rounded-md font-bold text-indigo-200 transition-all cursor-pointer">
+        FREE PLAN
+      </button>
+      <button (click)="userPlan.set('pro')" [class.bg-indigo-600]="userPlan() === 'pro'" [class.text-white]="userPlan() === 'pro'" class="px-3 py-1 rounded-md font-bold text-indigo-200 transition-all cursor-pointer">
+        PRO PLAN
+      </button>
+      <button (click)="userPlan.set('enterprise')" [class.bg-indigo-600]="userPlan() === 'enterprise'" [class.text-white]="userPlan() === 'enterprise'" class="px-3 py-1 rounded-md font-bold text-indigo-200 transition-all cursor-pointer">
+        ENTERPRISE
+      </button>
+    </div>
+
+    <div class="text-[10px] font-mono text-indigo-400 font-bold uppercase tracking-wider hidden sm:block">
+      Active: {{ userPlan() | uppercase }} Node
+    </div>
+  </div>
+
+  <!-- Top Sticky Header -->
+  <header class="h-16 bg-app-card border-b border-app-border flex items-center justify-between px-6 sticky top-0 z-30 print-hide">
+    <div class="flex items-center gap-4">
+      <a routerLink="/dashboard" class="text-app-muted hover:text-app-text transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-app-bg" aria-label="Go back">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      <div>
+        <h1 class="text-base font-bold text-app-text flex items-center gap-2">
+          Invoice Console
+          <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+            [class]="userPlan() === 'free' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : (userPlan() === 'pro' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20')">
+            {{ userPlan() }} Plan
+          </span>
+        </h1>
+        <p class="text-[10px] text-app-muted font-mono uppercase tracking-wider">Suite Node cluster &bull; Active Connection</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <!-- Send invoice button -->
+      <button (click)="sendInvoice()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 cursor-pointer">
+        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">{{ isSent() ? 'done' : 'send' }}</mat-icon>
+        {{ isSent() ? 'Invoice Sent!' : 'Send Invoice' }}
+      </button>
+
+      <!-- Print/PDF Button -->
+      <button (click)="triggerPrint()" class="flex items-center gap-2 bg-app-card border border-app-border text-app-text hover:bg-app-bg px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer">
+        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">picture_as_pdf</mat-icon>
+        Download PDF / Print
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace area -->
+  <div class="flex-grow flex flex-col lg:flex-row lg:overflow-hidden min-h-0">
+    
+    <!-- Mobile View Toggle Tabs (lg:hidden) -->
+    <div class="lg:hidden flex bg-app-card border-b border-app-border p-1.5 shrink-0 print-hide">
+      <button 
+        (click)="activeViewMode.set('edit')" 
+        [class.bg-indigo-600]="activeViewMode() === 'edit'" 
+        [class.text-white]="activeViewMode() === 'edit'" 
+        class="flex-1 py-2 text-xs font-bold text-app-muted rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+      >
+        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">edit</mat-icon>
+        Edit Details
+      </button>
+      <button 
+        (click)="activeViewMode.set('preview')" 
+        [class.bg-indigo-600]="activeViewMode() === 'preview'" 
+        [class.text-white]="activeViewMode() === 'preview'" 
+        class="flex-1 py-2 text-xs font-bold text-app-muted rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+      >
+        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">visibility</mat-icon>
+        Live Preview
+      </button>
+    </div>
+    
+    <!-- LEFT PANEL: CONFIGURATOR TABS (Print Hide) -->
+    <aside 
+      [class.hidden]="activeViewMode() !== 'edit'"
+      [class.flex]="activeViewMode() === 'edit'"
+      class="w-full lg:w-[480px] lg:!flex bg-app-card border-r border-app-border flex-col shrink-0 lg:overflow-hidden print-hide"
+    >
+      
+      <!-- Configuration Tabs Header -->
+      <div class="flex border-b border-app-border bg-app-bg/50 overflow-x-auto shrink-0 scrollbar-none">
+        <button (click)="activeTab.set('templates')" [class]="activeTab() === 'templates' ? 'border-indigo-500 text-indigo-400 font-bold bg-app-card' : 'border-transparent text-app-muted hover:text-app-text hover:bg-app-card/20'" class="flex-1 py-3 text-center text-[10px] uppercase font-black tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap px-4">
+          Templates Library
+        </button>
+        <button (click)="activeTab.set('data')" [class]="activeTab() === 'data' ? 'border-indigo-500 text-indigo-400 font-bold bg-app-card' : 'border-transparent text-app-muted hover:text-app-text hover:bg-app-card/20'" class="flex-1 py-3 text-center text-[10px] uppercase font-black tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap px-4">
+          Invoice Data
+        </button>
+        <button (click)="activeTab.set('branding')" [class]="activeTab() === 'branding' ? 'border-indigo-500 text-indigo-400 font-bold bg-app-card' : 'border-transparent text-app-muted hover:text-app-text hover:bg-app-card/20'" class="flex-1 py-3 text-center text-[10px] uppercase font-black tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap px-4">
+          Custom Branding
+        </button>
+        <button (click)="activeTab.set('layout')" [class]="activeTab() === 'layout' ? 'border-indigo-500 text-indigo-400 font-bold bg-app-card' : 'border-transparent text-app-muted hover:text-app-text hover:bg-app-card/20'" class="flex-1 py-3 text-center text-[10px] uppercase font-black tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap px-4">
+          Layout Order
+        </button>
+      </div>
+
+      <!-- Tab Contents (scrollable container) -->
+      <div class="flex-grow overflow-y-auto p-5 space-y-6 custom-scrollbar min-h-0">
+        
+        <!-- TAB 1: TEMPLATE SELECTION -->
+        @if (activeTab() === 'templates') {
+          <div class="space-y-5 animate-in fade-in duration-300">
+            <!-- Category buttons -->
+            <div class="flex gap-1.5 overflow-x-auto scrollbar-none pb-2">
+              @for (cat of categories; track cat) {
+                <button (click)="selectedCategory.set(cat)" [class]="selectedCategory() === cat ? 'bg-indigo-600 text-white font-extrabold' : 'bg-app-bg text-app-muted hover:text-app-text border border-app-border'" class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer">
+                  {{ cat }}
+                </button>
+              }
+            </div>
+
+            <!-- Templates Grid -->
+            <div class="grid grid-cols-2 gap-3.5">
+              @for (tpl of filteredTemplates(); track tpl.id) {
+                <div (click)="onSelectTemplate(tpl)" [class.border-indigo-600]="selectedTemplateId() === tpl.id" [class.ring-1]="selectedTemplateId() === tpl.id" [class.ring-indigo-600]="selectedTemplateId() === tpl.id" class="relative group bg-app-bg border border-app-border rounded-xl p-3.5 cursor-pointer hover:border-indigo-500/50 transition-all select-none">
+                  <!-- Lock Indicator for Free users -->
+                  @if (tpl.premium && userPlan() === 'free') {
+                    <div class="absolute top-2 right-2 bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 rounded-md p-1 shadow-sm flex items-center justify-center">
+                      <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon>
+                    </div>
+                  } @else if (tpl.premium) {
+                    <div class="absolute top-2 right-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md px-1 py-0.5 text-[8px] font-black uppercase tracking-wider shadow-sm">
+                      PRO
+                    </div>
+                  }
+
+                  <div class="w-full aspect-[4/3] bg-app-card rounded-lg flex items-center justify-center relative mb-2.5 overflow-hidden">
+                    <!-- Simulated A4 card preview -->
+                    <div class="w-[80%] h-[80%] border-t-4 bg-app-bg border-app-border/40 shadow-xs flex flex-col p-1.5 justify-between" [style.border-top-color]="tpl.primaryColor">
+                      <div class="flex justify-between items-start">
+                        <div class="w-4 h-4 bg-indigo-600/10 rounded-sm" [style.background-color]="tpl.showLogo ? tpl.primaryColor + '20' : 'transparent'"></div>
+                        <div class="w-8 h-1 bg-app-muted/30 rounded-sm"></div>
+                      </div>
+                      <div class="space-y-1">
+                        <div class="w-full h-1 bg-app-muted/30 rounded-sm"></div>
+                        <div class="w-[70%] h-1 bg-app-muted/20 rounded-sm"></div>
+                      </div>
+                      <div class="flex justify-between border-t border-app-border pt-1">
+                        <div class="w-6 h-1 bg-app-muted/30 rounded-sm"></div>
+                        <div class="w-4 h-1 bg-indigo-500 rounded-sm" [style.background-color]="tpl.primaryColor"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <span class="text-[10px] font-bold text-app-text uppercase tracking-wider block text-center truncate">{{ tpl.name }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Save template action (PRO) -->
+            <div class="pt-4 border-t border-app-border">
+              <button (click)="saveCustomTemplate()" class="w-full flex items-center justify-center gap-2 py-3 bg-app-bg hover:bg-app-card border border-indigo-500/30 text-indigo-400 font-bold rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer">
+                <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">save_alt</mat-icon>
+                Save Current Layout as Custom Template
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 2: INVOICE DATA -->
+        @if (activeTab() === 'data') {
+          <div class="space-y-5 animate-in fade-in duration-300 font-sans">
+            <!-- General Info -->
+            <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+              <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Invoice Parameters</span>
+              
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Invoice ID</label>
+                  <input type="text" [(ngModel)]="invoiceId" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono">
+                </div>
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Currency</label>
+                  <select [(ngModel)]="currency" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer text-app-text">
+                    <option>INR (₹)</option>
+                    <option>USD ($)</option>
+                    <option>EUR (€)</option>
+                    <option>GBP (£)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Date</label>
+                  <input type="date" [(ngModel)]="invoiceDate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Due Date</label>
+                  <input type="date" [(ngModel)]="dueDate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Seller & Client -->
+            <div class="grid grid-cols-1 gap-4">
+              <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-3">
+                <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Seller (Your Details)</span>
+                <div>
+                  <input type="text" [(ngModel)]="sellerName" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500 mb-2" placeholder="Company Name">
+                  <textarea [(ngModel)]="sellerAddress" rows="2" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-app-muted/30" placeholder="Address & Contact"></textarea>
+                </div>
+              </div>
+
+              <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-3">
+                <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Client (Bill To)</span>
+                <div>
+                  <input type="text" [(ngModel)]="clientName" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs font-bold outline-none focus:ring-1 focus:ring-indigo-500 mb-2" placeholder="Client Name">
+                  <textarea [(ngModel)]="clientAddress" rows="2" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-app-muted/30" placeholder="Client Address"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Metadata Fields (PRO/Enterprise) -->
+            <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-3 relative">
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Custom Metadata Fields</span>
+                <button (click)="addCustomField()" class="text-[9px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-wider flex items-center gap-1 cursor-pointer">
+                  <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">add_circle</mat-icon> Add Field
+                </button>
+              </div>
+
+              @if (userPlan() === 'free') {
+                <div class="bg-app-card/60 rounded-xl p-3 border border-app-border text-center text-[10px] text-app-muted italic">
+                  Premium Custom Fields are locked on the FREE plan.
+                </div>
+              } @else {
+                <div class="space-y-2">
+                  @for (field of customFields(); track $index; let idx = $index) {
+                    <div class="flex gap-2 items-center">
+                      <input type="text" [(ngModel)]="field.label" class="w-1/3 px-2 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs outline-none" placeholder="Label">
+                      <input type="text" [(ngModel)]="field.value" class="flex-grow px-2 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs outline-none" placeholder="Value">
+                      <button (click)="removeCustomField(idx)" class="text-rose-400 hover:text-rose-500 transition-colors p-1" aria-label="Delete field">
+                        <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">delete</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Line Items -->
+            <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+              <div class="flex items-center justify-between pb-1 border-b border-app-border">
+                <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Line Items</span>
+                <button (click)="addLineItem()" class="text-[9px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-wider flex items-center gap-1 cursor-pointer">
+                  <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">add_circle</mat-icon> Add Item
+                </button>
+              </div>
+
+              <div class="space-y-4.5 max-h-[300px] overflow-y-auto pr-1">
+                @for (item of lineItems(); track $index; let idx = $index) {
+                  <div class="bg-app-bg border border-app-border rounded-xl p-3 space-y-2.5 relative group">
+                    <button (click)="removeLineItem(idx)" class="absolute top-2.5 right-2.5 text-app-muted hover:text-rose-400 transition-all p-1" aria-label="Delete item">
+                      <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">close</mat-icon>
+                    </button>
+                    <span class="text-[8px] font-mono text-app-muted uppercase font-black">Item #{{ idx + 1 }}</span>
+                    
+                    <input type="text" [(ngModel)]="item.name" class="w-full px-2.5 py-1.5 bg-app-card border border-app-border rounded-lg text-xs font-bold outline-none" placeholder="Product Name (e.g. Graphic Kit)">
+                    <input type="text" [(ngModel)]="item.description" class="w-full px-2.5 py-1.5 bg-app-card border border-app-border rounded-lg text-[10px] outline-none" placeholder="Description details">
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="block text-[8px] text-app-muted uppercase font-bold mb-1">Qty</label>
+                        <input type="number" [(ngModel)]="item.quantity" class="w-full px-2 py-1.5 bg-app-card border border-app-border rounded-lg text-xs outline-none text-center">
+                      </div>
+                      <div>
+                        <label class="block text-[8px] text-app-muted uppercase font-bold mb-1">Rate</label>
+                        <input type="number" [(ngModel)]="item.rate" class="w-full px-2 py-1.5 bg-app-card border border-app-border rounded-lg text-xs outline-none text-right">
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Tax / Discount Details -->
+            <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+              <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Taxes & Discounts</span>
+              
+              <div class="grid grid-cols-2 gap-3.5">
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Tax Rate (%)</label>
+                  <input type="number" [(ngModel)]="taxRate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-right">
+                </div>
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Discount</label>
+                  <div class="flex border border-app-border rounded-xl overflow-hidden bg-app-bg">
+                    <input type="number" [(ngModel)]="discountVal" class="w-2/3 px-2 py-1.5 bg-transparent text-xs outline-none font-mono text-right">
+                    <select [(ngModel)]="discountType" class="w-1/3 bg-app-card border-none text-[9px] font-bold uppercase cursor-pointer text-app-text outline-none text-center">
+                      <option value="flat">Val</option>
+                      <option value="percent">%</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-2">
+              <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Notes & footer text</span>
+              <textarea [(ngModel)]="notes" rows="3" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-app-muted/30 resize-none"></textarea>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 3: CUSTOM BRANDING -->
+        @if (activeTab() === 'branding') {
+          <div class="space-y-5 animate-in fade-in duration-300 font-sans">
+            @if (userPlan() === 'free') {
+              <div class="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-6 text-center shadow-lg relative overflow-hidden">
+                <mat-icon class="text-indigo-400 !w-12 !h-12 !text-[48px] mb-3">workspace_premium</mat-icon>
+                <h3 class="text-base font-black text-white mb-2 uppercase font-display tracking-wider">Branding System Locked</h3>
+                <p class="text-xs text-indigo-200/80 mb-6 leading-relaxed">Unlock custom brand configurations, color schemes, logo alignments, signature uploads, and multi-brand templates by upgrading to a premium node.</p>
+                <button (click)="showUpgradeModal.set(true)" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
+                  View Upgrades
+                </button>
+              </div>
+            } @else {
+              <!-- Branding controls (Locked for Free) -->
+              <div class="space-y-5">
+                
+                <!-- Brand Colors & Typography -->
+                <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+                  <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Style Elements</span>
+                  
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[9px] font-bold text-app-muted uppercase mb-1.5">Theme Color</label>
+                      <div class="flex items-center gap-2 border border-app-border rounded-xl px-2.5 py-1.5 bg-app-bg">
+                        <input type="color" [(ngModel)]="primaryColor" class="w-8 h-8 rounded border-none cursor-pointer bg-transparent shrink-0">
+                        <input type="text" [(ngModel)]="primaryColor" class="w-full text-xs font-mono uppercase bg-transparent border-none outline-none">
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-[9px] font-bold text-app-muted uppercase mb-1.5">Typography</label>
+                      <select [(ngModel)]="fontFamily" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer text-app-text">
+                        <option value="Inter">Sans: Inter</option>
+                        <option value="Outfit">Sans: Outfit</option>
+                        <option value="Georgia">Serif: Georgia</option>
+                        <option value="JetBrains Mono">Mono: JetBrains</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Logo config & upload -->
+                <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+                  <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Logo Customization</span>
+                  
+                  <!-- Logo Alignment -->
+                  <div>
+                    <label class="block text-[9px] font-bold text-app-muted uppercase mb-2">Logo Position</label>
+                    <div class="grid grid-cols-3 gap-2">
+                      <button (click)="logoPosition.set('left')" [class.bg-indigo-600]="logoPosition() === 'left'" [class.text-white]="logoPosition() === 'left'" class="px-3 py-2 bg-app-bg border border-app-border rounded-xl text-[10px] font-extrabold uppercase tracking-wide cursor-pointer transition-all">
+                        Left
+                      </button>
+                      <button (click)="logoPosition.set('center')" [class.bg-indigo-600]="logoPosition() === 'center'" [class.text-white]="logoPosition() === 'center'" class="px-3 py-2 bg-app-bg border border-app-border rounded-xl text-[10px] font-extrabold uppercase tracking-wide cursor-pointer transition-all">
+                        Center
+                      </button>
+                      <button (click)="logoPosition.set('right')" [class.bg-indigo-600]="logoPosition() === 'right'" [class.text-white]="logoPosition() === 'right'" class="px-3 py-2 bg-app-bg border border-app-border rounded-xl text-[10px] font-extrabold uppercase tracking-wide cursor-pointer transition-all">
+                        Right
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Upload Logo -->
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-bold text-app-muted uppercase">Upload Logo Image</label>
+                    @if (logoUrl()) {
+                      <div class="relative rounded-xl overflow-hidden aspect-video bg-black/60 border border-app-border group">
+                        <img [src]="logoUrl()" alt="Company Logo Preview" class="w-full h-full object-contain p-2" referrerpolicy="no-referrer" />
+                        <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button (click)="logoInput.click()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Replace</button>
+                          <button (click)="logoUrl.set('')" class="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Remove</button>
+                        </div>
+                      </div>
+                    } @else {
+                      <div (click)="logoInput.click()" class="border border-dashed border-app-border hover:border-indigo-500/40 rounded-xl p-4 text-center cursor-pointer transition-colors duration-200 bg-app-bg/10 group">
+                        <mat-icon class="text-app-muted mx-auto mb-1 text-base group-hover:text-indigo-400 transition-colors">cloud_upload</mat-icon>
+                        <span class="text-[9px] font-black uppercase tracking-wider text-app-muted block">Upload Logo png/jpg</span>
+                      </div>
+                    }
+                    @if (isUploadingLogo()) {
+                      <div class="flex items-center gap-1.5 text-[9px] text-indigo-400 font-extrabold uppercase mt-1">
+                        <mat-icon class="animate-spin !w-3 !h-3 !text-[12px]">refresh</mat-icon> Uploading logo...
+                      </div>
+                    }
+                    <input #logoInput type="file" accept="image/*" class="hidden" (change)="onLogoSelected($event)" />
+                  </div>
+                </div>
+
+                <!-- Section Toggles -->
+                <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-3">
+                  <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Togglable Sections</span>
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <label class="flex items-center gap-2 p-2 border border-app-border rounded-xl cursor-pointer hover:bg-app-bg transition-colors">
+                      <input type="checkbox" [(ngModel)]="showHeader" class="rounded text-indigo-600">
+                      <span class="text-[10px] font-bold text-app-text uppercase">Header</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 border border-app-border rounded-xl cursor-pointer hover:bg-app-bg transition-colors">
+                      <input type="checkbox" [(ngModel)]="showLogo" class="rounded text-indigo-600">
+                      <span class="text-[10px] font-bold text-app-text uppercase">Logo</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 border border-app-border rounded-xl cursor-pointer hover:bg-app-bg transition-colors">
+                      <input type="checkbox" [(ngModel)]="showDates" class="rounded text-indigo-600">
+                      <span class="text-[10px] font-bold text-app-text uppercase">Dates Block</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 border border-app-border rounded-xl cursor-pointer hover:bg-app-bg transition-colors">
+                      <input type="checkbox" [(ngModel)]="showTable" class="rounded text-indigo-600">
+                      <span class="text-[10px] font-bold text-app-text uppercase">Items Table</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 border border-app-border rounded-xl cursor-pointer hover:bg-app-bg transition-colors">
+                      <input type="checkbox" [(ngModel)]="showNotes" class="rounded text-indigo-600">
+                      <span class="text-[10px] font-bold text-app-text uppercase">Notes</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 border border-app-border rounded-xl cursor-pointer hover:bg-app-bg transition-colors">
+                      <input type="checkbox" [(ngModel)]="showSignature" class="rounded text-indigo-600">
+                      <span class="text-[10px] font-bold text-app-text uppercase">Signature</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Signature Configuration -->
+                <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+                  <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Signature Block</span>
+                  
+                  <div>
+                    <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Signature Cursive Text</label>
+                    <input type="text" [(ngModel)]="signatureText" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-app-muted/30" placeholder="e.g. John Miller">
+                  </div>
+
+                  <!-- Upload Signature Image -->
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-bold text-app-muted uppercase">Upload Signature PNG</label>
+                    @if (signatureUrl()) {
+                      <div class="relative rounded-xl overflow-hidden aspect-video bg-black/60 border border-app-border group">
+                        <img [src]="signatureUrl()" alt="Authorized Signature Preview" class="w-full h-full object-contain p-2" referrerpolicy="no-referrer" />
+                        <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button (click)="sigInput.click()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Replace</button>
+                          <button (click)="signatureUrl.set('')" class="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Remove</button>
+                        </div>
+                      </div>
+                    } @else {
+                      <div (click)="sigInput.click()" class="border border-dashed border-app-border hover:border-indigo-500/40 rounded-xl p-4 text-center cursor-pointer transition-colors duration-200 bg-app-bg/10 group">
+                        <mat-icon class="text-app-muted mx-auto mb-1 text-base group-hover:text-indigo-400 transition-colors">cloud_upload</mat-icon>
+                        <span class="text-[9px] font-black uppercase tracking-wider text-app-muted block">Upload signature PNG</span>
+                      </div>
+                    }
+                    @if (isUploadingSignature()) {
+                      <div class="flex items-center gap-1.5 text-[9px] text-indigo-400 font-extrabold uppercase mt-1">
+                        <mat-icon class="animate-spin !w-3 !h-3 !text-[12px]">refresh</mat-icon> Uploading signature...
+                      </div>
+                    }
+                    <input #sigInput type="file" accept="image/*" class="hidden" (change)="onSignatureSelected($event)" />
+                  </div>
+                </div>
+
+                <!-- Save General Config -->
+                <div class="pt-4 border-t border-app-border">
+                  <button (click)="saveConfig()" [disabled]="isSaving()" class="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer disabled:opacity-50">
+                    <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">save</mat-icon>
+                    Save Branding Defaults & Configs
+                  </button>
+                </div>
+
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 4: LAYOUT ORDERING -->
+        @if (activeTab() === 'layout') {
+          <div class="space-y-4 animate-in fade-in duration-300 font-sans">
+            @if (userPlan() === 'free') {
+              <div class="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-6 text-center shadow-lg relative overflow-hidden">
+                <mat-icon class="text-indigo-400 !w-12 !h-12 !text-[48px] mb-3">low_priority</mat-icon>
+                <h3 class="text-base font-black text-white mb-2 uppercase font-display tracking-wider">Layout Positioning Locked</h3>
+                <p class="text-xs text-indigo-200/80 mb-6 leading-relaxed">Customizing the drag-and-drop hierarchy layout of invoice nodes is exclusive to our Pro and Enterprise workspace plans.</p>
+                <button (click)="showUpgradeModal.set(true)" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
+                  Upgrade Workspace
+                </button>
+              </div>
+            } @else {
+              <!-- Sections Reordering -->
+              <div class="space-y-3.5">
+                <span class="text-[9px] font-black text-app-muted uppercase tracking-widest block font-display">Rearrange Page Sections</span>
+                <p class="text-xs text-app-muted mb-4">Click the arrow buttons to move sections up and down to change the A4 rendering sequence.</p>
+                
+                <div class="space-y-2">
+                  @for (sec of sectionsOrder(); track sec; let idx = $index) {
+                    <div class="flex items-center justify-between bg-app-bg border border-app-border rounded-xl p-3.5 shadow-sm">
+                      <span class="text-[10px] font-black uppercase tracking-wider text-app-text flex items-center gap-2">
+                        <mat-icon class="text-indigo-400 text-sm">
+                          {{ sec === 'logo_header' ? 'dns' : (sec === 'bill_to' ? 'contact_mail' : (sec === 'line_items' ? 'view_list' : 'notes')) }}
+                        </mat-icon>
+                        {{ sec === 'logo_header' ? 'Logo & Issuer Header' : (sec === 'bill_to' ? 'Recipient Bill To Details' : (sec === 'line_items' ? 'Line Items Table' : 'Notes & Totals block')) }}
+                      </span>
+                      
+                      <div class="flex gap-1.5">
+                        <button (click)="moveSection(idx, 'up')" [disabled]="idx === 0" class="p-1.5 bg-app-card border border-app-border rounded-lg text-app-muted hover:text-indigo-400 hover:border-indigo-400/40 disabled:opacity-30 disabled:cursor-not-allowed">
+                          <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">arrow_upward</mat-icon>
+                        </button>
+                        <button (click)="moveSection(idx, 'down')" [disabled]="idx === sectionsOrder().length - 1" class="p-1.5 bg-app-card border border-app-border rounded-lg text-app-muted hover:text-indigo-400 hover:border-indigo-400/40 disabled:opacity-30 disabled:cursor-not-allowed">
+                          <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">arrow_downward</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: INVOICE PREVIEW CANVAS -->
+    <main 
+      [class.hidden]="activeViewMode() !== 'preview'"
+      [class.flex]="activeViewMode() === 'preview'"
+      class="flex-grow p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-auto bg-slate-900 justify-center lg:!flex custom-scrollbar"
+    >
+      
+      <!-- A4 Sheet wrapper -->
+      <div id="invoice-print-area" class="w-full max-w-[210mm] bg-white text-slate-900 shadow-2xl rounded-[20px] p-5 sm:p-8 lg:p-[15mm] flex flex-col justify-between select-text relative overflow-hidden" [style.font-family]="fontFamily()">
+        
+        <!-- Top accent stripe (positioned absolutely) -->
+        <div class="h-3 absolute top-0 left-0 right-0" [style.background-color]="primaryColor()"></div>
+        <div class="mt-4"></div>
+
+        <!-- Render dynamically structured invoice based on sectionsOrder -->
+        <div class="space-y-10 flex-grow">
+          @for (section of sectionsOrder(); track section) {
+            
+            <!-- SECTION A: LOGO & ISSUER HEADER -->
+            @if (section === 'logo_header' && showHeader()) {
+              <div class="flex flex-col sm:flex-row justify-between items-start gap-8 border-b border-slate-100 pb-8 animate-in fade-in duration-300">
+                <!-- Issuer brand logo -->
+                <div class="w-full sm:w-1/2 flex"
+                  [class.justify-start]="logoPosition() === 'left'"
+                  [class.justify-center]="logoPosition() === 'center'"
+                  [class.justify-end]="logoPosition() === 'right'">
+                  @if (showLogo() && (logoUrl() || sellerName())) {
+                    <div class="flex flex-col" [class.items-center]="logoPosition() === 'center'" [class.items-end]="logoPosition() === 'right'">
+                      @if (logoUrl()) {
+                        <img [src]="logoUrl()" alt="Issuer Logo" class="max-h-16 max-w-44 object-contain mb-3" referrerpolicy="no-referrer" />
+                      }
+                      <h2 class="text-xl font-black tracking-tight" [style.color]="primaryColor()">{{ sellerName() }}</h2>
+                      <p class="text-[10px] text-slate-400 font-medium whitespace-pre-line mt-1" [class.text-center]="logoPosition() === 'center'" [class.text-right]="logoPosition() === 'right'">{{ sellerAddress() }}</p>
+                    </div>
+                  }
+                </div>
+
+                <!-- Invoice generic IDs -->
+                <div class="w-full sm:w-1/3 text-left sm:text-right flex flex-col items-start sm:items-end">
+                  <h1 class="text-3xl font-black uppercase tracking-widest mb-4" [style.color]="primaryColor()">INVOICE</h1>
+                  <div class="space-y-1.5 font-sans">
+                    <div class="flex justify-between sm:justify-end gap-3 text-xs">
+                      <span class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Invoice ID:</span>
+                      <span class="font-bold text-slate-900 font-mono">{{ invoiceId() }}</span>
+                    </div>
+                    @if (showDates()) {
+                      <div class="flex justify-between sm:justify-end gap-3 text-xs">
+                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Issued:</span>
+                        <span class="font-bold text-slate-700">{{ invoiceDate() | date }}</span>
+                      </div>
+                      <div class="flex justify-between sm:justify-end gap-3 text-xs">
+                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Due Date:</span>
+                        <span class="font-bold text-slate-700">{{ dueDate() | date }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- SECTION B: RECIPIENT BILL TO -->
+            @if (section === 'bill_to') {
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-slate-100 pb-8 animate-in fade-in duration-300">
+                <div class="space-y-2">
+                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Bill To</span>
+                  <h3 class="text-base font-black text-slate-900">{{ clientName() || 'Client Acme Corp' }}</h3>
+                  <p class="text-xs text-slate-500 whitespace-pre-line leading-relaxed">{{ clientAddress() || 'Recipient Address details' }}</p>
+                </div>
+
+                <!-- Custom premium metadata parameters -->
+                @if (customFields().length > 0 && userPlan() !== 'free') {
+                  <div class="space-y-2 flex flex-col items-start md:items-end">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Reference Details</span>
+                    <div class="space-y-1.5 text-xs text-right w-full max-w-[200px]">
+                      @for (field of customFields(); track $index) {
+                        @if (field.label && field.value) {
+                          <div class="flex justify-between gap-3 text-right">
+                            <span class="text-slate-400 font-bold uppercase text-[9px]">{{ field.label }}:</span>
+                            <span class="font-bold text-slate-700 font-mono">{{ field.value }}</span>
+                          </div>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- SECTION C: PRODUCTS TABLE -->
+            @if (section === 'line_items' && showTable()) {
+              <div class="animate-in fade-in duration-300">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                      <th class="py-3 w-1/2">Product Description</th>
+                      <th class="py-3 text-center w-1/12">Qty</th>
+                      <th class="py-3 text-right w-2/12">Unit Rate</th>
+                      <th class="py-3 text-right w-2/12">Total Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-xs">
+                    @for (item of lineItems(); track $index) {
+                      <tr>
+                        <td class="py-4.5 pr-4">
+                          <span class="font-black text-slate-900 block">{{ item.name || 'Untitled Line Item' }}</span>
+                          <span class="text-[10px] text-slate-400 mt-0.5 block">{{ item.description }}</span>
+                        </td>
+                        <td class="py-4.5 text-center font-mono text-slate-600">{{ item.quantity }}</td>
+                        <td class="py-4.5 text-right font-mono text-slate-600">₹{{ item.rate | number:'1.2-2' }}</td>
+                        <td class="py-4.5 text-right font-black font-mono text-slate-900">₹{{ (item.quantity * item.rate) | number:'1.2-2' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            <!-- SECTION D: TOTALS, NOTES & SIGNATURES -->
+            @if (section === 'totals_notes') {
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-8 border-t border-slate-100 pt-8 animate-in fade-in duration-300">
+                <!-- Notes and Payments -->
+                <div class="md:col-span-7 space-y-5">
+                  @if (showNotes() && notes()) {
+                    <div class="space-y-1.5">
+                      <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Notes & Payment Terms</span>
+                      <p class="text-[10px] text-slate-500 leading-relaxed whitespace-pre-line">{{ notes() }}</p>
+                    </div>
+                  }
+
+                  <!-- Payment methods -->
+                  <div class="space-y-1.5">
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Accepted payment gateways</span>
+                    <div class="flex gap-2 flex-wrap">
+                      @if (paymentMethods().card) {
+                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase">
+                          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-slate-400">credit_card</mat-icon> Credit Card
+                        </span>
+                      }
+                      @if (paymentMethods().bank) {
+                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase">
+                          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-slate-400">account_balance</mat-icon> Bank Transfer
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Signature image or cursive text -->
+                  @if (showSignature()) {
+                    <div class="pt-4 flex flex-col items-start space-y-1.5">
+                      <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Authorized Signature</span>
+                      @if (signatureUrl()) {
+                        <img [src]="signatureUrl()" alt="Issuer Signature" class="max-h-12 max-w-36 object-contain" referrerpolicy="no-referrer" />
+                      } @else if (signatureText()) {
+                        <div class="font-serif italic text-lg text-slate-800 border-b border-slate-300 px-4 py-1" style="font-family: 'Georgia', serif;">
+                          {{ signatureText() }}
+                        </div>
+                      } @else {
+                        <div class="text-[10px] text-slate-300 italic">No signature set.</div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- Math Totals calculation block -->
+                <div class="md:col-span-5 space-y-2.5 font-sans">
+                  <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span class="font-bold uppercase tracking-wider text-[9px]">Subtotal:</span>
+                    <span class="font-bold text-slate-900 font-mono">₹{{ subtotal() | number:'1.2-2' }}</span>
+                  </div>
+                  
+                  @if (discountVal() > 0) {
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                      <span class="font-bold uppercase tracking-wider text-[9px]">Discount:</span>
+                      <span class="font-bold text-rose-500 font-mono">- ₹{{ discountAmount() | number:'1.2-2' }}</span>
+                    </div>
+                  }
+
+                  @if (taxRate() > 0) {
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                      <span class="font-bold uppercase tracking-wider text-[9px]">Tax ({{ taxRate() }}%):</span>
+                      <span class="font-bold text-slate-700 font-mono">+ ₹{{ taxAmount() | number:'1.2-2' }}</span>
+                    </div>
+                  }
+
+                  <div class="pt-3.5 border-t border-slate-100 flex justify-between items-center">
+                    <span class="text-sm font-black uppercase tracking-wider text-slate-900">Total Due:</span>
+                    <span class="text-xl font-black font-mono" [style.color]="primaryColor()">
+                      ₹{{ grandTotal() | number:'1.2-2' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+
+          }
+        </div>
+
+        <!-- Sheet Footer (Pixel-perfect indicator) -->
+        <footer class="mt-12 pt-6 border-t border-slate-100 flex justify-between items-center text-[8px] text-slate-400 font-mono">
+          <span>AJR Cluster Secure Invoice &bull; Generated digitally</span>
+          <span>Security hash: AJR-SEC-{{ invoiceId() }}</span>
+        </footer>
+
+      </div>
+
+    </main>
+
+  </div>
+</div>
+
+<!-- Plan Upgrade Promotion Dialog Modal -->
+@if (showUpgradeModal()) {
+  <div class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+    <div class="bg-app-card border border-app-border rounded-3xl p-8 max-w-xl w-full mx-4 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
+      
+      <button (click)="showUpgradeModal.set(false)" class="absolute top-4 right-4 text-app-muted hover:text-app-text transition-colors cursor-pointer">
+        <mat-icon class="!w-6 !h-6 !text-[24px]">close</mat-icon>
+      </button>
+      
+      <div class="text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/10 text-indigo-400 mb-6 border border-indigo-500/20">
+          <mat-icon class="!w-7 !h-7 !text-[28px]">workspace_premium</mat-icon>
+        </div>
+        
+        <h2 class="text-2xl font-black text-app-text uppercase tracking-wider mb-2 font-display">Upgrade to Premium Invoicing</h2>
+        <p class="text-xs text-app-muted mb-8 max-w-md mx-auto">
+          Unlock standard limits and customize templates with custom brand assets, custom themes, layout order re-arranging, signature blocks, and custom metadata fields.
+        </p>
+        
+        <!-- Plan comparison cards -->
+        <div class="grid grid-cols-2 gap-4 mb-8 text-left">
+          <div class="bg-app-bg/50 border border-app-border rounded-2xl p-5 hover:border-indigo-500/40 transition-colors flex flex-col justify-between">
+            <div>
+              <span class="text-[9px] font-black uppercase tracking-wider text-indigo-400 block mb-1">PRO PLAN</span>
+              <span class="text-lg font-black text-app-text">₹799 / mo</span>
+              <ul class="space-y-2 mt-4 text-[10px] text-app-muted">
+                <li class="flex items-center gap-1.5"><mat-icon class="text-emerald-500 !w-4 !h-4 !text-[14px]">done</mat-icon> Custom colors & fonts</li>
+                <li class="flex items-center gap-1.5"><mat-icon class="text-emerald-500 !w-4 !h-4 !text-[14px]">done</mat-icon> Logo & Signature uploads</li>
+                <li class="flex items-center gap-1.5"><mat-icon class="text-emerald-500 !w-4 !h-4 !text-[14px]">done</mat-icon> Unlimited saved layouts</li>
+              </ul>
+            </div>
+            <button (click)="upgradeToPro()" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer">
+              Choose Pro
+            </button>
+          </div>
+
+          <div class="bg-app-bg/50 border border-indigo-500/30 rounded-2xl p-5 hover:border-indigo-500/60 transition-colors flex flex-col justify-between relative">
+            <div class="absolute top-2 right-2 bg-indigo-600/90 text-white font-black text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">Popular</div>
+            <div>
+              <span class="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">ENTERPRISE</span>
+              <span class="text-lg font-black text-app-text">₹1,999 / mo</span>
+              <ul class="space-y-2 mt-4 text-[10px] text-app-muted">
+                <li class="flex items-center gap-1.5"><mat-icon class="text-cyan-400 !w-4 !h-4 !text-[14px]">done</mat-icon> Multi-brand templates</li>
+                <li class="flex items-center gap-1.5"><mat-icon class="text-cyan-400 !w-4 !h-4 !text-[14px]">done</mat-icon> Bulk API invoice generation</li>
+                <li class="flex items-center gap-1.5"><mat-icon class="text-cyan-400 !w-4 !h-4 !text-[14px]">done</mat-icon> Full multi-tenant node</li>
+              </ul>
+            </div>
+            <button (click)="upgradeToEnterprise()" class="mt-6 w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer">
+              Choose Enterprise
+            </button>
+          </div>
+        </div>
+        
+        <button (click)="showUpgradeModal.set(false)" class="text-app-muted hover:text-app-text text-[10px] font-black uppercase tracking-wider cursor-pointer">
+          Maybe Later
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Login Prompt Dialog Modal -->
+@if (showLoginModal()) {
+  <div class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+    <div class="bg-app-card border border-app-border rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative animate-in zoom-in-95 duration-300">
+      
+      <button (click)="showLoginModal.set(false)" class="absolute top-4 right-4 text-app-muted hover:text-app-text transition-colors cursor-pointer">
+        <mat-icon class="!w-6 !h-6 !text-[24px]">close</mat-icon>
+      </button>
+      
+      <div class="text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/10 text-indigo-400 mb-6 border border-indigo-500/20">
+          <mat-icon class="!w-6 !h-6 !text-[24px]">lock</mat-icon>
+        </div>
+        
+        <h2 class="text-lg font-black text-app-text uppercase mb-2 font-display tracking-wider">Login Required</h2>
+        <p class="text-xs text-app-muted mb-8 leading-relaxed">
+          You must have an active authenticated session with an account to save branding layouts, create custom templates, and view dashboard analytics.
+        </p>
+        
+        <div class="flex flex-col gap-3">
+          <button (click)="confirmLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-12 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+            <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">login</mat-icon>
+            <span>LOGIN</span>
+          </button>
+          <button (click)="showLoginModal.set(false)" class="w-full bg-app-bg hover:bg-app-card text-app-text font-bold h-12 rounded-xl border border-app-border transition-all cursor-pointer">
+            CANCEL
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

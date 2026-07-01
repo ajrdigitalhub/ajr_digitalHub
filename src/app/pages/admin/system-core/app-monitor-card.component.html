@@ -1,0 +1,110 @@
+<div 
+  (click)="navigateToDetail()"
+  class="app-monitor-card group relative bg-app-bg/40 backdrop-blur-md border border-app-border hover:border-cyan-500/40 rounded-xl p-6 transition-all duration-500 hover:-translate-y-1.5 cursor-pointer select-none overflow-hidden flex flex-col justify-between h-[390px] shadow-[0_4px_24px_rgba(0,0,0,0.6)] hover:shadow-[0_8px_32px_rgba(6,182,212,0.15)]">
+  
+  <!-- Ambient card background glow -->
+  <div [class]="getAmbientGlowClass()" class="absolute -right-20 -top-20 w-40 h-40 rounded-full blur-[80px] opacity-10 transition-all duration-700 group-hover:opacity-20 group-hover:blur-[60px]"></div>
+
+  <!-- Top decorative elements -->
+  <div class="absolute top-0 left-4 w-12 h-[1px] bg-cyan-500/35 group-hover:bg-cyan-400 group-hover:w-20 transition-all duration-500"></div>
+  <div class="absolute top-0 right-4 w-1.5 h-1.5 border-r border-t border-app-border"></div>
+  <div class="absolute bottom-0 left-4 w-1.5 h-1.5 border-l border-b border-app-border"></div>
+
+  <!-- Card Header -->
+  <div>
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex flex-col truncate">
+        <h3 class="text-md font-black tracking-wider text-app-text group-hover:text-cyan-400 transition-colors uppercase font-mono truncate">
+          {{ telemetry().name }}
+        </h3>
+        <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest mt-1">ID: {{ telemetry().appId }}</span>
+      </div>
+      <app-status-badge [status]="telemetry().status"></app-status-badge>
+    </div>
+
+    <!-- URL -->
+    <div class="mt-2.5 flex items-center gap-1">
+      <span class="text-[10px] font-mono text-emerald-400/80 hover:text-emerald-300 font-bold tracking-widest truncate uppercase">
+        https://{{ telemetry().domain }}
+      </span>
+      <mat-icon class="!w-3 !h-3 !text-[12px] text-app-muted shrink-0">open_in_new</mat-icon>
+    </div>
+
+    <!-- Health Progress -->
+    <div class="mt-6">
+      <div class="flex items-center justify-between text-[10px] font-mono font-bold tracking-widest uppercase mb-1.5">
+        <span class="text-app-muted">SYSTEM HEALTH</span>
+        <span [class]="getHealthTextClass()">{{ telemetry().status === 'OFFLINE' ? '0%' : telemetry().health + '%' }}</span>
+      </div>
+      <!-- Bar Track -->
+      <div class="w-full h-1.5 bg-app-bg/80 rounded-full overflow-hidden border border-app-border/60 p-[1px]">
+        <div 
+          [style.width.%]="telemetry().status === 'OFFLINE' ? 0 : telemetry().health"
+          [class]="getHealthBarClass()"
+          class="h-full rounded-full transition-all duration-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid of Telemetry Details -->
+    <div class="grid grid-cols-2 gap-3.5 mt-6 border-t border-app-border/60 pt-5">
+      <!-- Hits/Min -->
+      <div class="bg-black/25 border border-app-border/60 rounded p-2.5 flex flex-col justify-between">
+        <span class="text-[9px] font-mono text-app-muted uppercase tracking-wider">API HITS/MIN</span>
+        <span class="text-[13px] font-mono font-black text-app-text mt-1 uppercase">
+          {{ telemetry().status === 'OFFLINE' ? '—' : (telemetry().apiHitsPerMin | number:'1.1-1') + 'K' }}
+        </span>
+      </div>
+
+      <!-- Traffic -->
+      <div class="bg-black/25 border border-app-border/60 rounded p-2.5 flex flex-col justify-between">
+        <span class="text-[9px] font-mono text-app-muted uppercase tracking-wider">TRAFFIC GB/S</span>
+        <span class="text-[13px] font-mono font-black text-app-text mt-1">
+          {{ telemetry().status === 'OFFLINE' ? '—' : (telemetry().trafficGbps | number:'1.2-2') }}
+        </span>
+      </div>
+
+      <!-- Uptime -->
+      <div class="bg-black/25 border border-app-border/60 rounded p-2.5 flex flex-col justify-between">
+        <span class="text-[9px] font-mono text-app-muted uppercase tracking-wider">UPTIME</span>
+        <span class="text-[13px] font-mono font-black text-app-text mt-1">
+          {{ telemetry().status === 'OFFLINE' ? '—' : (telemetry().uptime | number:'1.2-2') + '%' }}
+        </span>
+      </div>
+
+      <!-- Error Rate -->
+      <div class="bg-black/25 border border-app-border/60 rounded p-2.5 flex flex-col justify-between">
+        <span class="text-[9px] font-mono text-app-muted uppercase tracking-wider">ERROR RATE</span>
+        <span [class]="getErrorRateClass()" class="text-[13px] font-mono font-black mt-1">
+          {{ telemetry().status === 'OFFLINE' ? '—' : (telemetry().errorRate | number:'1.2-2') + '%' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Footer -->
+  <div class="flex items-center gap-2 border-t border-app-border/60 pt-4 mt-auto">
+    @if (telemetry().status === 'OFFLINE') {
+      <app-control-button 
+        class="flex-1"
+        action="start" 
+        [loading]="service.loadingStates()[telemetry().appId]"
+        (triggerAction)="service.startService(telemetry().appId)">
+      </app-control-button>
+    } @else {
+      <app-control-button 
+        class="flex-1"
+        action="stop" 
+        [loading]="service.loadingStates()[telemetry().appId]"
+        (triggerAction)="service.stopService(telemetry().appId)">
+      </app-control-button>
+      
+      <app-control-button 
+        action="restart" 
+        [loading]="service.loadingStates()[telemetry().appId]"
+        (triggerAction)="service.restartService(telemetry().appId)">
+      </app-control-button>
+    }
+  </div>
+
+</div>

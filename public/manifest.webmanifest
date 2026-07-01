@@ -1,0 +1,23 @@
+{
+  "name": "AJR Digital HUB",
+  "short_name": "AJR Hub",
+  "theme_color": "#ff6600",
+  "background_color": "#07070d",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

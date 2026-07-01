@@ -1,0 +1,71 @@
+<div class="space-y-6">
+  
+  <!-- Top Title Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black tracking-tight text-app-text font-display">Customer Workspaces Registry</h1>
+      <p class="text-xs text-app-muted mt-1">Audit SaaS platform customer profiles, GST registrations, subscription packages, and system states.</p>
+    </div>
+    <button (click)="triggerBillingCron()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2 cursor-pointer">
+      <mat-icon class="!w-4 !h-4 !text-[16px]">play_arrow</mat-icon> Trigger Billing Cron
+    </button>
+  </div>
+
+  <!-- Main Registry Table -->
+  @if (loading()) {
+    <div class="flex justify-center py-20">
+      <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <div class="glass border border-app-border rounded-2xl overflow-hidden">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="bg-app-bg/50 border-b border-app-border">
+          <tr class="text-[9px] uppercase tracking-wider text-app-muted">
+            <th class="py-3 px-4 font-bold">Company Name</th>
+            <th class="py-3 px-4 font-bold">GSTIN / PAN</th>
+            <th class="py-3 px-4 font-bold">Industry</th>
+            <th class="py-3 px-4 font-bold">Location</th>
+            <th class="py-3 px-4 font-bold">Plan & Cycle</th>
+            <th class="py-3 px-4 font-bold text-center">Status</th>
+            <th class="py-3 px-4 font-bold text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-app-border/40">
+          @for (cust of customers(); track cust.id) {
+            <tr class="hover:bg-app-card/25 transition-colors">
+              <td class="py-3.5 px-4 font-bold text-app-text">
+                {{ cust.name }}
+                <span class="block text-[10px] text-app-muted font-normal font-sans" *ngIf="cust.website">{{ cust.website }}</span>
+              </td>
+              <td class="py-3.5 px-4 font-mono text-app-text">
+                <span class="block">GST: {{ cust.gst_number || 'N/A' }}</span>
+                <span class="block text-[10px] text-app-muted">PAN: {{ cust.pan || 'N/A' }}</span>
+              </td>
+              <td class="py-3.5 px-4 text-app-muted font-medium">{{ cust.industry || 'General' }}</td>
+              <td class="py-3.5 px-4 text-app-muted font-mono">{{ cust.country || 'India' }} ({{ cust.currency || 'INR' }})</td>
+              <td class="py-3.5 px-4 font-medium text-indigo-400">
+                {{ cust.plan || 'Lite' }} Plan
+                <span class="block text-[9px] text-app-muted font-mono">{{ cust.billing_cycle || 'monthly' }}</span>
+              </td>
+              <td class="py-3.5 px-4 text-center">
+                <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest"
+                  [ngClass]="cust.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'">
+                  {{ cust.status }}
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center flex items-center justify-center gap-2">
+                <button (click)="toggleCustomerStatus(cust)" class="px-2.5 py-1 bg-app-bg border border-app-border text-[10px] font-bold rounded-lg text-app-text hover:bg-app-card transition cursor-pointer">
+                  {{ cust.status === 'active' ? 'Suspend' : 'Activate' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="py-8 text-center text-app-muted">No SaaS customer workspaces registered.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
