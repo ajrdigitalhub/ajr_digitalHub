@@ -98,6 +98,10 @@ export class PwaInstallPromptComponent implements OnInit {
       return;
     }
 
+    if (!this.shouldShowPrompt()) {
+      return;
+    }
+
     if (typeof window !== 'undefined') {
       // Check if we already have the saved prompt in window
       const savedPrompt = (window as any).deferredInstallPrompt;
@@ -117,8 +121,24 @@ export class PwaInstallPromptComponent implements OnInit {
     if (typeof window !== 'undefined') {
       (window as any).deferredInstallPrompt = event;
     }
-    // Show the custom installation prompt UI
-    this.showPrompt.set(true);
+    
+    // Show the custom installation prompt UI only if we should
+    if (this.shouldShowPrompt()) {
+      this.showPrompt.set(true);
+    }
+  }
+
+  shouldShowPrompt(): boolean {
+    if (this.isStandalone()) return false;
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return false;
+    
+    const dismissedAt = localStorage.getItem('pwa_prompt_dismissed_at');
+    if (!dismissedAt) return true;
+
+    // Show again after 14 days (14 * 24 * 60 * 60 * 1000 = 1209600000 ms)
+    const fourteenDays = 14 * 24 * 60 * 60 * 1000;
+    const timeSinceDismissed = Date.now() - parseInt(dismissedAt, 10);
+    return timeSinceDismissed > fourteenDays;
   }
 
   isStandalone(): boolean {
@@ -143,10 +163,17 @@ export class PwaInstallPromptComponent implements OnInit {
       this.deferredPrompt = null;
       (window as any).deferredInstallPrompt = null;
       this.showPrompt.set(false);
+      
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('pwa_prompt_dismissed_at', Date.now().toString());
+      }
     });
   }
 
   close() {
     this.showPrompt.set(false);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('pwa_prompt_dismissed_at', Date.now().toString());
+    }
   }
 }

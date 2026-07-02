@@ -49,6 +49,8 @@ router.post('/:id/firebase-config', firebaseController.saveConfig);
 router.post('/:id/firebase/test', firebaseController.testConnection);
 
 // !! IMPORTANT: This /:id catch-all MUST come last to avoid swallowing sub-routes !!
+router.put('/:id', saasController.updateApp);
+router.delete('/:id', saasController.deleteApp);
 router.get('/:id', saasController.getAppById);
 
 export default router;

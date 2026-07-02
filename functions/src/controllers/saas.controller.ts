@@ -299,5 +299,57 @@ export const saasController = {
       console.error('Firebase sync failed:', err);
       return res.status(500).json({ error: err.message });
     }
+  },
+
+  async updateApp(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const { name, domain, environment, status, plan } = req.body;
+      
+      const result = await query(
+        `UPDATE apps 
+         SET name = COALESCE($1, name), 
+             domain = COALESCE($2, domain), 
+             environment = COALESCE($3, environment), 
+             status = COALESCE($4, status),
+             plan = COALESCE($5, plan),
+             updated_at = NOW() 
+         WHERE id = $6 RETURNING *`,
+        [name, domain, environment, status, plan, id]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'App not found' });
+      }
+      
+      const app = result.rows[0];
+      
+      // Update in records table too for general compatibility
+      await query(
+        `UPDATE records 
+         SET data = data || $1, updated_at = NOW() 
+         WHERE collection = 'apps' AND id = $2`,
+        [JSON.stringify(app), id]
+      );
+      
+      res.json(app);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async deleteApp(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const result = await query('DELETE FROM apps WHERE id = $1 RETURNING *', [id]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'App not found' });
+      }
+      // Also delete from records table
+      await query('DELETE FROM records WHERE collection = $1 AND id = $2', ['apps', id]);
+      res.json({ success: true, message: 'App deleted successfully' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };

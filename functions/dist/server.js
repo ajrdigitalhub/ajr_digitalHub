@@ -81325,6 +81325,49 @@ var saasController = {
       console.error("Firebase sync failed:", err);
       return res.status(500).json({ error: err.message });
     }
+  },
+  async updateApp(req, res) {
+    try {
+      const { id } = req.params;
+      const { name, domain, environment: environment2, status, plan } = req.body;
+      const result = await query2(
+        `UPDATE apps 
+         SET name = COALESCE($1, name), 
+             domain = COALESCE($2, domain), 
+             environment = COALESCE($3, environment), 
+             status = COALESCE($4, status),
+             plan = COALESCE($5, plan),
+             updated_at = NOW() 
+         WHERE id = $6 RETURNING *`,
+        [name, domain, environment2, status, plan, id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "App not found" });
+      }
+      const app2 = result.rows[0];
+      await query2(
+        `UPDATE records 
+         SET data = data || $1, updated_at = NOW() 
+         WHERE collection = 'apps' AND id = $2`,
+        [JSON.stringify(app2), id]
+      );
+      res.json(app2);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async deleteApp(req, res) {
+    try {
+      const { id } = req.params;
+      const result = await query2("DELETE FROM apps WHERE id = $1 RETURNING *", [id]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "App not found" });
+      }
+      await query2("DELETE FROM records WHERE collection = $1 AND id = $2", ["apps", id]);
+      res.json({ success: true, message: "App deleted successfully" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
 
@@ -82157,6 +82200,8 @@ router2.get("/:id/firebase/api-hits", firebaseController.getFirebaseApiHits);
 router2.get("/:id/firebase/live-api-hits", firebaseController.liveApiHits);
 router2.post("/:id/firebase-config", firebaseController.saveConfig);
 router2.post("/:id/firebase/test", firebaseController.testConnection);
+router2.put("/:id", saasController.updateApp);
+router2.delete("/:id", saasController.deleteApp);
 router2.get("/:id", saasController.getAppById);
 var saas_routes_default = router2;
 

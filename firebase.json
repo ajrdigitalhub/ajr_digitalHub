@@ -23,12 +23,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "index.html"
-      },
-      {
-        "source": "/**",
-        "destination": "https://ajrdigitalhub.in",
-        "type": 301
+        "destination": "/index.csr.html"
       }
     ],
     "predeploy": []
