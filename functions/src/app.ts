@@ -20,6 +20,14 @@ import { requireAuth, requireRole } from './middlewares/auth.middleware';
 import { initDynamicDb } from './utils/dynamic-db';
 import { seedDatabase } from './seed';
 
+// Import correct module routes
+import appsRoutes from './modules/apps/apps.routes';
+import shopsRoutes from './modules/shops/shops.routes';
+import uploadRoutes from './modules/upload/upload.routes';
+import adminSystemRoutes from './modules/admin-system/admin-system.routes';
+import invoiceRoutes from './modules/invoice/invoice.routes';
+import moduleMarketplaceRoutes from './modules/marketplace/marketplace.routes';
+
 // Initialize and seed database schemas asynchronously on cloud function cold start
 initDynamicDb()
   .then(() => seedDatabase())
@@ -62,8 +70,12 @@ app.use(usageTracker);
 app.use('/api/auth', authRoutes);
 
 // Module Routes
-app.use('/api/marketplace', marketplaceRoutes);
-app.use('/api/admin/apps', requireAuth, requireRole('admin'), saasRoutes);
+app.use('/api/marketplace', moduleMarketplaceRoutes);
+app.use('/api/admin/marketplace', moduleMarketplaceRoutes);
+app.use('/api/admin/marketplace-items', moduleMarketplaceRoutes);
+app.use('/api/marketplace-items', moduleMarketplaceRoutes);
+
+app.use('/api/admin/apps', appsRoutes);
 app.use('/api/admin/data', requireAuth, requireRole('admin'), adminDataRoutes);
 app.use('/api/admin/billing', requireAuth, requireRole('admin'), billingRoutes);
 app.use('/api/crm', crmRoutes);
@@ -73,6 +85,11 @@ app.use('/api/ai-assistant', aiAssistantRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/documentation', documentationRoutes);
 app.use('/api/billing', customerBillingRoutes);
+
+app.use('/api/shops', shopsRoutes);
+app.use('/api/admin/upload', uploadRoutes);
+app.use('/api/admin', adminSystemRoutes);
+app.use('/api/invoice', invoiceRoutes);
 
 // Settings routes (landing_config, growth/track, hero-slider key, etc.)
 app.use('/api/settings', settingsRoutes);
