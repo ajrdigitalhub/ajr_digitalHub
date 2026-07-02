@@ -6,7 +6,8 @@
 
 export const environment = {
   production: true,
-  apiBaseUrl: ' https://api-h53zfzhj2q-uc.a.run.app/api', // Dev default backend endpoint
-  apiUrl: ' https://api-h53zfzhj2q-uc.a.run.app'           // Used by SSE EventSource connections
+  apiBaseUrl: 'https://api-h53zfzhj2q-uc.a.run.app/api', // Dev default backend endpoint
+  apiUrl: 'https://api-h53zfzhj2q-uc.a.run.app'           // Used by SSE EventSource connections
 };
+
 

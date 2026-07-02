@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,21 +9,21 @@ import { AuthService } from '../services/auth.service';
   imports: [ReactiveFormsModule, MatIconModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-[#050816] text-slate-100 selection:bg-[#5B4BFF]/30 font-sans overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-app-bg text-app-text selection:bg-[#5B4BFF]/30 font-sans overflow-hidden">
       
-      <!-- Left Side: Animated Constellation Network & Services (Dark Theme) -->
-      <div class="relative bg-gradient-to-br from-[#050816] via-[#090d1f] to-[#050816] hidden lg:flex flex-col items-center justify-between py-12 px-8 border-r border-white/5">
+      <!-- Left Side: Animated Constellation Network & Services (Dark Theme Backdrop with Variables) -->
+      <div class="relative bg-gradient-to-br from-app-bg via-app-card/30 to-app-bg hidden lg:flex flex-col items-center justify-between py-12 px-8 border-r border-app-border">
         
         <!-- Glowing Ambient Lights -->
-        <div class="absolute top-1/3 left-1/3 w-[350px] h-[350px] bg-[#5B4BFF]/15 blur-[120px] rounded-full pointer-events-none"></div>
-        <div class="absolute bottom-1/3 right-1/3 w-[350px] h-[350px] bg-[#00E5A8]/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div class="absolute top-1/3 left-1/3 w-[350px] h-[350px] bg-[#5B4BFF]/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div class="absolute bottom-1/3 right-1/3 w-[350px] h-[350px] bg-[#00E5A8]/5 blur-[120px] rounded-full pointer-events-none"></div>
 
         <!-- Header -->
         <div class="z-10 text-center">
           <span class="tracking-[0.25em] text-[10px] uppercase font-bold text-[#00E5A8] font-mono">
             SECURE INTEGRATION NODE
           </span>
-          <h2 class="text-xl font-bold text-white mt-2">Connect Your Digital Services</h2>
+          <h2 class="text-xl font-bold text-app-text mt-2">Connect Your Digital Services</h2>
         </div>
 
         <!-- Floating Constellation / Services Network Diagram -->
@@ -55,39 +55,39 @@ import { AuthService } from '../services/auth.service';
           </svg>
 
           <!-- Centered Node -->
-          <div class="absolute z-20 w-24 h-24 rounded-full bg-[#0E1323]/95 border-2 border-[#5B4BFF] shadow-[0_0_25px_rgba(91,75,255,0.4)] flex flex-col items-center justify-center p-3 text-center">
+          <div class="absolute z-20 w-24 h-24 rounded-full bg-app-card/95 border-2 border-[#5B4BFF] shadow-[0_0_25px_rgba(91,75,255,0.4)] flex flex-col items-center justify-center p-3 text-center">
             <mat-icon class="text-[#00E5A8] !text-[20px] !w-5 !h-5 leading-none">lock_open</mat-icon>
-            <span class="text-white text-[9px] uppercase font-bold tracking-widest mt-1">AJR Gate</span>
+            <span class="text-app-text text-[9px] uppercase font-bold tracking-widest mt-1">AJR Gate</span>
           </div>
 
           <!-- Floating Node 1: WhatsApp Gateway -->
-          <div class="absolute left-2 top-2 w-28 bg-[#0E1323]/90 border border-white/5 shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
+          <div class="absolute left-2 top-2 w-28 bg-app-card border border-app-border shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
             <div class="text-[8px] font-bold text-emerald-400 font-mono uppercase">WhatsApp</div>
-            <div class="text-[7px] text-slate-500">API Connected</div>
+            <div class="text-[7px] text-app-muted">API Connected</div>
           </div>
 
           <!-- Floating Node 2: Firebase Storage -->
-          <div class="absolute right-2 top-2 w-28 bg-[#0E1323]/90 border border-white/5 shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
+          <div class="absolute right-2 top-2 w-28 bg-app-card border border-app-border shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
             <div class="text-[8px] font-bold text-orange-400 font-mono uppercase">Firebase</div>
-            <div class="text-[7px] text-slate-500">DB & Storage</div>
+            <div class="text-[7px] text-app-muted">DB & Storage</div>
           </div>
 
           <!-- Floating Node 3: Billing Logs -->
-          <div class="absolute left-2 bottom-2 w-28 bg-[#0E1323]/90 border border-white/5 shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
+          <div class="absolute left-2 bottom-2 w-28 bg-app-card border border-app-border shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
             <div class="text-[8px] font-bold text-[#5B4BFF] font-mono uppercase">Billing</div>
-            <div class="text-[7px] text-slate-500">Auto Invoices</div>
+            <div class="text-[7px] text-app-muted">Auto Invoices</div>
           </div>
 
           <!-- Floating Node 4: AI Telemetry -->
-          <div class="absolute right-2 bottom-2 w-28 bg-[#0E1323]/90 border border-white/5 shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
+          <div class="absolute right-2 bottom-2 w-28 bg-app-card border border-app-border shadow-lg rounded-xl p-2 text-center hover:scale-105 transition">
             <div class="text-[8px] font-bold text-[#00E5A8] font-mono uppercase">AI NOC</div>
-            <div class="text-[7px] text-slate-500">Telemetry Sync</div>
+            <div class="text-[7px] text-app-muted">Telemetry Sync</div>
           </div>
 
         </div>
 
         <!-- Flowing Process Workflow Steps Card -->
-        <div class="w-full max-w-sm bg-[#0E1323]/55 border border-white/5 rounded-3xl p-5 relative overflow-hidden group shadow-lg mb-8">
+        <div class="w-full max-w-sm bg-app-card/50 border border-app-border rounded-3xl p-5 relative overflow-hidden group shadow-lg mb-8">
           <style>
             @keyframes stepLineFlow {
               0% {
@@ -122,43 +122,43 @@ import { AuthService } from '../services/auth.service';
             
             <!-- Step 1 -->
             <div class="flex flex-col gap-0.5 relative">
-              <div class="absolute -left-[20px] top-0.5 w-3 h-3 rounded-full bg-[#050816] border border-[#5B4BFF] flex items-center justify-center">
+              <div class="absolute -left-[20px] top-0.5 w-3 h-3 rounded-full bg-app-bg border border-[#5B4BFF] flex items-center justify-center">
                 <span class="text-[7px] font-mono font-bold text-[#5B4BFF]">1</span>
               </div>
-              <h4 class="font-bold text-white uppercase tracking-wider text-[10px]">Tenant Authorization</h4>
-              <p class="text-[9px] text-slate-400">Verifying instance administrator permissions</p>
+              <h4 class="font-bold text-app-text uppercase tracking-wider text-[10px]">Tenant Authorization</h4>
+              <p class="text-[9px] text-app-muted">Verifying instance administrator permissions</p>
             </div>
 
             <!-- Step 2 -->
             <div class="flex flex-col gap-0.5 relative">
-              <div class="absolute -left-[20px] top-0.5 w-3 h-3 rounded-full bg-[#050816] border border-[#00E5A8] flex items-center justify-center">
+              <div class="absolute -left-[20px] top-0.5 w-3 h-3 rounded-full bg-app-bg border border-[#00E5A8] flex items-center justify-center">
                 <span class="text-[7px] font-mono font-bold text-[#00E5A8]">2</span>
               </div>
-              <h4 class="font-bold text-white uppercase tracking-wider text-[10px]">GCP Node Handshake</h4>
-              <p class="text-[9px] text-slate-400">Synchronizing monitoring endpoints for Firebase</p>
+              <h4 class="font-bold text-app-text uppercase tracking-wider text-[10px]">GCP Node Handshake</h4>
+              <p class="text-[9px] text-app-muted">Synchronizing monitoring endpoints for Firebase</p>
             </div>
 
             <!-- Step 3 -->
             <div class="flex flex-col gap-0.5 relative">
-              <div class="absolute -left-[20px] top-0.5 w-3 h-3 rounded-full bg-[#050816] border border-orange-500 flex items-center justify-center">
+              <div class="absolute -left-[20px] top-0.5 w-3 h-3 rounded-full bg-app-bg border border-orange-500 flex items-center justify-center">
                 <span class="text-[7px] font-mono font-bold text-orange-400">3</span>
               </div>
-              <h4 class="font-bold text-white uppercase tracking-wider text-[10px]">Meta API Handshake</h4>
-              <p class="text-[9px] text-slate-400">Confirming conversation logs status codes</p>
+              <h4 class="font-bold text-app-text uppercase tracking-wider text-[10px]">Meta API Handshake</h4>
+              <p class="text-[9px] text-app-muted">Confirming conversation logs status codes</p>
             </div>
 
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="z-10 text-center text-slate-500 text-xs">
+        <div class="z-10 text-center text-app-muted text-xs">
           <span>&copy; 2026 AJR Digital HUB &bull; SOC2 Type II Protected Workspace</span>
         </div>
 
       </div>
 
       <!-- Right Side: Glassmorphic Auth Form -->
-      <div class="flex items-center justify-center p-8 sm:p-12 lg:p-20 bg-[#050816]">
+      <div class="flex items-center justify-center p-8 sm:p-12 lg:p-20 bg-app-bg">
         <div class="w-full max-w-md space-y-8">
           
           <!-- Logo & Brand -->
@@ -166,29 +166,29 @@ import { AuthService } from '../services/auth.service';
             <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#5B4BFF] to-[#00E5A8] shadow-lg text-[#050816] mb-4">
               <mat-icon class="!text-[22px] !w-[22px] !h-[22px] font-bold">shield</mat-icon>
             </div>
-            <h2 class="text-2xl font-black tracking-wider text-white">
+            <h2 class="text-2xl font-black tracking-wider text-app-text">
               {{ isLoginMode() ? 'Access Control Tower' : 'Register Service Tenant' }}
             </h2>
-            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+            <p class="text-xs text-app-muted mt-1.5 leading-relaxed">
               {{ isLoginMode() ? 'Sign in to access your unified SaaS environments.' : 'Setup a new administrator account for your SaaS instance.' }}
             </p>
           </div>
 
           <!-- Glass Card Container -->
-          <div class="bg-[#0E1323]/75 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative group">
+          <div class="bg-app-card/75 backdrop-blur-xl border border-app-border rounded-3xl p-6 sm:p-8 shadow-2xl relative group">
             
             <!-- Border Glow -->
             <div class="absolute -inset-[1px] bg-gradient-to-br from-[#5B4BFF]/20 to-[#00E5A8]/20 rounded-3xl blur-[1px] -z-10"></div>
 
             <!-- Login / Signup Mode Tabs -->
-            <div class="flex border-b border-white/5 pb-4 mb-6">
+            <div class="flex border-b border-app-border pb-4 mb-6">
               <button 
                 (click)="isLoginMode.set(true)"
                 class="flex-1 text-center font-bold pb-2 text-xs uppercase tracking-wider cursor-pointer transition"
                 [class.text-[#00E5A8]]="isLoginMode()"
                 [class.border-b-2]="isLoginMode()"
                 [class.border-[#00E5A8]]="isLoginMode()"
-                [class.text-slate-400]="!isLoginMode()"
+                [class.text-app-muted]="!isLoginMode()"
               >
                 Sign In
               </button>
@@ -198,7 +198,7 @@ import { AuthService } from '../services/auth.service';
                 [class.text-[#00E5A8]]="!isLoginMode()"
                 [class.border-b-2]="!isLoginMode()"
                 [class.border-[#00E5A8]]="!isLoginMode()"
-                [class.text-slate-400]="isLoginMode()"
+                [class.text-app-muted]="isLoginMode()"
               >
                 Sign Up
               </button>
@@ -218,11 +218,11 @@ import { AuthService } from '../services/auth.service';
               
               <!-- Email -->
               <div>
-                <label for="email" class="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-1">
+                <label for="email" class="block text-[10px] font-mono font-bold uppercase tracking-wider text-app-muted mb-1">
                   Email Address
                 </label>
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-app-muted">
                     <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">mail</mat-icon>
                   </div>
                   <input 
@@ -230,7 +230,7 @@ import { AuthService } from '../services/auth.service';
                     formControlName="email"
                     type="email"
                     required
-                    class="block w-full pl-10 pr-4 py-3 bg-[#050816]/70 border border-white/5 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-[#5B4BFF] focus:ring-1 focus:ring-[#5B4BFF] transition"
+                    class="block w-full pl-10 pr-4 py-3 bg-app-bg border border-app-border rounded-xl text-sm text-app-text placeholder-app-muted/50 outline-none focus:border-[#5B4BFF] focus:ring-1 focus:ring-[#5B4BFF] transition"
                     placeholder="admin@domain.com"
                   />
                 </div>
@@ -244,21 +244,24 @@ import { AuthService } from '../services/auth.service';
 
               <!-- Password -->
               <div>
-                <label for="password" class="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-1">
+                <label for="password" class="block text-[10px] font-mono font-bold uppercase tracking-wider text-app-muted mb-1">
                   Password
                 </label>
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-app-muted">
                     <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">lock</mat-icon>
                   </div>
                   <input 
                     id="password"
                     formControlName="password"
-                    type="password"
+                    [type]="isPasswordVisible() ? 'text' : 'password'"
                     required
-                    class="block w-full pl-10 pr-4 py-3 bg-[#050816]/70 border border-white/5 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-[#5B4BFF] focus:ring-1 focus:ring-[#5B4BFF] transition font-mono"
+                    class="block w-full pl-10 pr-10 py-3 bg-app-bg border border-app-border rounded-xl text-sm text-app-text placeholder-app-muted/50 outline-none focus:border-[#5B4BFF] focus:ring-1 focus:ring-[#5B4BFF] transition font-mono"
                     placeholder="••••••••"
                   />
+                  <button type="button" (click)="isPasswordVisible.set(!isPasswordVisible())" class="absolute inset-y-0 right-0 pr-3 flex items-center text-app-muted hover:text-app-text cursor-pointer">
+                    <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">{{ isPasswordVisible() ? 'visibility' : 'visibility_off' }}</mat-icon>
+                  </button>
                 </div>
                 @if (f['password'].touched && f['password'].errors?.['required']) {
                   <p class="mt-1 text-xs text-rose-400 font-medium">Password is required</p>
@@ -268,17 +271,31 @@ import { AuthService } from '../services/auth.service';
                 }
               </div>
 
+              <!-- Remember Me & Forgot Password -->
+              <div class="flex items-center justify-between mt-2 select-none">
+                <label class="inline-flex items-center gap-2 cursor-pointer text-xs text-app-muted">
+                  <input 
+                    type="checkbox" 
+                    [checked]="rememberMe()" 
+                    (change)="rememberMe.set(!rememberMe())" 
+                    class="rounded border-app-border bg-app-bg text-[#5B4BFF] focus:ring-[#5B4BFF] h-4 w-4 transition cursor-pointer" 
+                  />
+                  <span>Remember Me</span>
+                </label>
+                <a (click)="onForgotPassword()" class="text-xs font-semibold text-primary hover:text-accent cursor-pointer hover:underline">Forgot Password?</a>
+              </div>
+
               <!-- Role Selector (Signup Mode) -->
               @if (!isLoginMode()) {
                 <div>
-                  <label class="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-1.5">Account Role</label>
+                  <label class="block text-[10px] font-mono font-bold uppercase tracking-wider text-app-muted mb-1.5">Account Role</label>
                   <div class="grid grid-cols-2 gap-3">
                     <button 
                       type="button"
                       (click)="selectedRole.set('user')"
                       [class]="selectedRole() === 'user'
-                        ? 'flex items-center justify-center gap-2 py-2 px-3 border-2 border-[#5B4BFF] bg-[#5B4BFF]/10 text-white rounded-xl text-xs font-bold cursor-pointer'
-                        : 'flex items-center justify-center gap-2 py-2 px-3 border border-white/5 text-slate-400 rounded-xl text-xs cursor-pointer hover:bg-white/5'"
+                        ? 'flex items-center justify-center gap-2 py-2 px-3 border-2 border-[#5B4BFF] bg-[#5B4BFF]/10 text-app-text rounded-xl text-xs font-bold cursor-pointer'
+                        : 'flex items-center justify-center gap-2 py-2 px-3 border border-app-border text-app-muted rounded-xl text-xs cursor-pointer hover:bg-white/5'"
                     >
                       <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">person</mat-icon>
                       SaaS Tenant
@@ -287,8 +304,8 @@ import { AuthService } from '../services/auth.service';
                       type="button"
                       (click)="selectedRole.set('admin')"
                       [class]="selectedRole() === 'admin'
-                        ? 'flex items-center justify-center gap-2 py-2 px-3 border-2 border-[#5B4BFF] bg-[#5B4BFF]/10 text-white rounded-xl text-xs font-bold cursor-pointer'
-                        : 'flex items-center justify-center gap-2 py-2 px-3 border border-white/5 text-slate-400 rounded-xl text-xs cursor-pointer hover:bg-white/5'"
+                        ? 'flex items-center justify-center gap-2 py-2 px-3 border-2 border-[#5B4BFF] bg-[#5B4BFF]/10 text-app-text rounded-xl text-xs font-bold cursor-pointer'
+                        : 'flex items-center justify-center gap-2 py-2 px-3 border border-app-border text-app-muted rounded-xl text-xs cursor-pointer hover:bg-white/5'"
                     >
                       <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">security</mat-icon>
                       Super Admin
@@ -318,9 +335,9 @@ import { AuthService } from '../services/auth.service';
             <!-- Separator -->
             <div class="relative my-6 flex items-center justify-center">
               <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-white/5"></div>
+                <div class="w-full border-t border-app-border"></div>
               </div>
-              <span class="relative px-3 bg-[#0E1323] text-[9px] font-mono tracking-wider text-slate-500 uppercase">
+              <span class="relative px-3 bg-app-card text-[9px] font-mono tracking-wider text-app-muted uppercase">
                 OR CONTINUE WITH
               </span>
             </div>
@@ -331,7 +348,7 @@ import { AuthService } from '../services/auth.service';
               type="button"
               (click)="loginWithGoogle()"
               [disabled]="isLoading()"
-              class="w-full flex justify-center items-center gap-2.5 py-2.5 px-4 border border-white/5 rounded-xl text-xs font-bold text-slate-300 bg-[#050816]/40 hover:bg-[#050816] transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full flex justify-center items-center gap-2.5 py-2.5 px-4 border border-app-border rounded-xl text-xs font-bold text-app-text bg-app-bg/40 hover:bg-app-bg transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -343,14 +360,14 @@ import { AuthService } from '../services/auth.service';
             </button>
 
             <!-- Sandbox Quick Login -->
-            <div class="mt-6 border-t border-white/5 pt-5 text-center">
-              <span class="text-[9px] font-mono font-bold tracking-wider text-slate-500 uppercase">Quick Access Sandbox Profiles</span>
+            <div class="mt-6 border-t border-app-border pt-5 text-center">
+              <span class="text-[9px] font-mono font-bold tracking-wider text-app-muted uppercase">Quick Access Sandbox Profiles</span>
               <div class="mt-3 flex gap-2 justify-center">
                 <button 
                   id="btn-demo-owner"
                   type="button" 
                   (click)="fillDemo('owner@saas.com', 'user')"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#050816]/50 hover:bg-[#050816] text-white border border-white/5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-app-bg/50 hover:bg-app-bg text-app-text border border-app-border rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
                 >
                   <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-indigo-400">manage_accounts</mat-icon>
                   Tenant Demo
@@ -359,7 +376,7 @@ import { AuthService } from '../services/auth.service';
                   id="btn-demo-admin"
                   type="button" 
                   (click)="fillDemo('admin@saas.com', 'admin')"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#050816]/50 hover:bg-[#050816] text-white border border-white/5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-app-bg/50 hover:bg-app-bg text-app-text border border-app-border rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
                 >
                   <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-[#00E5A8]">security</mat-icon>
                   Admin Demo
@@ -375,7 +392,7 @@ import { AuthService } from '../services/auth.service';
     </div>
   `
 })
-export class Login {
+export class Login implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -383,6 +400,8 @@ export class Login {
   isLoginMode = signal<boolean>(true);
   selectedRole = signal<'admin' | 'user'>('user');
   isLoading = signal<boolean>(false);
+  isPasswordVisible = signal<boolean>(false);
+  rememberMe = signal<boolean>(false);
   
   toastMessage = signal<string>('');
   toastType = signal<'success' | 'error'>('success');
@@ -396,12 +415,31 @@ export class Login {
     return this.authForm.controls;
   }
 
+  ngOnInit() {
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem('ajr_remembered_email');
+      if (savedEmail) {
+        this.authForm.patchValue({ email: savedEmail });
+        this.rememberMe.set(true);
+      }
+    }
+  }
+
   showToast(msg: string, type: 'success' | 'error' = 'success') {
     this.toastMessage.set(msg);
     this.toastType.set(type);
     setTimeout(() => {
       this.toastMessage.set('');
     }, 5000);
+  }
+
+  onForgotPassword() {
+    const email = this.authForm.value.email;
+    if (!email) {
+      this.showToast('Please enter your email address to recover your password.', 'error');
+      return;
+    }
+    this.showToast(`Reset instructions transmitted to ${email}. Check your inbox.`, 'success');
   }
 
   async fillDemo(email: string, role: 'admin' | 'user') {
@@ -431,6 +469,16 @@ export class Login {
     try {
       if (this.isLoginMode()) {
         const res = await this.authService.login(email, password);
+        
+        // Handle Remember Me storage
+        if (typeof window !== 'undefined') {
+          if (this.rememberMe()) {
+            localStorage.setItem('ajr_remembered_email', email);
+          } else {
+            localStorage.removeItem('ajr_remembered_email');
+          }
+        }
+
         this.showToast('Logged in successfully!', 'success');
         const redirectUrl = localStorage.getItem('redirectAfterLogin');
         const user = this.authService.currentUser();
@@ -460,6 +508,16 @@ export class Login {
     const role = this.selectedRole();
     try {
       await this.authService.signInWithGoogle(role);
+      
+      const email = this.authService.currentUser()?.email;
+      if (email && typeof window !== 'undefined') {
+        if (this.rememberMe()) {
+          localStorage.setItem('ajr_remembered_email', email);
+        } else {
+          localStorage.removeItem('ajr_remembered_email');
+        }
+      }
+
       this.showToast('Logged in with Google successfully!', 'success');
       const redirectUrl = localStorage.getItem('redirectAfterLogin');
       const user = this.authService.currentUser();

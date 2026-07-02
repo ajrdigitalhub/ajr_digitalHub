@@ -37,7 +37,7 @@ interface MetaCampaign {
           <p class="text-xs text-app-muted mt-1">Monitor reach, frequency, Meta Pixel connection status, and campaign spend.</p>
         </div>
 
-        <button (click)="showConnectModal.set(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+        <button (click)="showConnectModal.set(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
           <mat-icon class="text-xs w-4 h-4 leading-none">link</mat-icon>
           Link Facebook Page
         </button>
@@ -140,7 +140,7 @@ interface MetaCampaign {
               </div>
               <div class="flex justify-end gap-2 pt-2">
                 <button (click)="showConnectModal.set(false)" class="px-4 py-2 border border-app-border hover:bg-app-bg text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Cancel</button>
-                <button (click)="connectAccount()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors">Link Page</button>
+                <button (click)="connectAccount()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Link Page</button>
               </div>
             </div>
           </div>

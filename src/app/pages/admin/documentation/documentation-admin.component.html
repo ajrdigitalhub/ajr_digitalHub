@@ -3,11 +3,11 @@
   <!-- Top Title Header -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
-      <h1 class="text-2xl font-black tracking-tight text-app-text font-display">Manage Documentation Pages</h1>
-      <p class="text-xs text-app-muted mt-1">Add, update, or remove customer-facing product details and setup guides.</p>
+      <h1 class="text-2xl font-black tracking-tight text-app-text font-display uppercase tracking-widest">Documentation Workspace</h1>
+      <p class="text-xs text-app-muted mt-1">Manage tenant setup guides, REST APIs references, pricing estimates, and search index mappings.</p>
     </div>
-    <button (click)="openAddModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2 cursor-pointer">
-      <mat-icon class="!w-4 !h-4 !text-[16px]">add</mat-icon> Add Doc Page
+    <button (click)="openAddModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-app-text rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2 cursor-pointer">
+      <mat-icon class="!w-4 !h-4 !text-[16px]">add</mat-icon> Create Doc Page
     </button>
   </div>
 
@@ -17,23 +17,35 @@
       <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
   } @else {
-    <!-- Listing -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Listing Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       @for (doc of pages(); track doc.id) {
-        <div class="glass p-5 rounded-2xl border border-app-border flex flex-col justify-between min-h-[160px]">
+        <div class="glass p-5 rounded-3xl border border-app-border flex flex-col justify-between min-h-[220px] bg-app-card/25 hover:border-indigo-500/25 transition">
           <div>
-            <span class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              {{ doc.category }}
-            </span>
-            <h3 class="text-base font-bold text-app-text mt-2 font-display">{{ doc.title }}</h3>
-            <p class="text-xs text-app-muted mt-1 line-clamp-2">{{ doc.overview }}</p>
+            <div class="flex justify-between items-start gap-2">
+              <span class="px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                {{ doc.category }}
+              </span>
+              
+              <!-- Draft/Published indicator -->
+              <span 
+                [class]="doc.status === 'draft' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' : 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'"
+                class="px-2 py-0.5 rounded text-[8px] font-mono font-bold uppercase border"
+              >
+                {{ doc.status }}
+              </span>
+            </div>
+            
+            <h3 class="text-base font-black text-app-text mt-3.5 font-display truncate">{{ doc.title }}</h3>
+            <p class="text-xs text-app-muted mt-1.5 line-clamp-3 leading-relaxed">{{ doc.overview }}</p>
           </div>
 
           <div class="pt-4 mt-4 border-t border-app-border/40 flex justify-between items-center">
-            <span class="text-[10px] font-mono text-app-muted">Slug: /{{ doc.slug }}</span>
+            <span class="text-[9px] font-mono text-app-muted">Slug: /{{ doc.slug }}</span>
             <div class="flex gap-2">
-              <button (click)="openEditModal(doc)" class="text-indigo-400 hover:text-indigo-300 text-xs font-semibold px-2 py-1 border border-indigo-500/25 rounded cursor-pointer">Edit</button>
-              <button (click)="deletePage(doc.id)" class="text-rose-400 hover:text-rose-300 text-xs font-semibold px-2 py-1 border border-rose-500/25 rounded cursor-pointer">Delete</button>
+              <button (click)="viewVersions(doc)" class="text-[10px] font-bold text-app-muted hover:text-app-text px-2 py-1 border border-app-border rounded-lg cursor-pointer">History</button>
+              <button (click)="openEditModal(doc)" class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 px-2 py-1 border border-indigo-500/25 rounded-lg cursor-pointer bg-indigo-500/5">Edit</button>
+              <button (click)="deletePage(doc.id)" class="text-[10px] font-bold text-rose-400 hover:text-rose-300 px-2 py-1 border border-rose-500/25 rounded-lg cursor-pointer bg-rose-500/5">Delete</button>
             </div>
           </div>
         </div>
@@ -41,53 +53,252 @@
     </div>
   }
 
-  <!-- Add/Edit Sliding/Modal Overlay Panel -->
+  <!-- Version Control History Panel -->
+  @if (showVersionsPanel()) {
+    <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+      <div class="bg-app-card border border-app-border rounded-3xl shadow-2xl w-full max-w-xl p-6 flex flex-col justify-between max-h-[80vh] overflow-y-auto custom-scrollbar">
+        <div class="flex justify-between items-center pb-4 border-b border-app-border mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-app-text font-display uppercase">Article Version Logs</h2>
+            <p class="text-[11px] text-app-muted font-mono mt-0.5">Rollback target: {{ selectedDocForVersions?.title }}</p>
+          </div>
+          <button (click)="showVersionsPanel.set(false)" class="text-app-muted hover:text-app-text"><mat-icon>close</mat-icon></button>
+        </div>
+
+        <div class="space-y-3.5 flex-grow overflow-y-auto pr-1">
+          @for (v of versions(); track v.id; let idx = $index) {
+            <div class="flex items-center justify-between p-3.5 bg-app-bg border border-app-border rounded-xl">
+              <div>
+                <span class="text-xs font-bold text-app-text block">Revision #{{ versions().length - idx }}</span>
+                <span class="text-[10px] text-app-muted block font-mono mt-0.5">Saved at: {{ v.created_at | date:'medium' }}</span>
+                <span class="text-[9px] text-indigo-400 block font-mono mt-0.5">Author: {{ v.author_name || 'System Auto' }}</span>
+              </div>
+              <button (click)="rollback(v.id)" class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300 px-3 py-1.5 border border-emerald-500/20 bg-emerald-500/5 rounded-lg cursor-pointer transition">
+                Rollback
+              </button>
+            </div>
+          } @empty {
+            <div class="text-center py-10 text-xs text-app-muted">No historical changes registered.</div>
+          }
+        </div>
+
+        <div class="pt-4 border-t border-app-border mt-4 flex justify-end">
+          <button (click)="showVersionsPanel.set(false)" class="px-5 py-2 bg-app-bg border border-app-border text-app-text rounded-xl text-xs font-bold cursor-pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Add/Edit Sliding Panel Overlay -->
   @if (showModal()) {
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-app-card border border-app-border rounded-3xl shadow-2xl w-full max-w-2xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col justify-between">
+      <div class="bg-app-card border border-app-border rounded-3xl shadow-2xl w-full max-w-4xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col justify-between">
+        
         <div class="flex justify-between items-center pb-4 border-b border-app-border mb-4">
-          <h2 class="text-lg font-bold text-app-text font-display">{{ editMode() ? 'Edit Documentation Page' : 'Create New Guide' }}</h2>
+          <div>
+            <h2 class="text-lg font-bold text-app-text font-display uppercase">{{ editMode() ? 'Update Document Parameters' : 'Register New Documentation' }}</h2>
+            <p class="text-xs text-app-muted mt-0.5">Ensure SEO keywords and syntax layout code snippets are correctly configured.</p>
+          </div>
           <button (click)="showModal.set(false)" class="text-app-muted hover:text-app-text"><mat-icon>close</mat-icon></button>
         </div>
 
-        <form (ngSubmit)="savePage()" class="space-y-4 flex-grow">
-          <div class="grid grid-cols-2 gap-4">
+        <form (ngSubmit)="savePage()" class="space-y-6 flex-grow">
+          
+          <!-- Base Fields Row -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Title</label>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Article Title</label>
               <input type="text" [(ngModel)]="activeDoc.title" name="title" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500">
             </div>
             <div>
-              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Slug</label>
-              <input type="text" [(ngModel)]="activeDoc.slug" name="slug" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Category</label>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Category Node</label>
               <select [(ngModel)]="activeDoc.category" name="category" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer">
-                <option value="WhatsApp">WhatsApp API</option>
-                <option value="Marketing">Meta & Google Ads</option>
-                <option value="Billing">Automated Invoicing</option>
-                <option value="Core CRM">Core CRM</option>
-                <option value="Hosting">Hosting</option>
-                <option value="Cloud Functions">Cloud Functions</option>
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
               </select>
             </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">URL path slug</label>
+              <input type="text" [(ngModel)]="activeDoc.slug" name="slug" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
           </div>
 
-          <div>
-            <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Overview Description</label>
-            <textarea [(ngModel)]="activeDoc.overview" name="overview" rows="3" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none"></textarea>
+          <!-- Description, Purpose & Billing Details -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Overview Description (Introductory paragraph)</label>
+              <textarea [(ngModel)]="activeDoc.overview" name="overview" rows="2" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Purpose & Objective statement</label>
+              <textarea [(ngModel)]="activeDoc.purpose" name="purpose" rows="2" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Metered billing logs explanation</label>
+              <textarea [(ngModel)]="activeDoc.billing_explanation" name="billing_explanation" rows="2" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Setup Instructions (Markdown/Text)</label>
-            <textarea [(ngModel)]="activeDoc.setup_guide" name="setup_guide" rows="4" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none font-mono"></textarea>
+          <!-- Dynamic Item lists managers (Features, ROI, Business cases, Security, Keywords) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Features array list builder -->
+            <div class="bg-app-bg/50 border border-app-border p-4 rounded-2xl space-y-3">
+              <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Capabilities & Features</span>
+              <div class="flex gap-2">
+                <input type="text" [(ngModel)]="newFeature" name="newFeature" placeholder="Add platform feature..." class="flex-grow px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs outline-none">
+                <button type="button" (click)="addItem('features', newFeature)" class="px-3 py-1 bg-indigo-600 text-app-text text-xs font-bold rounded-lg cursor-pointer">+</button>
+              </div>
+              <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto mt-2">
+                @for (feat of activeDoc.features; track $index; let idx = $index) {
+                  <span class="bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 px-2 py-0.5 rounded-md text-[10px] flex items-center gap-1">
+                    {{ feat }}
+                    <mat-icon (click)="removeItem('features', idx)" class="!text-[12px] !w-3 !h-3 cursor-pointer hover:text-rose-400">close</mat-icon>
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Benefits/ROI array list builder -->
+            <div class="bg-app-bg/50 border border-app-border p-4 rounded-2xl space-y-3">
+              <span class="text-[10px] font-black text-emerald-400 uppercase tracking-widest block">Core ROI benefits</span>
+              <div class="flex gap-2">
+                <input type="text" [(ngModel)]="newBenefit" name="newBenefit" placeholder="Add value metric..." class="flex-grow px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs outline-none">
+                <button type="button" (click)="addItem('benefits', newBenefit)" class="px-3 py-1 bg-emerald-600 text-app-text text-xs font-bold rounded-lg cursor-pointer">+</button>
+              </div>
+              <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto mt-2">
+                @for (ben of activeDoc.benefits; track $index; let idx = $index) {
+                  <span class="bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 px-2 py-0.5 rounded-md text-[10px] flex items-center gap-1">
+                    {{ ben }}
+                    <mat-icon (click)="removeItem('benefits', idx)" class="!text-[12px] !w-3 !h-3 cursor-pointer hover:text-rose-400">close</mat-icon>
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Business Use Cases array list builder -->
+            <div class="bg-app-bg/50 border border-app-border p-4 rounded-2xl space-y-3">
+              <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Business use cases</span>
+              <div class="flex gap-2">
+                <input type="text" [(ngModel)]="newUseCase" name="newUseCase" placeholder="Add typical scenario..." class="flex-grow px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs outline-none">
+                <button type="button" (click)="addItem('business_use_cases', newUseCase)" class="px-3 py-1 bg-indigo-600 text-app-text text-xs font-bold rounded-lg cursor-pointer">+</button>
+              </div>
+              <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto mt-2">
+                @for (uc of activeDoc.business_use_cases; track $index; let idx = $index) {
+                  <span class="bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 px-2 py-0.5 rounded-md text-[10px] flex items-center gap-1">
+                    {{ uc }}
+                    <mat-icon (click)="removeItem('business_use_cases', idx)" class="!text-[12px] !w-3 !h-3 cursor-pointer hover:text-rose-400">close</mat-icon>
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Search index keywords array list builder -->
+            <div class="bg-app-bg/50 border border-app-border p-4 rounded-2xl space-y-3">
+              <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Search index keywords</span>
+              <div class="flex gap-2">
+                <input type="text" [(ngModel)]="newKeyword" name="newKeyword" placeholder="Add index tag..." class="flex-grow px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs outline-none">
+                <button type="button" (click)="addItem('search_keywords', newKeyword)" class="px-3 py-1 bg-indigo-600 text-app-text text-xs font-bold rounded-lg cursor-pointer">+</button>
+              </div>
+              <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto mt-2">
+                @for (k of activeDoc.search_keywords; track $index; let idx = $index) {
+                  <span class="bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 px-2 py-0.5 rounded-md text-[10px] flex items-center gap-1">
+                    {{ k }}
+                    <mat-icon (click)="removeItem('search_keywords', idx)" class="!text-[12px] !w-3 !h-3 cursor-pointer hover:text-rose-400">close</mat-icon>
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Installation and Configuration Code Snippet Textareas -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Setup / Installation steps code block</label>
+              <textarea [(ngModel)]="activeDoc.setup_guide" name="setup_guide" rows="4" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none font-mono"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">Configuration variables code block</label>
+              <textarea [(ngModel)]="activeDoc.config_guide" name="config_guide" rows="4" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 resize-none font-mono"></textarea>
+            </div>
+          </div>
+
+          <!-- Pricing Details Grid -->
+          <div class="bg-app-bg/30 border border-app-border rounded-2xl p-4.5 space-y-4">
+            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Metered billing settings</span>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Base Platform Subscription (₹)</label>
+                <input type="number" [(ngModel)]="activeDoc.pricing_details.basePrice" name="basePrice" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none text-right font-mono">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Free Tier Units</label>
+                <input type="number" [(ngModel)]="activeDoc.pricing_details.freeTier" name="freeTier" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none text-right font-mono">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Excess surcharge rate per action (₹)</label>
+                <input type="number" [(ngModel)]="activeDoc.pricing_details.excessRate" name="excessRate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none text-right font-mono">
+              </div>
+            </div>
+          </div>
+
+          <!-- SEO Config Meta Metadata & Publishing Status -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-app-bg/30 border border-app-border p-4.5 rounded-2xl">
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">SEO Title Tag</label>
+              <input type="text" [(ngModel)]="activeDoc.seo_settings.title" name="seoTitle" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-1">SEO Meta Description</label>
+              <input type="text" [(ngModel)]="activeDoc.seo_settings.description" name="seoDesc" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none">
+            </div>
+            
+            <!-- Publishing state -->
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-app-muted mb-2">Publishing State</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-1.5 text-xs text-app-text cursor-pointer">
+                  <input type="radio" [(ngModel)]="activeDoc.status" name="status" value="published" class="text-indigo-600">
+                  <span>Published</span>
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-app-text cursor-pointer">
+                  <input type="radio" [(ngModel)]="activeDoc.status" name="status" value="draft" class="text-indigo-600">
+                  <span>Draft</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion FAQ builder -->
+          <div class="bg-app-bg/30 border border-app-border p-4.5 rounded-2xl space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-app-border">
+              <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Accordion FAQs</span>
+              <button type="button" (click)="addFaq()" class="text-[9px] font-black text-indigo-400 uppercase tracking-wider flex items-center gap-1 cursor-pointer">
+                <mat-icon class="!text-[12px] !w-3 !h-3">add_circle</mat-icon> Add FAQ Item
+              </button>
+            </div>
+            
+            <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+              @for (faq of activeDoc.faqs; track $index; let idx = $index) {
+                <div class="bg-app-bg border border-app-border p-3 rounded-xl relative space-y-2">
+                  <button type="button" (click)="removeFaq(idx)" class="absolute top-2.5 right-2.5 text-app-muted hover:text-rose-400 transition" aria-label="Delete FAQ">
+                    <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">close</mat-icon>
+                  </button>
+                  <span class="text-[8px] font-mono text-app-muted uppercase">FAQ #{{ idx + 1 }}</span>
+                  <input type="text" [(ngModel)]="faq.q" name="faqQ_{{idx}}" class="w-[90%] px-2 py-1.5 bg-app-card border border-app-border rounded-lg text-xs font-bold outline-none" placeholder="Question">
+                  <textarea [(ngModel)]="faq.a" name="faqA_{{idx}}" rows="2" class="w-full px-2 py-1.5 bg-app-card border border-app-border rounded-lg text-xs outline-none resize-none" placeholder="Answer text"></textarea>
+                </div>
+              }
+            </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-app-border mt-4">
-            <button type="button" (click)="showModal.set(false)" class="px-4 py-2 text-xs font-semibold text-app-muted hover:text-app-text cursor-pointer">Cancel</button>
-            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer">Commit Changes</button>
+            <button type="button" (click)="showModal.set(false)" class="px-5 py-2.5 text-xs font-semibold text-app-muted hover:text-app-text cursor-pointer">Cancel</button>
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-xs font-bold shadow-md cursor-pointer uppercase tracking-wider">Commit Changes</button>
           </div>
         </form>
+
       </div>
     </div>
   }

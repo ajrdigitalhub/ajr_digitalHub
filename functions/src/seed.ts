@@ -213,6 +213,146 @@ export const seedDatabase = async () => {
       // Ignore if constraint already exists
     }
 
+    // Migration: Setup Documentation tables and extend columns
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS documentation_pages (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          slug VARCHAR(255) UNIQUE NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          category VARCHAR(100) NOT NULL,
+          overview TEXT,
+          features JSONB DEFAULT '[]'::jsonb,
+          benefits JSONB DEFAULT '[]'::jsonb,
+          screenshots JSONB DEFAULT '[]'::jsonb,
+          videos JSONB DEFAULT '[]'::jsonb,
+          workflow_diagrams JSONB DEFAULT '[]'::jsonb,
+          api_flow JSONB DEFAULT '[]'::jsonb,
+          setup_guide TEXT,
+          config_guide TEXT,
+          pricing_details JSONB DEFAULT '{}'::jsonb,
+          faqs JSONB DEFAULT '[]'::jsonb,
+          common_errors JSONB DEFAULT '[]'::jsonb,
+          best_practices JSONB DEFAULT '[]'::jsonb,
+          related_products JSONB DEFAULT '[]'::jsonb,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS purpose TEXT;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS business_use_cases JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS security_recommendations JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS performance_tips JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS billing_explanation TEXT;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS external_references JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'published';
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS search_keywords JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS seo_settings JSONB DEFAULT '{}'::jsonb;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS likes INTEGER DEFAULT 0;
+        ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS dislikes INTEGER DEFAULT 0;
+
+        CREATE TABLE IF NOT EXISTS documentation_feedback (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+            user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+            helpful BOOLEAN NOT NULL,
+            comment TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS documentation_bookmarks (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_user_bookmark UNIQUE (user_id, article_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS documentation_history (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+            session_id VARCHAR(100),
+            viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS documentation_versions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+            title VARCHAR(255) NOT NULL,
+            content_json JSONB NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            created_by UUID REFERENCES users(id) ON DELETE SET NULL
+        );
+      `);
+      console.log('🌱 Schema Migration: Created/updated documentation portal tables');
+    } catch (err: any) {
+      console.error('Failed schema migration for documentation tables:', err);
+    }
+
+    // Migration: Setup Transactions, Receipts, Billing logs, and Telemetry
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS payment_transactions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
+            provider VARCHAR(50) NOT NULL,
+            gateway_transaction_id VARCHAR(255),
+            amount NUMERIC(12,2) NOT NULL,
+            currency VARCHAR(10) DEFAULT 'INR',
+            status VARCHAR(50) DEFAULT 'pending',
+            error_message TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS payment_receipts (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            payment_id UUID REFERENCES payments(id) ON DELETE CASCADE,
+            receipt_number VARCHAR(100) UNIQUE NOT NULL,
+            gstin VARCHAR(50),
+            amount NUMERIC(12,2) NOT NULL,
+            tax_amount NUMERIC(12,2) DEFAULT 0.00,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS billing_history (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            previous_plan VARCHAR(100),
+            new_plan VARCHAR(100) NOT NULL,
+            action VARCHAR(50) NOT NULL,
+            details TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS customer_usage (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            metric_name VARCHAR(100) NOT NULL,
+            usage_count INTEGER DEFAULT 0,
+            recorded_date DATE DEFAULT CURRENT_DATE,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+            event VARCHAR(100) NOT NULL,
+            details JSONB DEFAULT '{}'::jsonb,
+            ip_address INET,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      console.log('🌱 Schema Migration: Created/updated billing, transactions, and audit tables');
+    } catch (err: any) {
+      console.error('Failed schema migration for transactional tables:', err);
+    }
+
+
 
     // 2. Check and Seed Admin and User
     const adminCheck = await query('SELECT id FROM records WHERE collection = $1 AND data->>\'email\' = $2', ['users', 'admin@ajr.com']);

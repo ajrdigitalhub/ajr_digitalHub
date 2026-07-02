@@ -62,7 +62,7 @@ import { ApiService } from '../../../services/api.service';
                     <input id="p-wa-phone" type="text" [(ngModel)]="cloudService.state().whatsapp.phoneId" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
                  </div>
                  <div class="pt-2">
-                    <button (click)="saveWhatsappConfig()" [disabled]="!cloudService.state().whatsapp.enabled || isSavingWa()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-emerald-500">
+                    <button (click)="saveWhatsappConfig()" [disabled]="!cloudService.state().whatsapp.enabled || isSavingWa()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-app-text rounded-lg text-xs font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-emerald-500">
                        @if (isSavingWa()) {
                           <mat-icon class="!w-3 !h-3 !text-[12px] animate-spin">sync</mat-icon>
                        }
@@ -105,7 +105,7 @@ import { ApiService } from '../../../services/api.service';
                     </div>
                  </div>
                  <div class="pt-2">
-                    <button (click)="saveEmailConfig()" [disabled]="!cloudService.state().email.enabled || isSavingEmail()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-indigo-500">
+                    <button (click)="saveEmailConfig()" [disabled]="!cloudService.state().email.enabled || isSavingEmail()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-lg text-xs font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-indigo-500">
                        @if (isSavingEmail()) {
                           <mat-icon class="!w-3 !h-3 !text-[12px] animate-spin">sync</mat-icon>
                        }
@@ -135,7 +135,7 @@ import { ApiService } from '../../../services/api.service';
                     <input id="p-firebase-collection" type="text" [(ngModel)]="firebaseCollection" [disabled]="!firebaseSyncEnabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-orange-500/50" placeholder="e.g. edge_apps">
                  </div>
                  <div class="pt-2">
-                    <button (click)="triggerFirebaseSync()" [disabled]="!firebaseSyncEnabled || isSyncing()" class="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-orange-500">
+                    <button (click)="triggerFirebaseSync()" [disabled]="!firebaseSyncEnabled || isSyncing()" class="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-app-text rounded-lg text-sm font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-orange-500">
                        @if (isSyncing()) {
                           <mat-icon class="!w-4 !h-4 !text-[16px] animate-spin">sync</mat-icon>
                        }

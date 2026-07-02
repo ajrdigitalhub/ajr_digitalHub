@@ -92,7 +92,7 @@ import { Subscription } from 'rxjs';
             <mat-icon class="absolute left-3 top-2.5 !w-4 !h-4 !text-[16px] text-app-muted">search</mat-icon>
             <input type="text" placeholder="Filter by endpoint (e.g. /api)"
                    [ngModel]="endpointSearch()" (ngModelChange)="endpointSearch.set($event)"
-                   class="bg-[#1f2937] border border-app-border text-xs text-white rounded-lg pl-9 pr-4 py-2 w-full outline-none focus:border-indigo-500 transition font-sans" />
+                   class="bg-[#1f2937] border border-app-border text-xs text-app-text rounded-lg pl-9 pr-4 py-2 w-full outline-none focus:border-indigo-500 transition font-sans" />
           </div>
         </div>
 
@@ -167,7 +167,7 @@ import { Subscription } from 'rxjs';
           <div class="bg-[#111827] border border-app-border rounded-xl p-5 shadow-xl space-y-4">
             <div class="flex justify-between items-center">
               <div>
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Request Count</h3>
+                <h3 class="text-sm font-bold text-app-text uppercase tracking-wider">Request Count</h3>
                 <p class="text-[11px] text-app-muted font-sans mt-0.5">API requests by status code (2xx/3xx/4xx/5xx)</p>
               </div>
               <div class="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest font-bold">
@@ -198,7 +198,7 @@ import { Subscription } from 'rxjs';
           <div class="bg-[#111827] border border-app-border rounded-xl p-5 shadow-xl space-y-4">
             <div class="flex justify-between items-center">
               <div>
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Request Latencies</h3>
+                <h3 class="text-sm font-bold text-app-text uppercase tracking-wider">Request Latencies</h3>
                 <p class="text-[11px] text-app-muted font-sans mt-0.5">Response latency percentiles (P50/P95/P99)</p>
               </div>
               <div class="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest font-bold">
@@ -228,7 +228,7 @@ import { Subscription } from 'rxjs';
             <!-- Chart 3: End-to-end Request Latency -->
             <div class="bg-[#111827] border border-app-border rounded-xl p-5 shadow-xl space-y-4">
               <div>
-                <h3 class="text-xs font-bold text-white uppercase tracking-widest">End-to-End Latency</h3>
+                <h3 class="text-xs font-bold text-app-text uppercase tracking-widest">End-to-End Latency</h3>
                 <p class="text-[10px] text-app-muted font-sans mt-0.5">Computed round-trip delay time (RTD)</p>
               </div>
 
@@ -244,7 +244,7 @@ import { Subscription } from 'rxjs';
             <!-- Chart 4: Instance Count -->
             <div class="bg-[#111827] border border-app-border rounded-xl p-5 shadow-xl space-y-4">
               <div>
-                <h3 class="text-xs font-bold text-white uppercase tracking-widest">Container Instance Count</h3>
+                <h3 class="text-xs font-bold text-app-text uppercase tracking-widest">Container Instance Count</h3>
                 <p class="text-[10px] text-app-muted font-sans mt-0.5">Autoscaled execution environment instances</p>
               </div>
 
@@ -266,7 +266,7 @@ import { Subscription } from 'rxjs';
           <div class="p-4 border-b border-app-border flex items-center justify-between bg-[#111827]/80">
             <div class="flex items-center gap-3">
               <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse relative shadow-[0_0_10px_rgba(16,185,129,0.7)]"></div>
-              <h3 class="text-xs font-bold text-white font-mono tracking-wider uppercase">Live Stream Logs</h3>
+              <h3 class="text-xs font-bold text-app-text font-mono tracking-wider uppercase">Live Stream Logs</h3>
             </div>
             
             <div class="flex items-center gap-3">

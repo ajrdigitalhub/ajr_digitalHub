@@ -8,5 +8,7 @@ router.use(requireAuth);
 
 router.get('/invoices', billingController.getCustomerInvoices);
 router.get('/stats', billingController.getBillingStats);
+router.get('/transactions', billingController.getTransactions);
+router.post('/checkout/:invoiceId', billingController.checkoutInvoice);
 
 export default router;

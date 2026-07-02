@@ -316,8 +316,8 @@ export class ProjectDeploymentsComponent implements OnInit, OnDestroy {
       'green': 'text-emerald-400',
       'indigo': 'text-indigo-400',
       'red': 'text-rose-400',
-      'muted': 'text-slate-400'
+      'muted': 'text-app-muted'
     };
-    return map[color] || 'text-slate-400';
+    return map[color] || 'text-app-muted';
   }
 }

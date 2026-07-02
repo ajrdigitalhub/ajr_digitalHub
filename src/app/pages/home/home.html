@@ -1,4 +1,4 @@
-<div class="min-h-screen text-slate-100 bg-[#07070d] relative overflow-hidden">
+<div class="min-h-screen text-app-text bg-app-bg relative overflow-hidden">
   
   <!-- Ambient Space Core / Nebula background -->
   <ajr-tech-background class="absolute inset-0 z-0 pointer-events-none opacity-40"></ajr-tech-background>
@@ -9,7 +9,7 @@
   <div class="absolute bottom-[10%] left-[20%] w-[500px] h-[500px] rounded-full bg-orange-500/5 blur-[120px] z-0 pointer-events-none animate-pulse duration-[6000ms]"></div>
 
   <!-- Announcement Banner -->
-  <div id="landing-announcement" class="relative z-40 bg-indigo-950/80 backdrop-blur-md border-b border-indigo-500/20 text-slate-100 text-xs py-2.5 px-4 text-center font-mono flex items-center justify-center gap-2">
+  <div id="landing-announcement" class="relative z-40 bg-indigo-950/80 backdrop-blur-md border-b border-indigo-500/20 text-app-text text-xs py-2.5 px-4 text-center font-mono flex items-center justify-center gap-2">
     <span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded text-[9px] uppercase tracking-widest font-black border border-indigo-500/30 font-bold">New Release</span>
     <span>ENTERPRISE DIGITAL MARKETING SAAS & CRM SUITE IS ONLINE. LAUNCH CAMPAIGNS AND TRACK LEADS.</span>
     <a routerLink="/dashboard/crm" class="underline font-bold text-indigo-400 hover:text-indigo-300 transition-colors">ACCESS CRM &rarr;</a>
@@ -18,7 +18,7 @@
   <!-- ==============================================
        1. HERO SECTION (TOP FOLD)
        ============================================== -->
-  <section id="hero-fold" class="relative pt-12 pb-24 md:pt-20 md:pb-32 overflow-hidden border-b border-white/5 z-10">
+  <section id="hero-fold" class="relative pt-12 pb-24 md:pt-20 md:pb-32 overflow-hidden border-b border-app-border z-10">
     <ajr-data-flow class="absolute top-0 left-0 w-full h-full opacity-60 pointer-events-none"></ajr-data-flow>
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -44,14 +44,14 @@
                 {{ growthConfig()?.heroSubTitleA || 'The Premier Digital Hub' }}
               </span>
               
-              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-6 leading-[1.08] font-sans uppercase">
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-app-text mb-6 leading-[1.08] font-sans uppercase">
                 Manage, Deploy & Scale <br/>
                 <span class="bg-gradient-to-r from-orange-400 via-amber-400 to-blue-500 bg-clip-text text-transparent">
                   {{ growthConfig()?.heroTitleA || 'Your Enterprise Workspace' }}
                 </span>
               </h1>
               
-              <p class="text-sm sm:text-base text-slate-300 leading-relaxed mb-8 max-w-xl">
+              <p class="text-sm sm:text-base text-app-text leading-relaxed mb-8 max-w-xl">
                 Deploy lightning-fast cloud applications with real-time analytics, integrated WhatsApp Business campaigns, interactive CRM pipelines, and Google/Meta Ads budget tools.
               </p>
 
@@ -61,7 +61,7 @@
                   <mat-icon class="!text-[16px] !w-[16px] !h-[16px] leading-none flex items-center justify-center">arrow_forward</mat-icon>
                 </ajr-glow-button>
                 
-                <button routerLink="/marketplace" class="bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 text-white font-bold px-6 h-12 rounded-xl transition-all uppercase tracking-wider text-[10px] flex items-center gap-2">
+                <button routerLink="/marketplace" class="bg-white/5 backdrop-blur-xl border border-app-border hover:border-app-border text-app-text font-bold px-6 h-12 rounded-xl transition-all uppercase tracking-wider text-[10px] flex items-center gap-2">
                   <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">grid_view</mat-icon>
                   <span>Explore Products</span>
                 </button>
@@ -76,13 +76,13 @@
                 {{ growthConfig()?.heroSubTitleB || '10x Developer Productivity' }}
               </span>
               
-              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-6 leading-[1.08] font-sans uppercase">
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-app-text mb-6 leading-[1.08] font-sans uppercase">
                 <span class="bg-gradient-to-r from-blue-400 via-indigo-400 to-orange-500 bg-clip-text text-transparent">
                   {{ growthConfig()?.heroTitleB || 'Transform Code Into Passive Cash Flow' }}
                 </span>
               </h1>
               
-              <p class="text-sm sm:text-base text-slate-300 leading-relaxed mb-8 max-w-xl">
+              <p class="text-sm sm:text-base text-app-text leading-relaxed mb-8 max-w-xl">
                 Launch automated customer engagement funnels. Scale your lead acquisition, sync WhatsApp marketing lists, draft ad copy using Gemini, and maximize ROI today.
               </p>
 
@@ -92,7 +92,7 @@
                   <mat-icon class="!text-[16px] !w-[16px] !h-[16px] leading-none flex items-center justify-center">arrow_forward</mat-icon>
                 </ajr-glow-button>
                 
-                <button (click)="onCtaClick('/invoice-builder')" class="bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 text-white font-bold px-6 h-12 rounded-xl transition-all uppercase tracking-wider text-[10px] flex items-center gap-2">
+                <button (click)="onCtaClick('/invoice-builder')" class="bg-white/5 backdrop-blur-xl border border-app-border hover:border-app-border text-app-text font-bold px-6 h-12 rounded-xl transition-all uppercase tracking-wider text-[10px] flex items-center gap-2">
                   <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">bolt</mat-icon>
                   <span>SaaS Sandbox</span>
                 </button>
@@ -102,7 +102,7 @@
 
           <!-- Social Proof under Hero -->
           @if (growthConfig()?.socialProofEnabled) {
-            <div class="mt-8 flex items-center gap-3 text-xs text-slate-400 border-t border-white/5 pt-6 font-mono">
+            <div class="mt-8 flex items-center gap-3 text-xs text-app-muted border-t border-app-border pt-6 font-mono">
               <mat-icon class="text-emerald-400 !text-[16px] !w-[16px] !h-[16px]">verified</mat-icon>
               <span>{{ growthConfig()?.socialProofMessage || 'Used by 1,200+ developers across 80+ companies' }}</span>
             </div>
@@ -118,8 +118,8 @@
           <!-- Live Telemetry Counters -->
           <ajr-floating-card>
             <div class="relative z-10 text-left py-4 px-2 space-y-5">
-              <div class="flex items-center justify-between border-b border-white/5 pb-4">
-                <span class="text-xs font-bold text-white uppercase tracking-wider font-mono">Live Platform Telemetry</span>
+              <div class="flex items-center justify-between border-b border-app-border pb-4">
+                <span class="text-xs font-bold text-app-text uppercase tracking-wider font-mono">Live Platform Telemetry</span>
                 <span class="relative flex h-2 w-2">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -127,23 +127,23 @@
               </div>
               
               <div class="grid grid-cols-2 gap-4">
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-2xl">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-1">Active Developers</span>
-                  <span class="text-xl font-black text-white font-mono tracking-tight">{{ activeUsersCount() | number }}</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-2xl">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-1">Active Developers</span>
+                  <span class="text-xl font-black text-app-text font-mono tracking-tight">{{ activeUsersCount() | number }}</span>
                 </div>
                 
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-2xl">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-1">API Requests Today</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-2xl">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-1">API Requests Today</span>
                   <span class="text-xl font-black text-indigo-400 font-mono tracking-tight">{{ apiCallsCount() | number }}</span>
                 </div>
                 
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-2xl">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-1">SaaS Revenue</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-2xl">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-1">SaaS Revenue</span>
                   <span class="text-xl font-black text-emerald-400 font-mono tracking-tight">₹{{ (revenueCount() / 100000).toFixed(1) }}L</span>
                 </div>
                 
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-2xl">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-1">Apps Deployed</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-2xl">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-1">Apps Deployed</span>
                   <span class="text-xl font-black text-pink-400 font-mono tracking-tight">{{ appsDeployedCount() | number }}</span>
                 </div>
               </div>
@@ -157,14 +157,14 @@
                 <span class="inline-flex px-3 py-1 bg-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase tracking-wider rounded-xl mb-4 border border-indigo-500/30 font-mono">
                   Limited Conversion Slots
                 </span>
-                <h3 class="text-lg font-black text-white mb-4 tracking-tight uppercase">Special 60% Launch Discount</h3>
+                <h3 class="text-lg font-black text-app-text mb-4 tracking-tight uppercase">Special 60% Launch Discount</h3>
                 
-                <div class="bg-slate-950/50 rounded-2xl p-4 border border-white/5 mb-4">
+                <div class="bg-app-bg/50 rounded-2xl p-4 border border-app-border mb-4">
                   <ajr-countdown-timer [endTime]="offerEndTime()" class="brightness-125"></ajr-countdown-timer>
                 </div>
                 <button 
                   (click)="onCtaClick('/invoice-builder')"
-                  class="w-full relative group overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-xl shadow-indigo-600/20"
+                  class="w-full relative group overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-app-text font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-xl shadow-indigo-600/20"
                 >
                   <div class="absolute inset-0 w-1/2 h-full bg-white/15 skew-x-[-25deg] -translate-x-full group-hover:animate-shine"></div>
                   <span>CLAIM LAUNCH OFFER &rarr;</span>
@@ -182,7 +182,7 @@
   <!-- ==============================================
        1b. LIVE SYSTEM STATUS STRIP
        ============================================== -->
-  <div class="bg-slate-950/80 border-y border-white/5 py-4 px-6 relative z-20 backdrop-blur-md">
+  <div class="bg-app-bg/80 border-y border-app-border py-4 px-6 relative z-20 backdrop-blur-md">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
       
       <div class="flex items-center gap-2">
@@ -190,7 +190,7 @@
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">API Gateway:</span>
+        <span class="text-[10px] font-mono text-app-muted uppercase tracking-wider">API Gateway:</span>
         <span class="text-[10px] font-mono text-emerald-400 font-bold uppercase">Operational</span>
       </div>
 
@@ -199,7 +199,7 @@
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Postgres DB:</span>
+        <span class="text-[10px] font-mono text-app-muted uppercase tracking-wider">Postgres DB:</span>
         <span class="text-[10px] font-mono text-emerald-400 font-bold uppercase">99.99% Healthy</span>
       </div>
 
@@ -208,13 +208,13 @@
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">WhatsApp API:</span>
+        <span class="text-[10px] font-mono text-app-muted uppercase tracking-wider">WhatsApp API:</span>
         <span class="text-[10px] font-mono text-emerald-400 font-bold uppercase">Active & Synced</span>
       </div>
 
       <div class="flex items-center gap-2">
         <mat-icon class="text-indigo-400 !text-[14px] !w-[14px] !h-[14px] leading-none flex items-center justify-center">speed</mat-icon>
-        <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Avg Latency:</span>
+        <span class="text-[10px] font-mono text-app-muted uppercase tracking-wider">Avg Latency:</span>
         <span class="text-[10px] font-mono text-indigo-400 font-bold uppercase">{{ latencyMs() }}ms</span>
       </div>
       
@@ -224,7 +224,7 @@
   <!-- ==============================================
        2. FEATURE HIGHLIGHTS SECTION
        ============================================== -->
-  <section id="features-highlights" class="relative py-24 border-b border-white/5">
+  <section id="features-highlights" class="relative py-24 border-b border-app-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Section header with scroll reveal input -->
@@ -232,10 +232,10 @@
         <span class="text-xs bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 px-3.5 py-1.5 rounded-full font-mono font-bold uppercase tracking-widest select-none">
           Services Portfolio
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-4 mb-4 font-sans">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-app-text tracking-tight mt-4 mb-4 font-sans">
           Engineered for Maximum Digital Output
         </h2>
-        <p class="text-sm sm:text-base text-slate-400">
+        <p class="text-sm sm:text-base text-app-muted">
           We combine cutting-edge UI components, fast servers, and reactive database sync loops to construct a reliable infrastructure.
         </p>
       </div>
@@ -243,49 +243,49 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
         <!-- Pillar 1: Web Development -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 100 }" class="group bg-slate-900/40 backdrop-blur-xl border border-white/5 hover:border-indigo-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
+        <div [appScrollReveal]="{ direction: 'up', delay: 100 }" class="group bg-app-card/40 backdrop-blur-xl border border-app-border hover:border-indigo-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none group-hover:bg-indigo-500/10 transition-colors"></div>
           <div class="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-6 text-indigo-400 border border-indigo-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
             <mat-icon class="!text-[22px] !w-[22px] !h-[22px]">code</mat-icon>
           </div>
-          <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-tight">Web Development</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
+          <h3 class="text-lg font-bold text-app-text mb-2 uppercase tracking-tight">Web Development</h3>
+          <p class="text-xs text-app-muted leading-relaxed">
             High-performance web and hybrid applications engineered with TypeScript, Angular standard modules, and ultra-responsive typography.
           </p>
         </div>
 
         <!-- Pillar 2: Marketing SaaS & CRM -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 150 }" class="group bg-slate-900/40 backdrop-blur-xl border border-white/5 hover:border-purple-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
+        <div [appScrollReveal]="{ direction: 'up', delay: 150 }" class="group bg-app-card/40 backdrop-blur-xl border border-app-border hover:border-purple-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/5 rounded-full blur-xl pointer-events-none group-hover:bg-purple-500/10 transition-colors"></div>
           <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6 text-purple-400 border border-purple-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
             <mat-icon class="!text-[22px] !w-[22px] !h-[22px]">sms</mat-icon>
           </div>
-          <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-tight">Marketing SaaS & CRM</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
+          <h3 class="text-lg font-bold text-app-text mb-2 uppercase tracking-tight">Marketing SaaS & CRM</h3>
+          <p class="text-xs text-app-muted leading-relaxed">
             Official Meta Cloud API dispatches, unified leads tracking, Kanban pipeline deal metrics, automation workflows, and real-time ROAS gauges.
           </p>
         </div>
 
         <!-- Pillar 3: UI Builder -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 200 }" class="group bg-slate-900/40 backdrop-blur-xl border border-white/5 hover:border-pink-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
+        <div [appScrollReveal]="{ direction: 'up', delay: 200 }" class="group bg-app-card/40 backdrop-blur-xl border border-app-border hover:border-pink-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-pink-500/5 rounded-full blur-xl pointer-events-none group-hover:bg-pink-500/10 transition-colors"></div>
           <div class="w-12 h-12 bg-pink-500/10 rounded-xl flex items-center justify-center mb-6 text-pink-400 border border-pink-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
             <mat-icon class="!text-[22px] !w-[22px] !h-[22px]">palette</mat-icon>
           </div>
-          <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-tight">UI Builder</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
+          <h3 class="text-lg font-bold text-app-text mb-2 uppercase tracking-tight">UI Builder</h3>
+          <p class="text-xs text-app-muted leading-relaxed">
             Drag-and-drop reactive workspace that compiles professional invoice assets, exports to custom PDF, and templates custom fields.
           </p>
         </div>
 
         <!-- Pillar 4: API Integration -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 250 }" class="group bg-slate-900/40 backdrop-blur-xl border border-white/5 hover:border-emerald-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
+        <div [appScrollReveal]="{ direction: 'up', delay: 250 }" class="group bg-app-card/40 backdrop-blur-xl border border-app-border hover:border-emerald-500/30 p-6 rounded-2xl transition-all duration-300 hover:-translate-y-2 relative overflow-hidden">
           <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none group-hover:bg-emerald-500/10 transition-colors"></div>
           <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 text-emerald-400 border border-emerald-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
             <mat-icon class="!text-[22px] !w-[22px] !h-[22px]">router</mat-icon>
           </div>
-          <h3 class="text-lg font-bold text-white mb-2 uppercase tracking-tight">API Integration</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
+          <h3 class="text-lg font-bold text-app-text mb-2 uppercase tracking-tight">API Integration</h3>
+          <p class="text-xs text-app-muted leading-relaxed">
             Exposes responsive endpoints with custom REST methods, strict rate limiting safeguards, and seamless token-based validation.
           </p>
         </div>
@@ -297,7 +297,7 @@
   <!-- ==============================================
        3. INTERACTIVE LIVE DEMO/PREVIEW SECTION
        ============================================== -->
-  <section id="interactive-preview" class="relative py-24 bg-slate-950/60 border-b border-white/5">
+  <section id="interactive-preview" class="relative py-24 bg-app-bg/60 border-b border-app-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
         
@@ -306,10 +306,10 @@
           <span class="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3.5 py-1.5 rounded-full font-mono font-bold uppercase tracking-widest max-w-max mb-6">
             Live Preview Frame
           </span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-6 uppercase">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-app-text tracking-tight mb-6 uppercase">
             Adaptive Workspace Sandbox
           </h2>
-          <p class="text-sm text-slate-300 leading-relaxed mb-8">
+          <p class="text-sm text-app-text leading-relaxed mb-8">
             Click the mock control switches on the right to interact with our real-time telemetry state. Observe how instantly components resolve color scales and latency signals.
           </p>
 
@@ -318,19 +318,19 @@
               <div class="h-6 w-6 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
                 <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">bolt</mat-icon>
               </div>
-              <span class="text-xs font-semibold text-slate-200">Zero-lag visual telemetry diagnostics</span>
+              <span class="text-xs font-semibold text-app-text">Zero-lag visual telemetry diagnostics</span>
             </li>
             <li class="flex items-center gap-3">
               <div class="h-6 w-6 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
                 <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">tune</mat-icon>
               </div>
-              <span class="text-xs font-semibold text-slate-200">Custom theme styling and font swapping</span>
+              <span class="text-xs font-semibold text-app-text">Custom theme styling and font swapping</span>
             </li>
             <li class="flex items-center gap-3">
               <div class="h-6 w-6 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
                 <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">security</mat-icon>
               </div>
-              <span class="text-xs font-semibold text-slate-200">Token-based verification & session locking</span>
+              <span class="text-xs font-semibold text-app-text">Token-based verification & session locking</span>
             </li>
           </ul>
 
@@ -342,16 +342,16 @@
 
         <!-- Right Side Live Interactive Panel -->
         <div [appScrollReveal]="{ direction: 'right', delay: 150 }" class="lg:col-span-7">
-          <div class="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
+          <div class="bg-app-card border border-app-border rounded-3xl overflow-hidden shadow-2xl relative">
             
             <!-- Custom Browser Top Bar Mockup -->
-            <div class="bg-slate-950 border-b border-white/5 py-3.5 px-6 flex items-center justify-between">
+            <div class="bg-app-bg border-b border-app-border py-3.5 px-6 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="h-3 w-3 rounded-full bg-red-500/60 block"></span>
                 <span class="h-3 w-3 rounded-full bg-amber-500/60 block"></span>
                 <span class="h-3 w-3 rounded-full bg-green-500/60 block"></span>
               </div>
-              <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-lg border border-white/5 select-none">
+              <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest bg-white/5 px-4 py-1.5 rounded-lg border border-app-border select-none">
                 live_diagnostic_hub.terminal
               </span>
               <span class="text-[10px] text-emerald-400 font-mono flex items-center gap-1.5 font-bold">
@@ -365,36 +365,36 @@
               
               <!-- Active Cluster Stats -->
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-xl flex flex-col justify-between">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-2 leading-none">Diagnostic Latency</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-xl flex flex-col justify-between">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-2 leading-none">Diagnostic Latency</span>
                   <div class="flex items-baseline gap-1">
-                    <span class="text-xl font-bold text-white font-mono">1.24</span>
+                    <span class="text-xl font-bold text-app-text font-mono">1.24</span>
                     <span class="text-[9px] text-indigo-400 font-mono">ms</span>
                   </div>
                 </div>
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-xl flex flex-col justify-between">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-2 leading-none">Resource Load</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-xl flex flex-col justify-between">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-2 leading-none">Resource Load</span>
                   <div class="flex items-baseline gap-1">
-                    <span class="text-xl font-bold text-white font-mono">0.08</span>
+                    <span class="text-xl font-bold text-app-text font-mono">0.08</span>
                     <span class="text-[9px] text-indigo-400 font-mono">% CPU</span>
                   </div>
                 </div>
-                <div class="bg-slate-950/60 border border-white/5 p-4 rounded-xl flex flex-col justify-between col-span-2 sm:col-span-1">
-                  <span class="text-[8px] font-mono text-slate-400 uppercase tracking-widest block mb-2 leading-none">Authorization Rate</span>
+                <div class="bg-app-bg/60 border border-app-border p-4 rounded-xl flex flex-col justify-between col-span-2 sm:col-span-1">
+                  <span class="text-[8px] font-mono text-app-muted uppercase tracking-widest block mb-2 leading-none">Authorization Rate</span>
                   <div class="flex items-baseline gap-1">
-                    <span class="text-xl font-bold text-white font-mono">100</span>
+                    <span class="text-xl font-bold text-app-text font-mono">100</span>
                     <span class="text-[9px] text-emerald-400 font-mono font-bold">% PASS</span>
                   </div>
                 </div>
               </div>
 
               <!-- Interactive Mock Invoice Generator Sandbox -->
-              <div class="p-5 bg-slate-950/40 rounded-2xl border border-indigo-500/20 relative overflow-hidden">
+              <div class="p-5 bg-app-bg/40 rounded-2xl border border-indigo-500/20 relative overflow-hidden">
                 <div class="absolute -right-8 -top-8 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex flex-col">
-                    <span class="text-xs font-bold text-white tracking-wide uppercase">Mock Corporate Invoice Widget</span>
-                    <span class="text-[9px] font-mono text-slate-400">ID: AJR-INV-02948-2026</span>
+                    <span class="text-xs font-bold text-app-text tracking-wide uppercase">Mock Corporate Invoice Widget</span>
+                    <span class="text-[9px] font-mono text-app-muted">ID: AJR-INV-02948-2026</span>
                   </div>
                   <span class="px-2.5 py-1 bg-yellow-500/10 text-yellow-500 text-[9px] font-mono rounded-lg border border-yellow-500/20 font-bold uppercase">
                     Pending
@@ -402,29 +402,29 @@
                 </div>
 
                 <div class="space-y-2 mb-4">
-                  <div class="flex justify-between text-xs text-slate-300">
+                  <div class="flex justify-between text-xs text-app-text">
                     <span>UX/UI Pro Design Pack</span>
                     <span class="font-bold">₹10,000.00</span>
                   </div>
-                  <div class="flex justify-between text-xs text-slate-300 border-t border-white/5 pt-2">
+                  <div class="flex justify-between text-xs text-app-text border-t border-app-border pt-2">
                     <span>Engine Hosting Cluster SLA</span>
                     <span class="font-bold">₹1,999.00</span>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between border-t border-white/10 pt-3">
+                <div class="flex items-center justify-between border-t border-app-border pt-3">
                   <span class="text-xs font-bold text-indigo-400 uppercase">Grand Net Value</span>
-                  <span class="text-lg font-black text-white font-mono">₹11,999.00</span>
+                  <span class="text-lg font-black text-app-text font-mono">₹11,999.00</span>
                 </div>
               </div>
 
               <!-- CTA and interactive controls -->
-              <div class="border-t border-white/5 pt-6 flex flex-wrap gap-4 items-center justify-between">
+              <div class="border-t border-app-border pt-6 flex flex-wrap gap-4 items-center justify-between">
                 <div class="flex items-center gap-2">
                   <span class="h-2 w-2 rounded-full bg-emerald-400 block animate-pulse"></span>
-                  <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Interactive API Port Online</span>
+                  <span class="text-[10px] font-mono text-app-muted uppercase tracking-widest">Interactive API Port Online</span>
                 </div>
-                <button routerLink="/invoice-builder" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase px-5 py-2.5 rounded-xl transition-all shadow-md">
+                <button routerLink="/invoice-builder" class="bg-indigo-600 hover:bg-indigo-500 text-app-text font-bold text-xs uppercase px-5 py-2.5 rounded-xl transition-all shadow-md">
                   Execute Live Compile
                 </button>
               </div>
@@ -441,7 +441,7 @@
   <!-- ==============================================
        4. PRODUCT SHOWCASE SECTION
        ============================================== -->
-  <section id="product-showcase" class="relative py-24 border-b border-white/5">
+  <section id="product-showcase" class="relative py-24 border-b border-app-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Section title with Scroll Reveal -->
@@ -449,10 +449,10 @@
         <span class="text-xs bg-pink-500/10 border border-pink-500/20 text-pink-400 px-3.5 py-1.5 rounded-full font-mono font-bold uppercase tracking-widest select-none">
           Marketplace Matrix
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-4 mb-4">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-app-text tracking-tight mt-4 mb-4">
           Acquire Premium Digital Assets
         </h2>
-        <p class="text-sm sm:text-base text-slate-400">
+        <p class="text-sm sm:text-base text-app-muted">
           Unlock high-conversion blueprints, developer widgets, and microservices crafted to jumpstart your enterprise pipeline.
         </p>
       </div>
@@ -461,7 +461,7 @@
       @if (isLoadingProducts()) {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           @for (s of [1,2,3]; track $index) {
-            <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5 space-y-4">
+            <div class="bg-app-card/50 p-6 rounded-3xl border border-app-border space-y-4">
               <ajr-skeleton className="h-48 w-full rounded-2xl"></ajr-skeleton>
               <ajr-skeleton className="h-6 w-1/2 rounded"></ajr-skeleton>
               <ajr-skeleton className="h-10 w-full rounded-xl"></ajr-skeleton>
@@ -473,30 +473,30 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           @for (p of featuredProducts(); track p.id; let idx = $index) {
             
-            <div [appScrollReveal]="{ direction: 'up', delay: idx * 100 }" class="group bg-slate-900/60 border border-white/5 hover:border-indigo-500/25 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 shadow-xl hover:shadow-indigo-500/5 relative overflow-hidden">
+            <div [appScrollReveal]="{ direction: 'up', delay: idx * 100 }" class="group bg-app-card/60 border border-app-border hover:border-indigo-500/25 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 shadow-xl hover:shadow-indigo-500/5 relative overflow-hidden">
               
               <!-- Absolute sales badges -->
               @if (idx === 0) {
-                <span class="absolute top-4 left-4 z-20 px-2.5 py-1 bg-rose-500/90 text-white text-[8px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1 shadow-md">
+                <span class="absolute top-4 left-4 z-20 px-2.5 py-1 bg-rose-500/90 text-app-text text-[8px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1 shadow-md">
                   Trending 🔥
                 </span>
               } @else if (idx === 1) {
-                <span class="absolute top-4 left-4 z-20 px-2.5 py-1 bg-amber-500/90 text-white text-[8px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1 shadow-md">
+                <span class="absolute top-4 left-4 z-20 px-2.5 py-1 bg-amber-500/90 text-app-text text-[8px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1 shadow-md">
                   Best Seller ⭐
                 </span>
               } @else {
-                <span class="absolute top-4 left-4 z-20 px-2.5 py-1 bg-cyan-500/90 text-white text-[8px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1 shadow-md">
+                <span class="absolute top-4 left-4 z-20 px-2.5 py-1 bg-cyan-500/90 text-app-text text-[8px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1 shadow-md">
                   New 🚀
                 </span>
               }
 
               <!-- Custom colored categories absolute tag -->
-              <span class="absolute top-4 right-4 z-20 px-3 py-1 bg-slate-950/80 border border-white/10 rounded-xl text-[9px] font-bold text-slate-300 uppercase tracking-widest font-mono">
+              <span class="absolute top-4 right-4 z-20 px-3 py-1 bg-app-bg/80 border border-app-border rounded-xl text-[9px] font-bold text-app-text uppercase tracking-widest font-mono">
                 {{ p.category }}
               </span>
 
               <!-- Image wrapper with scale effect -->
-              <div class="rounded-2xl overflow-hidden aspect-video bg-slate-950 border border-white/5 relative mb-5">
+              <div class="rounded-2xl overflow-hidden aspect-video bg-app-bg border border-app-border relative mb-5">
                 <img 
                   [src]="p.image_url" 
                   [alt]="p.title" 
@@ -508,12 +508,12 @@
 
               <!-- Product Details -->
               <div class="flex-grow">
-                <h3 class="text-lg font-black text-white hover:text-indigo-400 transition-colors uppercase mb-2">
+                <h3 class="text-lg font-black text-app-text hover:text-indigo-400 transition-colors uppercase mb-2">
                   {{ p.title }}
                 </h3>
                 
                 <!-- Social proof conversion metrics per product -->
-                <div class="flex items-center gap-2 mb-4 text-[10px] text-slate-400 font-mono">
+                <div class="flex items-center gap-2 mb-4 text-[10px] text-app-muted font-mono">
                   <span class="flex items-center gap-0.5 text-amber-400 font-bold">
                     <mat-icon class="!text-[12px] !w-[12px] !h-[12px] leading-none flex items-center justify-center">star</mat-icon> 
                     {{ idx === 0 ? '4.9' : (idx === 1 ? '4.8' : '4.7') }}
@@ -522,23 +522,23 @@
                   <span>Purchased {{ idx === 0 ? '512' : (idx === 1 ? '342' : '184') }} times</span>
                 </div>
 
-                <p class="text-xs text-slate-400 leading-relaxed mb-6">
+                <p class="text-xs text-app-muted leading-relaxed mb-6">
                   {{ p.description }}
                 </p>
               </div>
 
               <!-- Pricing Actions Footer -->
-              <div class="mt-6 pt-5 border-t border-white/5 flex items-center justify-between">
+              <div class="mt-6 pt-5 border-t border-app-border flex items-center justify-between">
                 <div class="flex flex-col">
-                  <span class="text-[9px] text-slate-500 uppercase tracking-widest font-mono leading-none mb-1">Price Asset</span>
-                  <span class="text-lg font-bold text-white font-mono">₹{{ p.price }}</span>
+                  <span class="text-[9px] text-app-muted uppercase tracking-widest font-mono leading-none mb-1">Price Asset</span>
+                  <span class="text-lg font-bold text-app-text font-mono">₹{{ p.price }}</span>
                 </div>
                 
                 <div class="flex items-center gap-2">
-                  <button (click)="openPreview(p)" class="bg-white/5 hover:bg-white/10 text-white font-bold text-[10px] uppercase tracking-wider px-3 py-2.5 rounded-lg border border-white/5 transition-all cursor-pointer">
+                  <button (click)="openPreview(p)" class="bg-white/5 hover:bg-white/10 text-app-text font-bold text-[10px] uppercase tracking-wider px-3 py-2.5 rounded-lg border border-app-border transition-all cursor-pointer">
                     Live Demo
                   </button>
-                  <button (click)="buyNow(p)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all shadow-md shadow-indigo-600/10 cursor-pointer">
+                  <button (click)="buyNow(p)" class="bg-indigo-600 hover:bg-indigo-500 text-app-text font-bold text-[10px] uppercase tracking-wider px-4 py-2.5 rounded-lg transition-all shadow-md shadow-indigo-600/10 cursor-pointer">
                     Buy Now
                   </button>
                 </div>
@@ -564,17 +564,17 @@
   <!-- ==============================================
        5b. PUBLIC TELEMETRY DASHBOARD
        ============================================== -->
-  <section id="telemetry-dashboard" class="relative py-24 bg-slate-950/40 border-b border-white/5">
+  <section id="telemetry-dashboard" class="relative py-24 bg-app-bg/40 border-b border-app-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div [appScrollReveal]="{ direction: 'up' }" class="text-center max-w-3xl mx-auto mb-16">
         <span class="text-xs bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 px-3.5 py-1.5 rounded-full font-mono font-bold uppercase tracking-widest select-none">
           Live Platform Stats
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-4 mb-4 uppercase">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-app-text mt-4 mb-4 uppercase">
           Real-Time Activity & Telemetry
         </h2>
-        <p class="text-sm text-slate-400">
+        <p class="text-sm text-app-muted">
           We believe in complete transparency. Observe live usage trends, request distributions, and platform scaling statistics.
         </p>
       </div>
@@ -583,15 +583,15 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- User Growth chart card -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 100 }" class="bg-slate-900/50 backdrop-blur-xl border border-white/5 p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-80 shadow-xl">
+        <div [appScrollReveal]="{ direction: 'up', delay: 100 }" class="bg-app-card/50 backdrop-blur-xl border border-app-border p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-80 shadow-xl">
           <div>
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+              <span class="text-xs font-bold text-app-text uppercase tracking-wider font-mono flex items-center gap-2">
                 <mat-icon class="text-indigo-400">group</mat-icon> Developer Onboarding
               </span>
               <span class="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">+12% this week</span>
             </div>
-            <p class="text-[10px] text-slate-400 mb-4 font-mono">Daily cumulative active developer workspaces</p>
+            <p class="text-[10px] text-app-muted mb-4 font-mono">Daily cumulative active developer workspaces</p>
           </div>
           <!-- SVG Line Chart -->
           <div class="w-full h-40 relative flex items-end">
@@ -612,15 +612,15 @@
         </div>
 
         <!-- API Traffic Volume chart card -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 150 }" class="bg-slate-900/50 backdrop-blur-xl border border-white/5 p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-80 shadow-xl">
+        <div [appScrollReveal]="{ direction: 'up', delay: 150 }" class="bg-app-card/50 backdrop-blur-xl border border-app-border p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-80 shadow-xl">
           <div>
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+              <span class="text-xs font-bold text-app-text uppercase tracking-wider font-mono flex items-center gap-2">
                 <mat-icon class="text-cyan-400">lan</mat-icon> API Traffic Volume
               </span>
               <span class="text-[10px] font-mono text-cyan-400 font-bold bg-cyan-400/10 px-2 py-0.5 rounded border border-cyan-400/20">Synced Live</span>
             </div>
-            <p class="text-[10px] text-slate-400 mb-4 font-mono">Edge request hits across active platform clusters</p>
+            <p class="text-[10px] text-app-muted mb-4 font-mono">Edge request hits across active platform clusters</p>
           </div>
           <!-- SVG Line Chart -->
           <div class="w-full h-40 relative flex items-end">
@@ -641,16 +641,16 @@
         </div>
 
         <!-- WhatsApp + Spend chart card -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 200 }" class="bg-slate-900/50 backdrop-blur-xl border border-white/5 p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-80 shadow-xl">
+        <div [appScrollReveal]="{ direction: 'up', delay: 200 }" class="bg-app-card/50 backdrop-blur-xl border border-app-border p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-80 shadow-xl">
           <div>
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+              <span class="text-xs font-bold text-app-text uppercase tracking-wider font-mono flex items-center gap-2">
                 <mat-icon class="text-emerald-400">chat</mat-icon> WhatsApp Delivery
               </span>
               <span class="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">99.8% Success</span>
             </div>
-            <div class="grid grid-cols-2 gap-2 mb-4 text-[10px] font-mono text-slate-400">
-              <div>Sent: <span class="text-white font-bold">14,242 Today</span></div>
+            <div class="grid grid-cols-2 gap-2 mb-4 text-[10px] font-mono text-app-muted">
+              <div>Sent: <span class="text-app-text font-bold">14,242 Today</span></div>
               <div>Estimated Cost: <span class="text-emerald-400 font-bold">₹0.08 / msg</span></div>
             </div>
           </div>
@@ -679,44 +679,44 @@
   <!-- ==============================================
        5. COUNTER STATS SECTION
        ============================================== -->
-  <section id="counter-stats" class="relative py-20 border-b border-white/5 bg-slate-950/40">
+  <section id="counter-stats" class="relative py-20 border-b border-app-border bg-app-bg/40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div [appScrollReveal]="{ direction: 'up' }" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         
         <!-- Stat Item 1 -->
-        <div class="text-center bg-slate-900/30 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+        <div class="text-center bg-app-card/30 border border-app-border p-6 rounded-2xl relative overflow-hidden">
           <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 mx-auto mb-4 border border-indigo-500/20">
             <mat-icon>terminal</mat-icon>
           </div>
-          <span class="text-3xl sm:text-4xl font-extrabold text-white block mb-1">500+</span>
-          <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Active Client Deployments</span>
+          <span class="text-3xl sm:text-4xl font-extrabold text-app-text block mb-1">500+</span>
+          <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest">Active Client Deployments</span>
         </div>
 
         <!-- Stat Item 2 -->
-        <div class="text-center bg-slate-900/30 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+        <div class="text-center bg-app-card/30 border border-app-border p-6 rounded-2xl relative overflow-hidden">
           <div class="w-10 h-10 bg-violet-500/10 rounded-xl flex items-center justify-center text-violet-400 mx-auto mb-4 border border-violet-500/20">
             <mat-icon>dns</mat-icon>
           </div>
-          <span class="text-3xl sm:text-4xl font-extrabold text-white block mb-1">99.99%</span>
-          <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Server Cluster SLA</span>
+          <span class="text-3xl sm:text-4xl font-extrabold text-app-text block mb-1">99.99%</span>
+          <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest">Server Cluster SLA</span>
         </div>
 
         <!-- Stat Item 3 -->
-        <div class="text-center bg-slate-900/30 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+        <div class="text-center bg-app-card/30 border border-app-border p-6 rounded-2xl relative overflow-hidden">
           <div class="w-10 h-10 bg-pink-500/10 rounded-xl flex items-center justify-center text-pink-400 mx-auto mb-4 border border-pink-500/20">
             <mat-icon>group_add</mat-icon>
           </div>
-          <span class="text-3xl sm:text-4xl font-extrabold text-white block mb-1">12K+</span>
-          <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Secured User Registries</span>
+          <span class="text-3xl sm:text-4xl font-extrabold text-app-text block mb-1">12K+</span>
+          <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest">Secured User Registries</span>
         </div>
 
         <!-- Stat Item 4 -->
-        <div class="text-center bg-slate-900/30 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+        <div class="text-center bg-app-card/30 border border-app-border p-6 rounded-2xl relative overflow-hidden">
           <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 mx-auto mb-4 border border-emerald-500/20">
             <mat-icon>credit_score</mat-icon>
           </div>
-          <span class="text-3xl sm:text-4xl font-extrabold text-white block mb-1">₹1.2M+</span>
-          <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Volume Processed</span>
+          <span class="text-3xl sm:text-4xl font-extrabold text-app-text block mb-1">₹1.2M+</span>
+          <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest">Volume Processed</span>
         </div>
 
       </div>
@@ -726,7 +726,7 @@
   <!-- ==============================================
        6. PRICING GRID
        ============================================== -->
-  <section id="pricing-matrix" class="relative py-24 border-b border-white/5">
+  <section id="pricing-matrix" class="relative py-24 border-b border-app-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Headings with scroll reveal -->
@@ -734,18 +734,18 @@
         <span class="text-xs bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 px-3.5 py-1.5 rounded-full font-mono font-bold uppercase tracking-widest select-none">
           Service Rates
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-4 mb-4">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-app-text mt-4 mb-4">
           Transparent Scalable Agreements
         </h2>
-        <p class="text-sm text-slate-400">
+        <p class="text-sm text-app-muted">
           Acquire the right volume of templates, team seats, and server integrations to fully support your operation.
         </p>
 
-        <div class="mt-8 inline-flex bg-slate-900 border border-white/5 rounded-2xl p-1 select-none">
-          <button class="px-6 py-2 rounded-xl text-xs font-bold uppercase bg-indigo-600 text-white shadow">
+        <div class="mt-8 inline-flex bg-app-card border border-app-border rounded-2xl p-1 select-none">
+          <button class="px-6 py-2 rounded-xl text-xs font-bold uppercase bg-indigo-600 text-app-text shadow">
             Monthly Billing
           </button>
-          <button class="px-6 py-2 rounded-xl text-xs font-bold uppercase text-slate-400 hover:text-white transition-colors">
+          <button class="px-6 py-2 rounded-xl text-xs font-bold uppercase text-app-muted hover:text-app-text transition-colors">
             Yearly <span class="text-emerald-400 ml-1">-20%</span>
           </button>
         </div>
@@ -754,114 +754,114 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
         
         <!-- Starter Plan -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 100 }" class="bg-slate-900/50 backdrop-blur-md rounded-3xl p-8 border border-white/5 flex flex-col justify-between shadow-xl">
+        <div [appScrollReveal]="{ direction: 'up', delay: 100 }" class="bg-app-card/50 backdrop-blur-md rounded-3xl p-8 border border-app-border flex flex-col justify-between shadow-xl">
           <div>
-            <h3 class="text-xl font-bold text-white uppercase tracking-tight mb-2">Starter Plan</h3>
-            <p class="text-xs text-slate-400 mb-6">Excellent starting point for independent freelancers.</p>
+            <h3 class="text-xl font-bold text-app-text uppercase tracking-tight mb-2">Starter Plan</h3>
+            <p class="text-xs text-app-muted mb-6">Excellent starting point for independent freelancers.</p>
             <div class="mb-8">
-              <span class="text-4xl font-black text-white font-mono">₹0</span>
-              <span class="text-slate-400 font-mono text-xs">/mo</span>
+              <span class="text-4xl font-black text-app-text font-mono">₹0</span>
+              <span class="text-app-muted font-mono text-xs">/mo</span>
             </div>
             
             <ul class="space-y-4 mb-8">
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Up to 5 invoices / month</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>2 basic digital stylesheets</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Local PDF output</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-600">
+              <li class="flex items-center gap-3 text-xs text-app-muted">
                 <mat-icon class="text-slate-700 !text-[18px] !w-[18px] !h-[18px]">close</mat-icon>
                 <span>Online client processing</span>
               </li>
             </ul>
           </div>
 
-          <button routerLink="/invoice-builder" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-xl border border-white/10 transition-colors text-center">
+          <button routerLink="/invoice-builder" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-app-text text-xs font-bold uppercase tracking-wider rounded-xl border border-app-border transition-colors text-center">
             Initialize Free Route
           </button>
         </div>
 
         <!-- Pro Plan (Highlighted SaaS banner-glow layout) -->
         <div [appScrollReveal]="{ direction: 'up', delay: 150 }" class="bg-indigo-950/30 backdrop-blur-md rounded-3xl p-8 border-2 border-indigo-500 shadow-2xl shadow-indigo-500/10 flex flex-col justify-between relative transform md:-translate-y-4">
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-md">
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-pink-500 text-app-text px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-md">
             RECOMMENDED CLIENT NODE
           </div>
 
           <div>
-            <h3 class="text-xl font-bold text-white uppercase tracking-tight mb-2">Professional</h3>
+            <h3 class="text-xl font-bold text-app-text uppercase tracking-tight mb-2">Professional</h3>
             <p class="text-xs text-indigo-200/60 mb-6">For growing teams and professional developers.</p>
             <div class="mb-8">
-              <span class="text-4xl font-black text-white font-mono">₹1,499</span>
+              <span class="text-4xl font-black text-app-text font-mono">₹1,499</span>
               <span class="text-indigo-200/60 font-mono text-xs">/mo</span>
             </div>
             
             <ul class="space-y-4 mb-8">
-              <li class="flex items-center gap-3 text-xs text-slate-100">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Unlimited invoices compilation</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-100">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>All premium thematic skins</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-100">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Live online processing</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-100">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Auto-reminders scheduling</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-100">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Remove default AJR credit banners</span>
               </li>
             </ul>
           </div>
 
-          <button routerLink="/invoice-builder" class="w-full py-4 px-4 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest leading-none rounded-xl transition-all shadow-xl shadow-indigo-600/20 text-center">
+          <button routerLink="/invoice-builder" class="w-full py-4 px-4 bg-indigo-600 hover:bg-indigo-500 text-app-text text-xs font-bold uppercase tracking-widest leading-none rounded-xl transition-all shadow-xl shadow-indigo-600/20 text-center">
             CLAIM 14-DAY TRIAL FOR SF
           </button>
         </div>
 
         <!-- Business Plan -->
-        <div [appScrollReveal]="{ direction: 'up', delay: 200 }" class="bg-slate-900/50 backdrop-blur-md rounded-3xl p-8 border border-white/5 flex flex-col justify-between shadow-xl">
+        <div [appScrollReveal]="{ direction: 'up', delay: 200 }" class="bg-app-card/50 backdrop-blur-md rounded-3xl p-8 border border-app-border flex flex-col justify-between shadow-xl">
           <div>
-            <h3 class="text-xl font-bold text-white uppercase tracking-tight mb-2">Corporate Core</h3>
-            <p class="text-xs text-slate-400 mb-6">Advanced telemetry rates for enterprise teams.</p>
+            <h3 class="text-xl font-bold text-app-text uppercase tracking-tight mb-2">Corporate Core</h3>
+            <p class="text-xs text-app-muted mb-6">Advanced telemetry rates for enterprise teams.</p>
             <div class="mb-8">
-              <span class="text-4xl font-black text-white font-mono">₹3,999</span>
-              <span class="text-slate-400 font-mono text-xs">/mo</span>
+              <span class="text-4xl font-black text-app-text font-mono">₹3,999</span>
+              <span class="text-app-muted font-mono text-xs">/mo</span>
             </div>
             
             <ul class="space-y-4 mb-8">
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Includes everything in Pro</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Multiple user registry access</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Exposes custom REST routes</span>
               </li>
-              <li class="flex items-center gap-3 text-xs text-slate-300">
+              <li class="flex items-center gap-3 text-xs text-app-text">
                 <mat-icon class="text-emerald-400 !text-[18px] !w-[18px] !h-[18px]">check</mat-icon>
                 <span>Dedicated system engineering</span>
               </li>
             </ul>
           </div>
 
-          <button (click)="sendMessage()" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-wider rounded-xl border border-white/10 transition-colors text-center">
+          <button (click)="sendMessage()" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-app-text text-xs font-bold uppercase tracking-wider rounded-xl border border-app-border transition-colors text-center">
             CONTACT TEAM &rarr;
           </button>
         </div>
@@ -873,10 +873,10 @@
   <!-- ==============================================
        7. TESTIMONIAL MARQUEE
        ============================================== -->
-  <section id="marquee-section" class="py-24 overflow-hidden border-b border-white/5 bg-slate-950/20">
+  <section id="marquee-section" class="py-24 overflow-hidden border-b border-app-border bg-app-bg/20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
       <div [appScrollReveal]="{ direction: 'up' }" class="text-center max-w-2xl mx-auto">
-        <h2 class="text-3xl font-extrabold text-white tracking-tight uppercase">Trusted globally by operators</h2>
+        <h2 class="text-3xl font-extrabold text-app-text tracking-tight uppercase">Trusted globally by operators</h2>
       </div>
     </div>
     
@@ -885,7 +885,7 @@
       <div class="flex gap-6 px-4 animate-marquee whitespace-nowrap min-w-min hover:pause" style="width: max-content;">
         @for (t of duplicatedTestimonials(); track $index) {
           
-          <div class="bg-slate-900 border border-white/5 p-6 rounded-2xl flex-shrink-0 w-80 flex flex-col whitespace-normal justify-between min-h-[250px] shadow-lg">
+          <div class="bg-app-card border border-app-border p-6 rounded-2xl flex-shrink-0 w-80 flex flex-col whitespace-normal justify-between min-h-[250px] shadow-lg">
             <div>
               <div class="flex items-center gap-2 mb-3">
                 <div class="flex text-amber-400">
@@ -893,17 +893,17 @@
                     <mat-icon class="!text-[16px] !w-[16px] !h-[16px] leading-none">star</mat-icon>
                   }
                 </div>
-                <span class="text-xs font-mono text-slate-400 font-bold ml-1">({{ t.rating | number:'1.1-1' }})</span>
+                <span class="text-xs font-mono text-app-muted font-bold ml-1">({{ t.rating | number:'1.1-1' }})</span>
               </div>
-              <p class="text-xs text-slate-300 italic leading-relaxed mb-6">
+              <p class="text-xs text-app-text italic leading-relaxed mb-6">
                 "{{ t.comment }}"
               </p>
             </div>
             
-            <div class="flex items-center justify-between border-t border-white/5 pt-4">
+            <div class="flex items-center justify-between border-t border-app-border pt-4">
               <div class="flex flex-col">
-                <span class="text-[10px] font-black text-white uppercase">{{ t.name || 'Enterprise Operator' }}</span>
-                <span class="text-[9px] font-mono text-slate-500 uppercase">{{ t.role }}</span>
+                <span class="text-[10px] font-black text-app-text uppercase">{{ t.name || 'Enterprise Operator' }}</span>
+                <span class="text-[9px] font-mono text-app-muted uppercase">{{ t.role }}</span>
               </div>
               <div class="flex items-center gap-1 text-emerald-400 text-[10px] font-mono font-bold uppercase bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
                 <mat-icon class="!text-[12px] !w-[12px] !h-[12px] leading-none">verified</mat-icon>
@@ -926,24 +926,24 @@
         
         <!-- FAQ lists left col -->
         <div [appScrollReveal]="{ direction: 'left' }" class="lg:col-span-6">
-          <h2 class="text-3xl font-extrabold text-white tracking-tight uppercase mb-8">Frequently Addressed Inquiries</h2>
+          <h2 class="text-3xl font-extrabold text-app-text tracking-tight uppercase mb-8">Frequently Addressed Inquiries</h2>
           
           <div class="space-y-6">
-            <div class="border-b border-white/5 pb-6">
-              <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-2">Can I cancel my subscription agreement at any moment?</h4>
-              <p class="text-xs text-slate-400 leading-relaxed font-sans">
+            <div class="border-b border-app-border pb-6">
+              <h4 class="text-sm font-bold text-app-text uppercase tracking-wider mb-2">Can I cancel my subscription agreement at any moment?</h4>
+              <p class="text-xs text-app-muted leading-relaxed font-sans">
                 Absolutely. You retain access to compile invoices, manage workspace templates and fetch products until your billing window completes.
               </p>
             </div>
-            <div class="border-b border-white/5 pb-6">
-              <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-2">How are transaction integrations calculated?</h4>
-              <p class="text-xs text-slate-400 leading-relaxed font-sans">
+            <div class="border-b border-app-border pb-6">
+              <h4 class="text-sm font-bold text-app-text uppercase tracking-wider mb-2">How are transaction integrations calculated?</h4>
+              <p class="text-xs text-app-muted leading-relaxed font-sans">
                 All client purchases are directed straight into your custom Stripe or validation registries. Zero auxiliary commissions are retained.
               </p>
             </div>
-            <div class="border-b border-white/5 pb-6">
-              <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-2">Can I map corporate domains?</h4>
-              <p class="text-xs text-slate-400 leading-relaxed font-sans">
+            <div class="border-b border-app-border pb-6">
+              <h4 class="text-sm font-bold text-app-text uppercase tracking-wider mb-2">Can I map corporate domains?</h4>
+              <p class="text-xs text-app-muted leading-relaxed font-sans">
                 Yes. Under active Pro or Corporate plans, custom domains are mapped directly to your cluster instance for true white-label operations.
               </p>
             </div>
@@ -951,30 +951,30 @@
         </div>
 
         <!-- Contact message builder right col -->
-        <div [appScrollReveal]="{ direction: 'right', delay: 150 }" class="lg:col-span-6 bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-          <h3 class="text-2xl font-bold text-white mb-2 uppercase">Core Channel Transmission</h3>
-          <p class="text-xs text-slate-400 font-mono mb-8">INITIATE TRANSACTION ENVELOPE BELOW</p>
+        <div [appScrollReveal]="{ direction: 'right', delay: 150 }" class="lg:col-span-6 bg-app-card border border-app-border rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+          <h3 class="text-2xl font-bold text-app-text mb-2 uppercase">Core Channel Transmission</h3>
+          <p class="text-xs text-app-muted font-mono mb-8">INITIATE TRANSACTION ENVELOPE BELOW</p>
           
           <form class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label for="firstName" class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">First Name</label>
-                <input id="firstName" type="text" class="w-full px-4 py-3 rounded-xl border border-white/5 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-white text-xs font-mono placeholder-slate-700" placeholder="John">
+                <label for="firstName" class="block text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1">First Name</label>
+                <input id="firstName" type="text" class="w-full px-4 py-3 rounded-xl border border-app-border focus:border-indigo-500 outline-none transition-all bg-app-bg text-app-text text-xs font-mono placeholder-slate-700" placeholder="John">
               </div>
               <div>
-                <label for="lastName" class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Last Name</label>
-                <input id="lastName" type="text" class="w-full px-4 py-3 rounded-xl border border-white/5 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-white text-xs font-mono placeholder-slate-700" placeholder="Doe">
+                <label for="lastName" class="block text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1">Last Name</label>
+                <input id="lastName" type="text" class="w-full px-4 py-3 rounded-xl border border-app-border focus:border-indigo-500 outline-none transition-all bg-app-bg text-app-text text-xs font-mono placeholder-slate-700" placeholder="Doe">
               </div>
             </div>
             <div>
-              <label for="email" class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</label>
-              <input id="email" type="email" class="w-full px-4 py-3 rounded-xl border border-white/5 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-white text-xs font-mono placeholder-slate-700" placeholder="operator@ajr.com">
+              <label for="email" class="block text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1">Email Address</label>
+              <input id="email" type="email" class="w-full px-4 py-3 rounded-xl border border-app-border focus:border-indigo-500 outline-none transition-all bg-app-bg text-app-text text-xs font-mono placeholder-slate-700" placeholder="operator@ajr.com">
             </div>
             <div>
-              <label for="message" class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Message Transmission</label>
-              <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-xl border border-white/5 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-white text-xs font-mono placeholder-slate-700 resize-none" placeholder="Initiate inquiry..."></textarea>
+              <label for="message" class="block text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1">Message Transmission</label>
+              <textarea id="message" rows="4" class="w-full px-4 py-3 rounded-xl border border-app-border focus:border-indigo-500 outline-none transition-all bg-app-bg text-app-text text-xs font-mono placeholder-slate-700 resize-none" placeholder="Initiate inquiry..."></textarea>
             </div>
-            <button type="button" (click)="sendMessage()" class="w-full relative group overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md shadow-indigo-600/15">
+            <button type="button" (click)="sendMessage()" class="w-full relative group overflow-hidden bg-indigo-600 hover:bg-indigo-500 text-app-text font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md shadow-indigo-600/15">
               <span>{{ isMessageSent() ? 'ENVELOPE DISPATCHED SUCCESSFULLY' : 'TRANSMIT SIGNAL &rarr;' }}</span>
             </button>
           </form>
@@ -987,17 +987,17 @@
   <!-- ==============================================
        9. CALL-TO-ACTION (CTA) SECTION
        ============================================== -->
-  <section id="bottom-cta" class="relative py-24 border-t border-white/5 bg-slate-950/60 overflow-hidden">
+  <section id="bottom-cta" class="relative py-24 border-t border-app-border bg-app-bg/60 overflow-hidden">
     <!-- Glowing background node in CTA -->
     <div class="absolute inset-0 bg-gradient-to-tr from-indigo-950 via-slate-950 to-pink-950/30 opacity-80 z-0"></div>
     <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none"></div>
 
     <div [appScrollReveal]="{ direction: 'zoom' }" class="max-w-4xl mx-auto text-center px-4 sm:px-6 relative z-10">
-      <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white hover:scale-[1.01] transition-transform tracking-tight uppercase mb-6 leading-tight">
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-app-text hover:scale-[1.01] transition-transform tracking-tight uppercase mb-6 leading-tight">
         STRENGTHEN YOUR ENTERPRISE <br/>
         DIGITAL PRODUCTS TODAY
       </h2>
-      <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl mx-auto mb-10">
+      <p class="text-xs sm:text-sm text-app-text leading-relaxed max-w-xl mx-auto mb-10">
         Deploy instant invoices, map your custom domains, acquire modular CMS products, and enjoy modern, high-conversion visual design frameworks of the AJR digital suite.
       </p>
 
@@ -1006,9 +1006,94 @@
           START BUILDING NOW
           <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">bolt</mat-icon>
         </ajr-glow-button>
-        <button routerLink="/marketplace" class="px-6 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase border border-white/10 transition-all tracking-wider">
+        <button routerLink="/marketplace" class="px-6 h-12 rounded-xl bg-white/5 hover:bg-white/10 text-app-text font-bold text-xs uppercase border border-app-border transition-all tracking-wider">
           EXPLORE ARENA
         </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================================
+       9b. DEVELOPER DOCUMENTATION SECTION
+       ============================================== -->
+  <section id="developer-docs" class="py-24 border-b border-app-border bg-app-card/20 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        
+        <!-- Docs Left Details -->
+        <div class="lg:col-span-5 space-y-6">
+          <span class="text-xs bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-3.5 py-1.5 rounded-full font-mono font-bold uppercase tracking-widest max-w-max select-none">
+            Developer Documentation
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-app-text tracking-tight uppercase leading-tight">
+            REST API & Cloud Node Integration
+          </h2>
+          <p class="text-xs sm:text-sm text-app-muted leading-relaxed">
+            Integrate AJR Digital Hub seamlessly with your backend engines. Generate API keys, configure webhooks, and trigger Meta Cloud / WhatsApp API scripts via standard REST endpoints.
+          </p>
+          
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <mat-icon class="text-indigo-400 shrink-0">api</mat-icon>
+              <div>
+                <h4 class="text-xs font-bold text-app-text uppercase">POST /api/v1/invoices</h4>
+                <p class="text-[11px] text-app-muted mt-0.5">Transmit invoice payloads to compile and email PDF automatically.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <mat-icon class="text-indigo-400 shrink-0">webhook</mat-icon>
+              <div>
+                <h4 class="text-xs font-bold text-app-text uppercase">Meta Webhook Listeners</h4>
+                <p class="text-[11px] text-app-muted mt-0.5">Catch real-time WhatsApp message delivery receipts and open events.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pt-4">
+            <a routerLink="/documentation" class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#00E5A8] hover:underline cursor-pointer">
+              Access Full API Documentation
+              <mat-icon class="!text-[14px] !w-[14px] !h-[14px] leading-none">arrow_forward</mat-icon>
+            </a>
+          </div>
+        </div>
+
+        <!-- Docs Right Code Preview Block -->
+        <div class="lg:col-span-7 bg-app-card border border-app-border rounded-3xl p-5 shadow-2xl relative overflow-hidden font-mono text-xs">
+          <div class="absolute -right-16 -top-16 w-32 h-32 bg-[#00E5A8]/5 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex justify-between items-center pb-3.5 border-b border-app-border mb-4">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500 block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-green-500 block"></span>
+            </div>
+            <span class="text-[10px] text-app-muted font-bold uppercase tracking-wider">integration_test.js</span>
+            <span class="text-[9px] text-[#00E5A8] font-bold">Node.js v20</span>
+          </div>
+
+          <pre class="overflow-x-auto text-app-text p-2 rounded-xl bg-app-bg/50 border border-app-border text-[11px] leading-relaxed">
+<span class="text-indigo-400">const</span> fetch = require(<span class="text-orange-400">'node-fetch'</span>);
+
+<span class="text-indigo-400">const</span> payload = {{ '{' }}
+  clientId: <span class="text-orange-400">'ACME-10023'</span>,
+  amount: <span class="text-emerald-400">11999.00</span>,
+  currency: <span class="text-orange-400">'INR'</span>,
+  notifyWhatsApp: <span class="text-indigo-400">true</span>
+{{ '}' }};
+
+<span class="text-indigo-400">const</span> response = <span class="text-indigo-400">await</span> fetch(<span class="text-orange-400">'https://api.ajr.hub/v1/invoices'</span>, {{ '{' }}
+  method: <span class="text-orange-400">'POST'</span>,
+  headers: {{ '{' }}
+    <span class="text-orange-400">'Authorization'</span>: <span class="text-orange-400">'Bearer AJR_SECURE_TOKEN_...'</span>,
+    <span class="text-orange-400">'Content-Type'</span>: <span class="text-orange-400">'application/json'</span>
+  {{ '}' }},
+  body: JSON.stringify(payload)
+{{ '}' }});
+
+<span class="text-indigo-400">const</span> data = <span class="text-indigo-400">await</span> response.json();
+console.log(<span class="text-orange-400">\`[SYNC] Invoice created: \$\{{ '{' }}data.invoiceId{{ '}' }}\`</span>);</pre>
+        </div>
+
       </div>
     </div>
   </section>
@@ -1019,35 +1104,35 @@
   <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
     <!-- Chat Messenger Dialog Bubble -->
     @if (isChatOpen()) {
-      <div class="bg-slate-900 border border-white/10 w-72 md:w-80 rounded-2xl shadow-2xl mb-4 overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
-        <div class="p-4 bg-slate-950 border-b border-white/5 flex justify-between items-center select-none font-mono">
+      <div class="bg-app-card border border-app-border w-72 md:w-80 rounded-2xl shadow-2xl mb-4 overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
+        <div class="p-4 bg-app-bg border-b border-app-border flex justify-between items-center select-none font-mono">
           <div class="flex items-center gap-2">
             <span class="h-2 w-2 rounded-full bg-emerald-400 block animate-ping"></span>
-            <span class="font-bold text-[10px] text-white uppercase tracking-wider">AJR Dispatch Desk</span>
+            <span class="font-bold text-[10px] text-app-text uppercase tracking-wider">AJR Dispatch Desk</span>
           </div>
-          <button (click)="toggleChat()" class="text-slate-400 hover:text-white transition-colors focus:outline-none">
+          <button (click)="toggleChat()" class="text-app-muted hover:text-app-text transition-colors focus:outline-none">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">close</mat-icon>
           </button>
         </div>
         <div class="p-4 space-y-4 max-h-60 overflow-y-auto">
-          <div class="bg-slate-950/80 border border-white/5 text-xs text-slate-300 p-3.5 rounded-2xl rounded-tl-none leading-relaxed">
+          <div class="bg-app-bg/80 border border-app-border text-xs text-app-text p-3.5 rounded-2xl rounded-tl-none leading-relaxed">
             Welcome to AJR Central operations! Looking for premium React, Angular or Web deployments for your digital enterprise?
           </div>
           <div class="bg-indigo-950/40 border border-indigo-500/20 text-xs text-indigo-200 p-3.5 rounded-2xl rounded-tl-none leading-relaxed">
             Dispatch a quick query in this chat port, and our service operators will coordinate a node link!
           </div>
         </div>
-        <div class="p-3.5 border-t border-white/5 bg-slate-950/60">
-          <input type="text" placeholder="Transmit inquiry message..." class="w-full text-xs font-mono outline-none px-3 py-2 text-white bg-slate-900 border border-white/5 rounded-xl placeholder-slate-600 focus:border-indigo-500 transition-colors">
+        <div class="p-3.5 border-t border-app-border bg-app-bg/60">
+          <input type="text" placeholder="Transmit inquiry message..." class="w-full text-xs font-mono outline-none px-3 py-2 text-app-text bg-app-card border border-app-border rounded-xl placeholder-slate-600 focus:border-indigo-500 transition-colors">
         </div>
       </div>
     }
 
     <!-- Floating Chat Trigger Trigger -->
-    <button (click)="toggleChat()" class="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative z-40 border border-indigo-500/30">
+    <button (click)="toggleChat()" class="w-14 h-14 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative z-40 border border-indigo-500/30">
       <mat-icon class="!text-[22px] !w-[22px] !h-[22px] leading-none">{{ isChatOpen() ? 'keyboard_arrow_down' : 'chat' }}</mat-icon>
       @if (!isChatOpen()) {
-        <span class="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border-2 border-[#07070d] text-white select-none animate-bounce">1</span>
+        <span class="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border-2 border-[#07070d] text-app-text select-none animate-bounce">1</span>
       }
     </button>
   </div>
@@ -1056,8 +1141,8 @@
        11. LOGIN SECURITY EXPLICIT MODAL
        ============================================== -->
   @if (showLoginModal()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div class="bg-slate-900 border border-white/10 p-6 md:p-8 rounded-3xl max-w-sm w-full shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-app-bg/80 backdrop-blur-md animate-in fade-in duration-300">
+      <div class="bg-app-card border border-app-border p-6 md:p-8 rounded-3xl max-w-sm w-full shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
         <!-- Inner ambient overlay background -->
         <div class="absolute -right-10 -top-10 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1065,47 +1150,48 @@
           <mat-icon class="!text-[22px] !w-[22px] !h-[22px]">lock</mat-icon>
         </div>
         
-        <h3 class="text-xl font-black text-white uppercase tracking-tight mb-2">Cluster Registry Locked</h3>
-        <p class="text-xs text-slate-400 font-mono mb-6 leading-relaxed">
+        <h3 class="text-xl font-black text-app-text uppercase tracking-tight mb-2">Cluster Registry Locked</h3>
+        <p class="text-xs text-app-muted font-mono mb-6 leading-relaxed">
           AUTHORIZED CLUSTER SESSIONS ONLY. YOU MUST INITIATE AN ACTIVE LOCAL AUTH PORT ENTRY TO ACQUIRE DIGITAL ASSETS.
         </p>
         
-        <div class="flex gap-3 justify-end border-t border-white/5 pt-5">
-          <button (click)="showLoginModal.set(false)" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white uppercase transition-colors">
+        <div class="flex gap-3 justify-end border-t border-app-border pt-5">
+          <button (click)="showLoginModal.set(false)" class="px-4 py-2.5 text-xs font-bold text-app-muted hover:text-app-text uppercase transition-colors">
             Cancel
           </button>
-          <button (click)="confirmLogin()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-indigo-600/10">
+          <button (click)="confirmLogin()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-app-text text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-indigo-600/10">
             Initialize Auth Entry &rarr;
           </button>
         </div>
       </div>
     </div>
   }
+
   <!-- ==============================================
        12. SANDBOXED LIVE PREVIEW MODAL
        ============================================== -->
   @if (showPreviewModal() && previewProduct()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div class="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-300">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-app-bg/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      <div class="bg-app-card border border-app-border rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-300">
         
         <!-- Modal Header -->
-        <div class="bg-slate-950 border-b border-white/5 py-4 px-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div class="bg-app-bg border-b border-app-border py-4 px-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
           <div class="truncate">
-            <h3 class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider font-mono truncate" [title]="previewProduct().title">{{ previewProduct().title }}</h3>
-            <p class="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-0.5">Sandboxed Secure Iframe Environment</p>
+            <h3 class="text-xs sm:text-sm font-bold text-app-text uppercase tracking-wider font-mono truncate" [title]="previewProduct().title">{{ previewProduct().title }}</h3>
+            <p class="text-[9px] sm:text-[10px] text-app-muted font-mono mt-0.5">Sandboxed Secure Iframe Environment</p>
           </div>
           <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-            <button (click)="buyNow(previewProduct())" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[9px] sm:text-[10px] uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-md cursor-pointer">
+            <button (click)="buyNow(previewProduct())" class="bg-indigo-600 hover:bg-indigo-500 text-app-text font-bold text-[9px] sm:text-[10px] uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-md cursor-pointer">
               Buy Now - ₹{{ previewProduct().price }}
             </button>
-            <button (click)="closePreview()" class="text-slate-400 hover:text-white transition-colors flex items-center justify-center p-1 cursor-pointer">
+            <button (click)="closePreview()" class="text-app-muted hover:text-app-text transition-colors flex items-center justify-center p-1 cursor-pointer">
               <mat-icon class="!w-[20px] !h-[20px] !text-[20px]">close</mat-icon>
             </button>
           </div>
         </div>
 
         <!-- Iframe Body Area -->
-        <div class="flex-grow bg-slate-950 p-4 relative">
+        <div class="flex-grow bg-app-bg p-4 relative">
           <iframe 
             [srcdoc]="previewProduct().html || previewProduct().html_content || '<h1>No preview available</h1>'" 
             class="w-full h-full border-0 rounded-2xl bg-white"
@@ -1117,4 +1203,68 @@
     </div>
   }
 
+  <!-- ==============================================
+       13. SaaS Landing Page Footer
+       ============================================== -->
+  <footer class="bg-app-card pt-16 pb-8 border-t border-app-border mt-16 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Columns grid -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+        
+        <!-- Company Info -->
+        <div class="col-span-2 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-black tracking-wider text-app-text">AJR Digital <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-indigo-500">HUB</span></span>
+          </div>
+          <p class="text-xs text-app-muted leading-relaxed max-w-sm">
+            Deploy scalable SaaS workspaces, telemetry controllers, and digital marketing engines. Unified console for enterprise system monitoring.
+          </p>
+        </div>
+
+        <!-- Products -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-app-text">Products</h4>
+          <ul class="space-y-2 text-xs text-app-muted">
+            <li><a routerLink="/invoice-builder" class="hover:text-app-text transition">Invoice Generator</a></li>
+            <li><a routerLink="/marketplace" class="hover:text-app-text transition">CRM Add-ons</a></li>
+            <li><a routerLink="/marketplace" class="hover:text-app-text transition">Marketplace App Store</a></li>
+          </ul>
+        </div>
+
+        <!-- Developer Resources -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-app-text">Resources</h4>
+          <ul class="space-y-2 text-xs text-app-muted">
+            <li><a routerLink="/dashboard" class="hover:text-app-text transition">API Console</a></li>
+            <li><a routerLink="/dashboard" class="hover:text-app-text transition">System Logs</a></li>
+            <li><a routerLink="/dashboard" class="hover:text-app-text transition">Cloud Config</a></li>
+          </ul>
+        </div>
+
+        <!-- Support Policy -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-app-text">Support</h4>
+          <ul class="space-y-2 text-xs text-app-muted">
+            <li><a href="#faq" class="hover:text-app-text transition">Documentation</a></li>
+            <li><a href="#pricing" class="hover:text-app-text transition">Pricing Plans</a></li>
+            <li><a href="#faq" class="hover:text-app-text transition">Compliance FAQ</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 border-t border-app-border flex flex-col sm:flex-row items-center justify-between text-xs text-app-muted gap-4">
+        <span>&copy; 2026 AJR Digital HUB. All rights reserved.</span>
+        <div class="flex gap-4">
+          <a href="javascript:void(0)" class="hover:text-app-text transition">Privacy Policy</a>
+          <a href="javascript:void(0)" class="hover:text-app-text transition">Terms of Service</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
 </div>
+

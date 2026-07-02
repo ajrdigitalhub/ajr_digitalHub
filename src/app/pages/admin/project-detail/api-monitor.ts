@@ -226,7 +226,7 @@ const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
                   <!-- Header tools -->
                   <div class="flex justify-between items-start mb-4">
                      <div>
-                        <h3 class="text-lg font-bold text-white flex items-center gap-3">
+                        <h3 class="text-lg font-bold text-app-text flex items-center gap-3">
                            Project cost 
                            <span class="bg-[#374151] text-xs font-bold text-gray-300 px-2 py-0.5 rounded-full uppercase tracking-wider">
                               {{ project().plan || 'Blaze' }}
@@ -316,7 +316,7 @@ const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
                            <span class="text-xs font-bold text-gray-300">Cloud Functions</span>
                            <div class="flex items-center gap-2">
                               <input type="checkbox" checked disabled class="accent-blue-500 rounded cursor-pointer">
-                              <span class="text-sm font-black font-mono text-white">₹{{ realProjectCost() }}</span>
+                              <span class="text-sm font-black font-mono text-app-text">₹{{ realProjectCost() }}</span>
                            </div>
                         </div>
                         @if (billingData()?.totalExecutions) {
@@ -328,7 +328,7 @@ const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
                         
                         <div class="border-t border-app-border/40 pt-4">
                            <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">Project cost (MTD)</span>
-                           <span class="text-2xl font-black font-mono text-white mt-1 block">₹{{ realProjectCost() }}</span>
+                           <span class="text-2xl font-black font-mono text-app-text mt-1 block">₹{{ realProjectCost() }}</span>
                            @if (billingData()?.billingEnabled) {
                               <span class="text-[10px] text-emerald-400 font-bold">● Real Firebase Billing</span>
                            } @else {
@@ -342,14 +342,14 @@ const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
                <!-- B. Product Usage & API Hits Graph -->
                <div class="bg-[#111827] border border-app-border rounded-xl p-6 shadow-xl space-y-4">
                   <div>
-                     <h3 class="text-lg font-bold text-white">Product Usage</h3>
+                     <h3 class="text-lg font-bold text-app-text">Product Usage</h3>
                      <p class="text-xs text-app-muted mt-1 font-sans">
                         Firebase offers a no-cost tier for paid infrastructure products. You'll be charged only for any usage that goes above these no-cost tier thresholds.
                      </p>
                   </div>
 
                   <div class="bg-[#1f2937]/20 border border-app-border/60 rounded-xl p-5 space-y-4">
-                     <div class="flex items-center gap-2 text-xs font-bold text-white border-b border-app-border/40 pb-3">
+                     <div class="flex items-center gap-2 text-xs font-bold text-app-text border-b border-app-border/40 pb-3">
                         <mat-icon class="text-indigo-400 !w-4 !h-4 !text-[16px]">sensors</mat-icon>
                         <span>Cloud Storage / API Gateway Hits</span>
                      </div>

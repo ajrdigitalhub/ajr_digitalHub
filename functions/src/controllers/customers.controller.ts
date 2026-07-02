@@ -1,5 +1,51 @@
 import { Request, Response } from 'express';
 import { query, pool } from '../db';
+import crypto from 'crypto';
+
+const ALGORITHM = 'aes-256-cbc';
+const ENCRYPTION_KEY = process.env['ENCRYPTION_KEY'] || 'ajr-encryption-key-32chars-2026';
+const IV_LENGTH = 16;
+
+function encrypt(text: string): string {
+  if (!text) return '';
+  const key = crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text: string): string {
+  if (!text) return '';
+  try {
+    const parts = text.split(':');
+    const iv = Buffer.from(parts.shift() || '', 'hex');
+    const encryptedText = Buffer.from(parts.join(':'), 'hex');
+    const key = crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (err) {
+    return text;
+  }
+}
+
+function processObjectSecrets(obj: any, mode: 'encrypt' | 'decrypt'): any {
+  if (!obj || typeof obj !== 'object') return obj;
+  const result = { ...obj };
+  const secretKeys = ['apiKey', 'secretKey', 'password', 'token', 'privateKey', 'developerToken'];
+  
+  for (const k of Object.keys(result)) {
+    if (secretKeys.includes(k) && typeof result[k] === 'string') {
+      result[k] = mode === 'encrypt' ? encrypt(result[k]) : decrypt(result[k]);
+    } else if (result[k] && typeof result[k] === 'object') {
+      result[k] = processObjectSecrets(result[k], mode);
+    }
+  }
+  return result;
+}
 
 export const customersController = {
   async getCustomers(req: Request, res: Response) {
@@ -48,12 +94,26 @@ export const customersController = {
       const integrations = await query('SELECT * FROM customer_integrations WHERE customer_id = $1', [id]);
       const settings = await query('SELECT * FROM customer_settings WHERE customer_id = $1', [id]);
 
+      // Decrypt integration keys before sending to UI
+      let decIntegrations = integrations.rows[0] || null;
+      if (decIntegrations) {
+        decIntegrations = {
+          ...decIntegrations,
+          whatsapp_cloud_api: processObjectSecrets(decIntegrations.whatsapp_cloud_api, 'decrypt'),
+          meta_business: processObjectSecrets(decIntegrations.meta_business, 'decrypt'),
+          google_ads: processObjectSecrets(decIntegrations.google_ads, 'decrypt'),
+          firebase: processObjectSecrets(decIntegrations.firebase, 'decrypt'),
+          smtp: processObjectSecrets(decIntegrations.smtp, 'decrypt'),
+          payment_gateway: processObjectSecrets(decIntegrations.payment_gateway, 'decrypt')
+        };
+      }
+
       res.json({
         ...custRes.rows[0],
         contacts: contacts.rows,
         billing: billing.rows[0] || null,
         subscription: subscription.rows[0] || null,
-        integrations: integrations.rows[0] || null,
+        integrations: decIntegrations,
         settings: settings.rows[0] || null
       });
     } catch (err: any) {
@@ -176,13 +236,6 @@ export const customersController = {
       // 2. Update primary contact
       if (primary_contact) {
         await client.query(
-          `INSERT INTO customer_contacts (customer_id, name, mobile, whatsapp, alternate_mobile, email, designation, is_primary)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, true)
-           ON CONFLICT DO NOTHING`, // simplified logic, normally you'd check/update
-          [id, primary_contact.name, primary_contact.mobile, primary_contact.whatsapp, primary_contact.alternate_mobile, primary_contact.email, primary_contact.designation]
-        );
-        // Let's do an update instead if we have primary contacts
-        await client.query(
           `UPDATE customer_contacts SET 
             name = $1, mobile = $2, whatsapp = $3, alternate_mobile = $4, email = $5, designation = $6
            WHERE customer_id = $7 AND is_primary = true`,
@@ -228,8 +281,17 @@ export const customersController = {
         );
       }
 
-      // 5. Update integrations
+      // 5. Update integrations with encrypted keys
       if (integrations) {
+        const encIntegrations = {
+          whatsapp_cloud_api: processObjectSecrets(integrations.whatsapp_cloud_api, 'encrypt'),
+          meta_business: processObjectSecrets(integrations.meta_business, 'encrypt'),
+          google_ads: processObjectSecrets(integrations.google_ads, 'encrypt'),
+          firebase: processObjectSecrets(integrations.firebase, 'encrypt'),
+          smtp: processObjectSecrets(integrations.smtp, 'encrypt'),
+          payment_gateway: processObjectSecrets(integrations.payment_gateway, 'encrypt')
+        };
+
         await client.query(
           `UPDATE customer_integrations SET 
             whatsapp_cloud_api = COALESCE($1, whatsapp_cloud_api),
@@ -241,12 +303,12 @@ export const customersController = {
             updated_at = CURRENT_TIMESTAMP
            WHERE customer_id = $7`,
           [
-            integrations.whatsapp_cloud_api ? JSON.stringify(integrations.whatsapp_cloud_api) : null,
-            integrations.meta_business ? JSON.stringify(integrations.meta_business) : null,
-            integrations.google_ads ? JSON.stringify(integrations.google_ads) : null,
-            integrations.firebase ? JSON.stringify(integrations.firebase) : null,
-            integrations.smtp ? JSON.stringify(integrations.smtp) : null,
-            integrations.payment_gateway ? JSON.stringify(integrations.payment_gateway) : null,
+            encIntegrations.whatsapp_cloud_api ? JSON.stringify(encIntegrations.whatsapp_cloud_api) : null,
+            encIntegrations.meta_business ? JSON.stringify(encIntegrations.meta_business) : null,
+            encIntegrations.google_ads ? JSON.stringify(encIntegrations.google_ads) : null,
+            encIntegrations.firebase ? JSON.stringify(encIntegrations.firebase) : null,
+            encIntegrations.smtp ? JSON.stringify(encIntegrations.smtp) : null,
+            encIntegrations.payment_gateway ? JSON.stringify(encIntegrations.payment_gateway) : null,
             id
           ]
         );

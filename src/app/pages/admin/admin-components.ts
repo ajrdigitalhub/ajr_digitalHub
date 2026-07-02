@@ -278,7 +278,7 @@ export class AjrAdminAppCard {
           <button (click)="closePanel.emit()" class="px-5 py-2.5 rounded-lg text-sm font-bold text-app-muted hover:text-app-text transition-colors">Discard</button>
           <button (click)="onSave()" [disabled]="isSaving()" class="px-6 py-2.5 rounded-lg text-sm font-bold bg-indigo-500 text-app-text hover:bg-indigo-400 disabled:opacity-70 transition-all flex items-center gap-2 border border-indigo-400/50 shadow-lg">
             @if (isSaving()) {
-               <div class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+               <div class="w-4 h-4 border-2 border-app-border0 border-t-white rounded-full animate-spin"></div>
                Applying...
             } @else {
                <mat-icon class="!w-[18px] !h-[18px] !text-[18px]">check</mat-icon> Apply Setup
@@ -398,7 +398,7 @@ export class AjrAppConfigPanel {
          <div class="mt-8 flex justify-end">
              <button (click)="saveConfig()" [disabled]="isSaving()" class="px-6 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-app-text font-bold text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 border border-indigo-400/50">
                 @if (isSaving()) {
-                   <div class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                   <div class="w-4 h-4 border-2 border-app-border0 border-t-white rounded-full animate-spin"></div>
                    Deploying...
                 } @else {
                    <mat-icon class="!w-[18px] !h-[18px] !text-[18px]">verified</mat-icon> Commit Policy

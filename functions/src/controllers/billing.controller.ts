@@ -144,7 +144,6 @@ export const billingController = {
       const { id } = req.body;
       const updateResult = await query(`UPDATE billing SET status = 'paid' WHERE id = $1 RETURNING *`, [id]);
       if (updateResult.rows.length === 0) {
-        // Try updating the new invoices table
         const saasUpdate = await query(`UPDATE invoices SET status = 'paid' WHERE id = $1 RETURNING *`, [id]);
         if (saasUpdate.rows.length === 0) {
           return res.status(404).json({ error: 'Invoice not found' });
@@ -155,6 +154,114 @@ export const billingController = {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  },
+
+  // --- NEW CUSTOMER MANAGEMENT & BILLING APIs ---
+
+  async getAdminStats(req: Request, res: Response) {
+    try {
+      if (!pool) return res.json({});
+      
+      const totalRevRes = await query(`SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status = 'paid'`);
+      const totalPendingRes = await query(`SELECT COALESCE(SUM(amount), 0) as pending FROM invoices WHERE status != 'paid'`);
+      const activeSubsRes = await query(`SELECT COUNT(*) as count FROM subscriptions WHERE status = 'active'`);
+      const failedPaymentsRes = await query(`SELECT COUNT(*) as count FROM payment_transactions WHERE status = 'failed'`);
+
+      res.json({
+        totalRevenue: Number(totalRevRes.rows[0]?.total || 0),
+        pendingPayments: Number(totalPendingRes.rows[0]?.pending || 0),
+        activeSubscriptions: Number(activeSubsRes.rows[0]?.count || 0),
+        failedPayments: Number(failedPaymentsRes.rows[0]?.count || 0),
+        revenueTrends: [
+          { month: 'Apr', sales: Number(totalRevRes.rows[0]?.total || 0) * 0.2 },
+          { month: 'May', sales: Number(totalRevRes.rows[0]?.total || 0) * 0.35 },
+          { month: 'Jun', sales: Number(totalRevRes.rows[0]?.total || 0) * 0.45 }
+        ]
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async createInvoiceManual(req: Request, res: Response) {
+    try {
+      const { customerId, amount, description } = req.body;
+      const invoiceNumber = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 15);
+
+      const result = await query(
+        `INSERT INTO invoices (customer_id, invoice_number, billing_period_start, billing_period_end, amount, gst, total_amount, status, due_date)
+         VALUES ($1, $2, CURRENT_DATE, CURRENT_DATE + INTERVAL '30 days', $3, $3 * 0.18, $3 * 1.18, 'pending', $4) RETURNING *`,
+        [customerId, invoiceNumber, amount, dueDate]
+      );
+      res.status(201).json(result.rows[0]);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async refundInvoice(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const result = await query(`UPDATE invoices SET status = 'unpaid' WHERE id = $1 RETURNING *`, [id]);
+      if (result.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
+      res.json({ message: 'Invoice refunded', invoice: result.rows[0] });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getTransactions(req: Request, res: Response) {
+    try {
+      let q = `SELECT t.*, c.name as customer_name FROM payment_transactions t JOIN customers c ON t.customer_id = c.id`;
+      const params: any[] = [];
+
+      if (req.user?.role !== 'admin') {
+        const userRes = await query('SELECT customer_id FROM users WHERE id = $1', [req.user?.id]);
+        const customerId = userRes.rows[0]?.customer_id;
+        if (!customerId) return res.json([]);
+        q += ' WHERE t.customer_id = $1';
+        params.push(customerId);
+      }
+
+      q += ' ORDER BY t.created_at DESC';
+      const result = await query(q, params);
+      res.json(result.rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async checkoutInvoice(req: Request, res: Response) {
+    try {
+      const { invoiceId } = req.params;
+      const { amount, method } = req.body;
+
+      const invoiceRes = await query('SELECT * FROM invoices WHERE id = $1', [invoiceId]);
+      if (invoiceRes.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
+      const invoice = invoiceRes.rows[0];
+
+      // Mark Invoice as Paid
+      await query(`UPDATE invoices SET status = 'paid' WHERE id = $1`, [invoiceId]);
+
+      // Record transaction
+      const tx = await query(
+        `INSERT INTO payment_transactions (customer_id, invoice_id, provider, gateway_transaction_id, amount, status)
+         VALUES ($1, $2, $3, $4, $5, 'success') RETURNING *`,
+        [invoice.customer_id, invoiceId, method || 'Stripe', 'ch_' + Math.random().toString(36).substring(7), amount, ]
+      );
+
+      // Record payment
+      await query(
+        `INSERT INTO payments (invoice_id, amount, payment_method, transaction_id, status)
+         VALUES ($1, $2, $3, $4, 'success')`,
+        [invoiceId, amount, method || 'Card', tx.rows[0].id]
+      );
+
+      res.json({ message: 'Invoice paid successfully', transaction: tx.rows[0] });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
-

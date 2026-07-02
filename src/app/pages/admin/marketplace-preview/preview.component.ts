@@ -13,10 +13,10 @@ import { MatIconModule } from '@angular/material/icon';
        <div class="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
        
        <!-- Toolbar inside preview area -->
-       <div class="absolute bottom-6 right-6 flex items-center gap-1 bg-[#1e1e1e]/80 backdrop-blur-xl rounded-full shadow-2xl border border-white/10 p-1.5 pointer-events-auto z-30">
-          <button (click)="zoom.set(0.5)" [class.bg-indigo-600]="zoom() === 0.5" class="w-10 h-10 rounded-full hover:bg-white/5 text-white/50 hover:text-white transition-all text-[10px] font-black uppercase flex items-center justify-center">50%</button>
-          <button (click)="zoom.set(0.75)" [class.bg-indigo-600]="zoom() === 0.75" class="w-10 h-10 rounded-full hover:bg-white/5 text-white/50 hover:text-white transition-all text-[10px] font-black uppercase flex items-center justify-center">75%</button>
-          <button (click)="zoom.set(1)" [class.bg-indigo-600]="zoom() === 1" class="w-10 h-10 rounded-full hover:bg-white/5 text-white/50 hover:text-white transition-all text-[10px] font-black uppercase flex items-center justify-center">100%</button>
+       <div class="absolute bottom-6 right-6 flex items-center gap-1 bg-[#1e1e1e]/80 backdrop-blur-xl rounded-full shadow-2xl border border-app-border p-1.5 pointer-events-auto z-30">
+          <button (click)="zoom.set(0.5)" [class.bg-indigo-600]="zoom() === 0.5" class="w-10 h-10 rounded-full hover:bg-white/5 text-app-text/50 hover:text-app-text transition-all text-[10px] font-black uppercase flex items-center justify-center">50%</button>
+          <button (click)="zoom.set(0.75)" [class.bg-indigo-600]="zoom() === 0.75" class="w-10 h-10 rounded-full hover:bg-white/5 text-app-text/50 hover:text-app-text transition-all text-[10px] font-black uppercase flex items-center justify-center">75%</button>
+          <button (click)="zoom.set(1)" [class.bg-indigo-600]="zoom() === 1" class="w-10 h-10 rounded-full hover:bg-white/5 text-app-text/50 hover:text-app-text transition-all text-[10px] font-black uppercase flex items-center justify-center">100%</button>
        </div>
 
        <!-- Browser Frame Container (handles scaling centering) -->
@@ -26,7 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
             
           <div [style.width]="deviceWidth()" 
                [style.transform]="'scale(' + zoom() + ')'"
-               class="flex flex-col bg-white rounded-3xl shadow-[0_60px_100px_-20px_rgba(0,0,0,0.7)] overflow-hidden transition-all duration-500 border border-white/10 origin-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+               class="flex flex-col bg-white rounded-3xl shadow-[0_60px_100px_-20px_rgba(0,0,0,0.7)] overflow-hidden transition-all duration-500 border border-app-border origin-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
              
              <!-- Browser Header -->
              <div class="h-10 bg-[#f8f9fa] border-b border-[#e1e3e4] flex items-center px-5 gap-4 shrink-0">
@@ -36,12 +36,12 @@ import { MatIconModule } from '@angular/material/icon';
                    <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
                 </div>
                 <div class="flex-grow flex justify-center">
-                   <div class="bg-white rounded-lg px-4 py-1 text-[11px] text-slate-400 font-mono flex items-center gap-2 border border-slate-200/80 shadow-sm min-w-[200px]">
+                   <div class="bg-white rounded-lg px-4 py-1 text-[11px] text-app-muted font-mono flex items-center gap-2 border border-slate-200/80 shadow-sm min-w-[200px]">
                       <mat-icon class="!w-3 !h-3 !text-[12px]">lock</mat-icon> 
                       <span class="truncate">https://preview.low-code.io/asset-{{ activeDevice() }}</span>
                    </div>
                 </div>
-                <div class="flex items-center gap-3 text-slate-300">
+                <div class="flex items-center gap-3 text-app-text">
                   <mat-icon class="!w-4 !h-4 !text-[16px]">share</mat-icon>
                   <mat-icon class="!w-4 !h-4 !text-[16px]">more_vert</mat-icon>
                 </div>

@@ -13,7 +13,7 @@ exports.api = functions.https.onRequest(app);
 // exports.monthlyBillingCron = onSchedule({
 //     schedule: '0 0 1 * *', // 1st of every month at midnight
 //     timeoutSeconds: 300,
-//     memory: '1GiB'
+//     memory: '1GiB'vc bvcb
 // }, async (event) => {
 //     if (mod.billingService) {
 //         await mod.billingService.runMonthlyBilling();

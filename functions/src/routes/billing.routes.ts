@@ -10,4 +10,10 @@ router.get('/customer-invoices', billingController.getCustomerInvoices);
 router.post('/invoice/send', billingController.sendInvoiceWhatsApp);
 router.post('/invoice/mark-paid', billingController.markPaid);
 
+// New Admin Billing & Transaction dashboard routes
+router.get('/admin-stats', billingController.getAdminStats);
+router.post('/invoice/manual', billingController.createInvoiceManual);
+router.post('/invoice/:id/refund', billingController.refundInvoice);
+router.get('/transactions', billingController.getTransactions);
+
 export default router;

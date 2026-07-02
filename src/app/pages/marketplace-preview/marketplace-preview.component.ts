@@ -27,7 +27,7 @@ import { MatIconModule } from '@angular/material/icon';
          </div>
          <div class="flex items-center gap-3">
             @if(item()) {
-               <button class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-indigo-500 transition-colors flex items-center gap-2">
+               <button class="bg-indigo-600 text-app-text px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-indigo-500 transition-colors flex items-center gap-2">
                  <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">shopping_cart</mat-icon> Purchase
                </button>
             }

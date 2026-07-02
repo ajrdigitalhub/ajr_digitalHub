@@ -59,7 +59,7 @@ interface AIResult {
               <input type="text" formControlName="audience" class="w-full bg-app-bg border border-app-border rounded-xl px-3 py-2 text-xs text-app-text outline-none focus:border-indigo-500 placeholder:text-app-muted" placeholder="e.g. Freelancers, Tech agencies">
             </div>
 
-            <button type="submit" [disabled]="paramsForm.invalid || isLoading()" class="w-full flex justify-center items-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer">
+            <button type="submit" [disabled]="paramsForm.invalid || isLoading()" class="w-full flex justify-center items-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-app-text rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer">
               <mat-icon [class.animate-spin]="isLoading()" class="text-xs w-4 h-4 leading-none">auto_awesome</mat-icon>
               {{ isLoading() ? 'Generating copy...' : 'Generate Copy' }}
             </button>

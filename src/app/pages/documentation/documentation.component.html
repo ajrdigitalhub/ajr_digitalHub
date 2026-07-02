@@ -1,195 +1,489 @@
-<div class="min-h-screen bg-app-bg text-app-text flex flex-col font-sans pb-16">
-  <app-top-nav></app-top-nav>
+<div class="min-h-screen bg-app-bg text-app-text flex flex-col font-sans select-none relative pb-16">
+  <!-- Top Navigation Header (Print Hidden) -->
+  <app-top-nav class="print:hidden"></app-top-nav>
 
-  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-10 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-8">
+  <!-- Reading Progress Bar (Print Hidden) -->
+  <div class="h-1 bg-indigo-500 fixed top-16 left-0 z-50 transition-all duration-150 print:hidden" [style.width.%]="scrollPercent()"></div>
+
+  <div class="max-w-[1500px] w-full mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
     
-    <!-- Sidebar Navigation (Filters & Search) -->
-    <aside class="space-y-6 lg:col-span-1">
-      <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
-        <h3 class="text-sm font-black text-indigo-400 uppercase tracking-widest">Global Docs Search</h3>
+    <!-- LEFT PANEL: DOCS TREE NAVIGATION (Print Hidden) -->
+    <aside class="lg:col-span-3 space-y-6 print:hidden lg:sticky lg:top-24 lg:h-[calc(100vh-120px)] lg:overflow-y-auto pr-2 custom-scrollbar">
+      
+      <!-- Search Engine with Autocomplete Dropdown -->
+      <div class="glass p-4 rounded-2xl border border-app-border space-y-3 relative">
+        <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Global Docs Hub</h3>
         <div class="relative flex items-center bg-app-bg border border-app-border rounded-xl px-3 py-2">
           <mat-icon class="text-app-muted text-sm shrink-0">search</mat-icon>
           <input 
             type="text" 
-            [(ngModel)]="searchQuery" 
-            (ngModelChange)="onSearchChange()"
-            placeholder="Search products, setup guides..." 
-            class="bg-transparent border-none outline-none text-xs text-app-text w-full pl-2 placeholder:text-app-muted"
+            [ngModel]="searchQuery()" 
+            (ngModelChange)="searchQuery.set($event); onSearchInput()"
+            placeholder="Search API keys, setup guides..." 
+            class="bg-transparent border-none outline-none text-xs text-app-text w-full pl-2 placeholder:text-app-muted focus:ring-0"
+            (focus)="showAutocomplete.set(autocompleteResults().length > 0)"
           />
         </div>
 
-        <!-- Categories -->
-        <div class="pt-4 border-t border-app-border space-y-1">
-          <h4 class="text-[10px] font-bold text-app-muted uppercase tracking-wider mb-2">Category Filters</h4>
+        <!-- Autocomplete Suggestions Modal -->
+        @if (showAutocomplete() && autocompleteResults().length > 0) {
+          <div class="absolute top-[105%] left-0 right-0 bg-app-card border border-app-border rounded-xl shadow-2xl z-50 p-2 max-h-60 overflow-y-auto">
+            @for (item of autocompleteResults(); track item.id) {
+              <div 
+                (click)="selectAutocompleteItem(item)"
+                class="px-3 py-2 rounded-lg hover:bg-indigo-500/10 hover:text-indigo-400 text-xs text-app-text cursor-pointer transition truncate border-b border-app-border/10 last:border-0"
+              >
+                <div class="font-bold">{{ item.title }}</div>
+                <span class="text-[9px] text-app-muted font-mono uppercase">{{ item.category }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Categories & Tree Navigation -->
+      <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
+        <div class="flex justify-between items-center pb-2 border-b border-app-border">
+          <span class="text-[10px] font-bold text-app-muted uppercase tracking-wider">DOCS DIRECTORY</span>
+          <button (click)="selectedCategory.set('All')" class="text-[8px] font-mono text-indigo-400 uppercase tracking-widest hover:underline cursor-pointer">Reset</button>
+        </div>
+
+        <div class="space-y-4">
           @for (cat of categories; track cat) {
-            <button 
-              (click)="selectedCategory.set(cat)"
-              [class]="selectedCategory() === cat 
-                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 font-bold' 
-                : 'text-app-muted hover:bg-app-card hover:text-app-text border border-transparent'"
-              class="w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center justify-between cursor-pointer"
-            >
-              <span>{{ cat }}</span>
-              <mat-icon class="text-xs !w-3 !h-3">chevron_right</mat-icon>
-            </button>
+            @if (cat !== 'All' && groupedPages()[cat]) {
+              <div class="space-y-1.5">
+                <button 
+                  (click)="selectedCategory.set(selectedCategory() === cat ? 'All' : cat)"
+                  class="w-full flex items-center justify-between text-left text-[11px] font-bold uppercase tracking-wide text-app-text hover:text-indigo-400 transition"
+                >
+                  <span>{{ cat }}</span>
+                  <mat-icon class="text-xs transition-transform duration-200" [class.rotate-90]="selectedCategory() === cat">chevron_right</mat-icon>
+                </button>
+
+                <!-- Children Pages list -->
+                @if (selectedCategory() === 'All' || selectedCategory() === cat) {
+                  <div class="pl-3 border-l border-app-border/40 space-y-1 mt-1">
+                    @for (page of groupedPages()[cat]; track page.id) {
+                      <a 
+                        [routerLink]="['/documentation', page.slug]"
+                        [class.text-indigo-400]="activeSlug() === page.slug"
+                        [class.font-bold]="activeSlug() === page.slug"
+                        class="block text-[11px] text-app-muted hover:text-app-text transition truncate py-1"
+                      >
+                        &bull; {{ page.title }}
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            }
           }
         </div>
       </div>
 
-      <!-- Quick Links -->
-      <div class="glass p-5 rounded-2xl border border-app-border">
-        <h3 class="text-xs font-bold text-app-text uppercase tracking-wider mb-3">Popular Guides</h3>
-        <div class="space-y-3">
-          @for (page of filteredPages(); track page.slug) {
-            <a 
-              [routerLink]="['/documentation', page.slug]"
-              [class.text-indigo-400]="activeSlug() === page.slug"
-              class="block text-xs font-medium text-app-muted hover:text-app-text transition truncate"
-            >
-              {{ page.title }}
-            </a>
+      <!-- Bookmarks Quick Panel -->
+      @if (authService.isAuthenticated() && bookmarkedPages().length > 0) {
+        <div class="glass p-4 rounded-2xl border border-app-border space-y-3">
+          <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+            <mat-icon class="text-sm">bookmark</mat-icon> BOOKMARKED GUIDES
+          </h3>
+          <div class="space-y-2">
+            @for (b of bookmarkedPages(); track b.id) {
+              <a 
+                [routerLink]="['/documentation', b.slug]" 
+                class="block text-[11px] text-app-muted hover:text-app-text transition truncate"
+              >
+                {{ b.title }}
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Recent Reading History -->
+      @if (authService.isAuthenticated() && recentHistory().length > 0) {
+        <div class="glass p-4 rounded-2xl border border-app-border space-y-3">
+          <h3 class="text-[10px] font-black text-app-muted uppercase tracking-widest flex items-center gap-1.5">
+            <mat-icon class="text-sm">history</mat-icon> RECENTLY VIEWED
+          </h3>
+          <div class="space-y-2">
+            @for (h of recentHistory(); track h.article_id) {
+              <a 
+                [routerLink]="['/documentation', h.slug]" 
+                class="block text-[11px] text-app-muted hover:text-app-text transition truncate"
+              >
+                {{ h.title }}
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </aside>
+
+    <!-- CENTER PANEL: MAIN DOCUMENTATION CANVAS -->
+    <main class="lg:col-span-7 space-y-8 select-text">
+      @if (loading()) {
+        <div class="flex items-center justify-center h-96 print:hidden">
+          <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else if (activePage(); as doc) {
+        
+        <!-- Standard public/A4 printable wrapper container -->
+        <article class="glass p-6 md:p-8 lg:p-10 rounded-3xl border border-app-border space-y-8 bg-app-card/30 relative print:bg-white print:text-slate-900 print:shadow-none print:border-none print:p-0">
+          
+          <!-- Top Header controls -->
+          <div class="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-app-border/40 pb-6 print:hidden">
+            <div>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/25 uppercase tracking-wider">
+                {{ doc.category }}
+              </span>
+              <h1 class="text-3xl font-black tracking-tight text-app-text mt-2 font-display uppercase tracking-widest">{{ doc.title }}</h1>
+              
+              <div class="flex flex-wrap items-center gap-4 text-[10px] text-app-muted mt-2 font-mono">
+                <span class="flex items-center gap-1"><mat-icon class="!text-[12px] !w-3 !h-3">schedule</mat-icon> {{ readingTime() }} Min Read</span>
+                <span class="flex items-center gap-1"><mat-icon class="!text-[12px] !w-3 !h-3">visibility</mat-icon> {{ doc.views || 0 }} Views</span>
+                <span class="flex items-center gap-1"><mat-icon class="!text-[12px] !w-3 !h-3">history</mat-icon> Updated: {{ doc.updated_at | date }}</span>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-2 shrink-0">
+              <button 
+                (click)="toggleBookmark()"
+                [class.text-emerald-400]="isBookmarked()"
+                class="p-2.5 bg-app-card hover:bg-app-card/80 text-app-text border border-app-border rounded-xl transition cursor-pointer"
+                title="Bookmark article"
+              >
+                <mat-icon class="!w-4 !h-4 !text-[16px]">{{ isBookmarked() ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+              </button>
+              <button 
+                (click)="triggerPrint()" 
+                class="px-4 py-2 bg-app-card hover:bg-app-card/80 text-app-text border border-app-border rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <mat-icon class="!w-4 !h-4 !text-[16px]">picture_as_pdf</mat-icon>
+                <span>Print/PDF</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Printable view header -->
+          <div class="hidden print:block border-b-2 border-slate-900 pb-4 mb-8">
+            <h1 class="text-3xl font-black uppercase text-slate-900">{{ doc.title }}</h1>
+            <p class="text-xs text-slate-500 font-mono mt-1">AJR Digital HUB Documentation Portal Cluster &bull; Category: {{ doc.category }}</p>
+          </div>
+
+          <!-- Section 1: Overview -->
+          <section id="overview" class="space-y-4 scroll-mt-24">
+            <h2 class="text-xl font-bold text-app-text uppercase tracking-wider font-display border-b border-app-border/40 pb-2 print:text-slate-900 print:border-slate-300">Overview</h2>
+            <p class="text-sm text-app-muted leading-relaxed print:text-slate-800">{{ doc.overview }}</p>
+          </section>
+
+          <!-- Section 2: Purpose & Business cases -->
+          @if (doc.purpose) {
+            <section id="purpose" class="space-y-4 scroll-mt-24">
+              <h2 class="text-xl font-bold text-app-text uppercase tracking-wider font-display border-b border-app-border/40 pb-2 print:text-slate-900 print:border-slate-300">Objective & Business Use Cases</h2>
+              <p class="text-sm text-app-muted leading-relaxed print:text-slate-800">{{ doc.purpose }}</p>
+
+              @if (doc.business_use_cases && doc.business_use_cases.length > 0) {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                  @for (caseItem of doc.business_use_cases; track $index) {
+                    <div class="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-4 flex gap-3 print:bg-slate-50 print:border-slate-200">
+                      <mat-icon class="text-indigo-400 shrink-0">business_center</mat-icon>
+                      <p class="text-xs text-app-muted print:text-slate-700 leading-relaxed font-sans">{{ caseItem }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            </section>
           }
+
+          <!-- Section 3: Visual Flowchart / Workflow Diagram -->
+          <section id="diagram" class="space-y-4 scroll-mt-24 print:break-inside-avoid">
+            <h2 class="text-xl font-bold text-app-text uppercase tracking-wider font-display border-b border-app-border/40 pb-2 print:text-slate-900 print:border-slate-300">Workflow Architecture</h2>
+            
+            <!-- Graphic flow nodes simulation -->
+            <div class="bg-app-bg border border-app-border rounded-2xl p-6 space-y-4 print:bg-slate-50 print:border-slate-200 print:text-slate-800">
+              <span class="text-[10px] font-mono text-app-muted uppercase tracking-widest flex items-center gap-1.5 print:text-slate-500">
+                <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400">alt_route</mat-icon> API INBOUND SYNC WORKFLOW DIAGRAM
+              </span>
+
+              <div class="flex flex-col md:flex-row items-center justify-center gap-6 py-4">
+                <div class="bg-app-card border border-app-border p-4 rounded-xl text-center min-w-[140px] shadow-sm print:bg-white print:border-slate-300">
+                  <div class="text-[9px] font-black text-app-muted uppercase print:text-slate-500">Public Application</div>
+                  <span class="text-xs text-app-text font-bold mt-1 block print:text-slate-900">AJR Hub Client</span>
+                </div>
+                <mat-icon class="text-indigo-400 rotate-90 md:rotate-0">trending_flat</mat-icon>
+                <div class="bg-indigo-600/10 border border-indigo-600/30 p-4 rounded-xl text-center min-w-[140px] shadow-sm animate-pulse print:bg-indigo-50 print:border-indigo-200">
+                  <div class="text-[9px] font-black text-indigo-400 uppercase">Functions Node</div>
+                  <span class="text-xs text-indigo-300 font-bold mt-1 block print:text-indigo-600">Secure API Guard</span>
+                </div>
+                <mat-icon class="text-indigo-400 rotate-90 md:rotate-0">trending_flat</mat-icon>
+                <div class="bg-app-card border border-app-border p-4 rounded-xl text-center min-w-[140px] shadow-sm print:bg-white print:border-slate-300">
+                  <div class="text-[9px] font-black text-app-muted uppercase print:text-slate-500">Cloud Datastore</div>
+                  <span class="text-xs text-app-text font-bold mt-1 block print:text-slate-900">PostgreSQL / JSONB</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 4: Capabilities and ROI -->
+          <section class="grid grid-cols-1 md:grid-cols-2 gap-6 print:break-inside-avoid">
+            <div class="bg-app-card/40 border border-app-border p-5 rounded-2xl print:border-slate-300 print:bg-white">
+              <h3 class="text-xs font-black text-indigo-400 uppercase tracking-wider mb-3">Key Capabilities</h3>
+              <ul class="space-y-2">
+                @for (feature of doc.features || []; track feature) {
+                  <li class="text-xs text-app-text flex items-center gap-2 print:text-slate-800">
+                    <mat-icon class="text-indigo-400 !w-4 !h-4 !text-[16px]">check_circle</mat-icon>
+                    <span>{{ feature }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <div class="bg-app-card/40 border border-app-border p-5 rounded-2xl print:border-slate-300 print:bg-white">
+              <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider mb-3">Core Value & ROI</h3>
+              <ul class="space-y-2">
+                @for (benefit of doc.benefits || []; track benefit) {
+                  <li class="text-xs text-app-text flex items-center gap-2 print:text-slate-800">
+                    <mat-icon class="text-emerald-400 !w-4 !h-4 !text-[16px]">trending_up</mat-icon>
+                    <span>{{ benefit }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </section>
+
+          <!-- Section 5: Setup Instructions -->
+          <section id="setup" class="space-y-4 scroll-mt-24 print:break-inside-avoid">
+            <h2 class="text-xl font-bold text-app-text uppercase tracking-wider font-display border-b border-app-border/40 pb-2 print:text-slate-900 print:border-slate-300">Step-by-Step Installation</h2>
+            
+            <div class="bg-app-bg border border-app-border rounded-2xl p-4 space-y-3 relative print:bg-slate-50 print:border-slate-200">
+              <div class="flex justify-between items-center print:hidden">
+                <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest">SETUP COMMAND TERMINAL</span>
+                <button (click)="copyCode(doc.setup_guide, $event)" class="text-[9px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-wider flex items-center gap-1 cursor-pointer">
+                  <mat-icon class="!text-[12px] !w-3 !h-3">content_copy</mat-icon> Copy Code
+                </button>
+              </div>
+
+              <pre class="text-xs text-indigo-200/90 whitespace-pre-wrap leading-relaxed font-mono select-all p-3 bg-app-card/40 rounded-xl border border-app-border print:text-slate-800 print:bg-white print:border-slate-300">{{ doc.setup_guide }}</pre>
+            </div>
+          </section>
+
+          <!-- Section 6: Configuration Instructions -->
+          @if (doc.config_guide) {
+            <section id="config" class="space-y-4 scroll-mt-24 print:break-inside-avoid">
+              <h2 class="text-xl font-bold text-app-text uppercase tracking-wider font-display border-b border-app-border/40 pb-2 print:text-slate-900 print:border-slate-300">Configuration Details</h2>
+              <div class="bg-app-bg border border-app-border rounded-2xl p-4 space-y-3 relative print:bg-slate-50 print:border-slate-200">
+                <div class="flex justify-between items-center print:hidden">
+                  <span class="text-[9px] font-mono text-app-muted uppercase tracking-widest">CONFIG VARIABLES CONFIGURATION</span>
+                  <button (click)="copyCode(doc.config_guide, $event)" class="text-[9px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-wider flex items-center gap-1 cursor-pointer">
+                    <mat-icon class="!text-[12px] !w-3 !h-3">content_copy</mat-icon> Copy Code
+                  </button>
+                </div>
+                <pre class="text-xs text-indigo-200/90 whitespace-pre-wrap leading-relaxed font-mono select-all p-3 bg-app-card/40 rounded-xl border border-app-border print:text-slate-800 print:bg-white print:border-slate-300">{{ doc.config_guide }}</pre>
+              </div>
+            </section>
+          }
+
+          <!-- Callout Boxes: Security Recommendations & Performance Tips -->
+          <section class="grid grid-cols-1 md:grid-cols-2 gap-6 print:break-inside-avoid">
+            @if (doc.security_recommendations && doc.security_recommendations.length > 0) {
+              <div class="border border-rose-500/20 bg-rose-500/5 rounded-2xl p-5 space-y-3 print:bg-rose-50/50 print:border-rose-200">
+                <h4 class="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <mat-icon class="text-sm">security</mat-icon> Security Recommendations
+                </h4>
+                <ul class="space-y-1.5">
+                  @for (sec of doc.security_recommendations; track sec) {
+                    <li class="text-[11px] text-app-text print:text-slate-800 flex items-start gap-1">
+                      <span class="text-rose-400 font-bold shrink-0">&bull;</span> {{ sec }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (doc.performance_tips && doc.performance_tips.length > 0) {
+              <div class="border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 space-y-3 print:bg-amber-50/50 print:border-amber-200">
+                <h4 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <mat-icon class="text-sm">offline_bolt</mat-icon> Performance & Scaling
+                </h4>
+                <ul class="space-y-1.5">
+                  @for (perf of doc.performance_tips; track perf) {
+                    <li class="text-[11px] text-app-text print:text-slate-800 flex items-start gap-1">
+                      <span class="text-amber-400 font-bold shrink-0">&bull;</span> {{ perf }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </section>
+
+          <!-- Section 7: Quota Billing Calculator -->
+          @if (doc.pricing_details; as price) {
+            <section id="billing" class="bg-gradient-to-br from-indigo-950/40 to-purple-950/30 border border-indigo-500/20 rounded-3xl p-6 space-y-6 print:bg-slate-50 print:border-slate-200 print:break-inside-avoid">
+              <div>
+                <h3 class="text-lg font-bold text-app-text font-display uppercase tracking-wider print:text-slate-900">Dynamic Quota Spend Calculator</h3>
+                <p class="text-xs text-indigo-200/70 mt-1 print:text-slate-500">Estimate your monthly pricing including platform subscriptions and provider rate adjustments.</p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 print:hidden">
+                <div>
+                  <label class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider mb-1.5">WhatsApp Messages</label>
+                  <input type="number" [(ngModel)]="calcWa" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-right" placeholder="0">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider mb-1.5">Google Ads spend (₹)</label>
+                  <input type="number" [(ngModel)]="calcAds" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-right" placeholder="0">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider mb-1.5">Firebase reads/writes</label>
+                  <input type="number" [(ngModel)]="calcFb" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-right" placeholder="0">
+                </div>
+              </div>
+
+              <div class="pt-4 border-t border-indigo-500/20 flex flex-col sm:flex-row justify-between items-center gap-4 print:border-slate-300">
+                <div class="text-xs text-indigo-200/80 print:text-slate-700">
+                  <span class="block">Platform Base Rate: <strong>₹{{ price.basePrice }}/mo</strong></span>
+                  <span class="block text-[10px] text-indigo-300/60 mt-0.5 print:text-slate-500">*Excess charges: ₹{{ price.excessRate }} per action outside of {{ price.freeTier }} free actions. GST applicable.</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[9px] font-bold text-indigo-300 uppercase tracking-widest block print:text-slate-500">Estimated monthly cost</span>
+                  <span class="text-3xl font-black text-app-text print:text-slate-900">₹{{ totalEstimate() | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- Section 8: FAQs Accordion -->
+          @if (doc.faqs && doc.faqs.length > 0) {
+            <section id="faqs" class="space-y-4 scroll-mt-24 print:break-inside-avoid">
+              <h2 class="text-xl font-bold text-app-text uppercase tracking-wider font-display border-b border-app-border/40 pb-2 print:text-slate-900 print:border-slate-300">Frequently Asked Questions</h2>
+              <div class="space-y-3">
+                @for (faq of doc.faqs; track faq.q) {
+                  <div class="bg-app-card p-4.5 rounded-2xl border border-app-border print:bg-white print:border-slate-300">
+                    <div class="text-xs font-bold text-app-text print:text-slate-900 flex items-center gap-2">
+                      <mat-icon class="text-indigo-400 text-sm">help_outline</mat-icon>
+                      <span>{{ faq.q }}</span>
+                    </div>
+                    <p class="text-xs text-app-muted mt-2 leading-relaxed pl-7 print:text-slate-700">{{ faq.a }}</p>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- Section 9: Feedback Widget (Print Hidden) -->
+          <section class="border-t border-app-border/40 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 print:hidden">
+            <div class="text-xs text-app-muted">
+              Was this guide helpful? 
+              <span class="font-mono ml-2">({{ doc.likes || 0 }} helpful &bull; {{ doc.dislikes || 0 }} unhelpful)</span>
+            </div>
+
+            <div class="flex gap-2">
+              @if (feedbackSubmitted()) {
+                <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <mat-icon class="text-sm">done_all</mat-icon> Thanks for your feedback!
+                </span>
+              } @else {
+                <button 
+                  (click)="submitFeedback(true)" 
+                  [disabled]="submittingFeedback()"
+                  class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/25 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <mat-icon class="text-sm">thumb_up</mat-icon> Yes
+                </button>
+                <button 
+                  (click)="submitFeedback(false)" 
+                  [disabled]="submittingFeedback()"
+                  class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <mat-icon class="text-sm">thumb_down</mat-icon> No
+                </button>
+              }
+            </div>
+          </section>
+
+        </article>
+      } @else {
+        <div class="glass p-16 rounded-3xl border border-app-border text-center text-app-muted space-y-4 print:hidden">
+          <mat-icon class="text-5xl">menu_book</mat-icon>
+          <h2 class="text-xl font-bold text-app-text">Documentation Portal Workspace</h2>
+          <p class="text-xs max-w-md mx-auto leading-relaxed">Select a category guide from the sidebar panel or search keywords to learn setup details, API integrations, and billing costs.</p>
+        </div>
+      }
+    </main>
+
+    <!-- RIGHT PANEL: TABLE OF CONTENTS (Print Hidden) -->
+    <aside class="lg:col-span-2 space-y-6 print:hidden lg:sticky lg:top-24 lg:h-[calc(100vh-120px)] lg:overflow-y-auto pl-2">
+      <div class="glass p-4 rounded-2xl border border-app-border space-y-3">
+        <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">On This Page</h4>
+        
+        <div class="space-y-2 text-xs">
+          <button 
+            (click)="scrollToSection('overview')" 
+            [class.text-indigo-400]="activeTocSection() === 'overview'"
+            [class.font-bold]="activeTocSection() === 'overview'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            1. Overview
+          </button>
+          
+          <button 
+            (click)="scrollToSection('purpose')" 
+            [class.text-indigo-400]="activeTocSection() === 'purpose'"
+            [class.font-bold]="activeTocSection() === 'purpose'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            2. Business Goals
+          </button>
+
+          <button 
+            (click)="scrollToSection('diagram')" 
+            [class.text-indigo-400]="activeTocSection() === 'diagram'"
+            [class.font-bold]="activeTocSection() === 'diagram'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            3. Architecture Flow
+          </button>
+
+          <button 
+            (click)="scrollToSection('setup')" 
+            [class.text-indigo-400]="activeTocSection() === 'setup'"
+            [class.font-bold]="activeTocSection() === 'setup'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            4. Setup & Install
+          </button>
+
+          <button 
+            (click)="scrollToSection('config')" 
+            [class.text-indigo-400]="activeTocSection() === 'config'"
+            [class.font-bold]="activeTocSection() === 'config'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            5. Config Guide
+          </button>
+
+          <button 
+            (click)="scrollToSection('billing')" 
+            [class.text-indigo-400]="activeTocSection() === 'billing'"
+            [class.font-bold]="activeTocSection() === 'billing'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            6. Pricing Estimator
+          </button>
+
+          <button 
+            (click)="scrollToSection('faqs')" 
+            [class.text-indigo-400]="activeTocSection() === 'faqs'"
+            [class.font-bold]="activeTocSection() === 'faqs'"
+            class="block text-left text-app-muted hover:text-app-text transition w-full"
+          >
+            7. FAQ & Help
+          </button>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="lg:col-span-3 space-y-8">
-      @if (loading()) {
-        <div class="flex items-center justify-center h-96">
-          <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      } @else if (activePage(); as doc) {
-        <!-- Doc Page content -->
-        <div class="glass p-6 md:p-8 rounded-3xl border border-app-border space-y-6">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 uppercase tracking-wider">
-                {{ doc.category }}
-              </span>
-              <h1 class="text-3xl font-black tracking-tight text-app-text mt-2 font-display">{{ doc.title }}</h1>
-            </div>
-            <button routerLink="/login" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg transition hover:scale-[1.02] cursor-pointer">
-              Start Free Trial
-            </button>
-          </div>
-
-          <p class="text-sm text-app-muted leading-relaxed">{{ doc.overview }}</p>
-
-          <!-- Interactive Workflow Diagram (Stylized visual tree/graph) -->
-          <div class="bg-app-bg border border-app-border rounded-2xl p-6 space-y-4">
-            <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest flex items-center gap-1.5">
-              <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400">alt_route</mat-icon> API Integration Flow Diagram
-            </span>
-            
-            <div class="flex flex-col md:flex-row items-center justify-center gap-6 py-4">
-              <div class="bg-app-card border border-app-border p-3.5 rounded-xl text-center min-w-[120px] shadow-sm">
-                <div class="text-[10px] font-bold text-app-muted uppercase">Client Portal</div>
-                <span class="text-xs text-app-text font-bold mt-1 block">Trigger Request</span>
-              </div>
-              <mat-icon class="text-indigo-400 rotate-90 md:rotate-0">trending_flat</mat-icon>
-              <div class="bg-indigo-600/10 border border-indigo-600/30 p-3.5 rounded-xl text-center min-w-[120px] shadow-sm animate-pulse">
-                <div class="text-[10px] font-bold text-indigo-400 uppercase">AJR API Gateway</div>
-                <span class="text-xs text-indigo-300 font-bold mt-1 block">Auth & Limits Check</span>
-              </div>
-              <mat-icon class="text-indigo-400 rotate-90 md:rotate-0">trending_flat</mat-icon>
-              <div class="bg-app-card border border-app-border p-3.5 rounded-xl text-center min-w-[120px] shadow-sm">
-                <div class="text-[10px] font-bold text-app-muted uppercase">Meta / Provider</div>
-                <span class="text-xs text-app-text font-bold mt-1 block">Process Delivery</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Features & Benefits -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-app-card/40 border border-app-border p-5 rounded-2xl">
-              <h3 class="text-xs font-black text-indigo-400 uppercase tracking-wider mb-3">Key Capabilities</h3>
-              <ul class="space-y-2">
-                @for (feature of doc.features || []; track feature) {
-                  <li class="text-xs text-app-text flex items-center gap-2">
-                    <mat-icon class="text-indigo-400 !w-4 !h-4 !text-[16px]">check_circle</mat-icon>
-                    {{ feature }}
-                  </li>
-                }
-              </ul>
-            </div>
-
-            <div class="bg-app-card/40 border border-app-border p-5 rounded-2xl">
-              <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider mb-3">Core Value & ROI</h3>
-              <ul class="space-y-2">
-                @for (benefit of doc.benefits || []; track benefit) {
-                  <li class="text-xs text-app-text flex items-center gap-2">
-                    <mat-icon class="text-emerald-400 !w-4 !h-4 !text-[16px]">trending_up</mat-icon>
-                    {{ benefit }}
-                  </li>
-                }
-              </ul>
-            </div>
-          </div>
-
-          <!-- Guides -->
-          <div class="space-y-4 pt-4 border-t border-app-border">
-            <h3 class="text-lg font-bold text-app-text font-display">Setup & Integration Manual</h3>
-            <div class="bg-app-bg border border-app-border rounded-2xl p-5">
-              <h4 class="text-xs font-bold text-app-muted uppercase tracking-wider mb-2">Step-by-Step Installation</h4>
-              <pre class="text-xs text-indigo-200/90 whitespace-pre-wrap leading-relaxed font-mono select-all bg-app-card/40 p-4 rounded-xl border border-app-border">{{ doc.setup_guide }}</pre>
-            </div>
-          </div>
-
-          <!-- Calculator Section (Embedded in Pricing guide) -->
-          <div class="bg-gradient-to-r from-indigo-900/40 to-purple-900/30 border border-indigo-500/20 rounded-3xl p-6 space-y-6">
-            <div>
-              <h3 class="text-lg font-bold text-white font-display">Dynamic Quota Spend Calculator</h3>
-              <p class="text-xs text-indigo-200/70 mt-1">Estimate your monthly pricing including AJR platform subscriptions and provider rates.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label class="block text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1.5">WhatsApp Messages</label>
-                <input type="number" [(ngModel)]="calcWa" class="w-full px-3 py-2 bg-app-bg/50 border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono" placeholder="0">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1.5">Google Ads spend (₹)</label>
-                <input type="number" [(ngModel)]="calcAds" class="w-full px-3 py-2 bg-app-bg/50 border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono" placeholder="0">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1.5">Firebase reads/writes</label>
-                <input type="number" [(ngModel)]="calcFb" class="w-full px-3 py-2 bg-app-bg/50 border border-app-border rounded-xl text-xs outline-none focus:ring-1 focus:ring-indigo-500 font-mono" placeholder="0">
-              </div>
-            </div>
-
-            <div class="pt-4 border-t border-indigo-500/20 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div class="text-xs text-indigo-200/80">
-                <span class="block">Platform Tier: <strong>Standard Pro Suite</strong></span>
-                <span class="block text-[10px] text-indigo-300/60 mt-0.5">*Excess charges: ₹0.80 per WhatsApp conversation, 18% GST applicable.</span>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest block">Estimated Monthly invoice</span>
-                <span class="text-3xl font-black text-white">₹{{ totalEstimate() | number:'1.2-2' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- FAQ Section -->
-          <div class="space-y-4 pt-4 border-t border-app-border">
-            <h3 class="text-lg font-bold text-app-text font-display">Frequently Asked Questions</h3>
-            <div class="space-y-3">
-              @for (faq of doc.faqs || []; track faq.q) {
-                <div class="bg-app-card p-4 rounded-xl border border-app-border">
-                  <div class="text-xs font-bold text-app-text">{{ faq.q }}</div>
-                  <p class="text-xs text-app-muted mt-1.5 leading-relaxed">{{ faq.a }}</p>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      } @else {
-        <div class="glass p-12 rounded-3xl border border-app-border text-center text-app-muted space-y-3">
-          <mat-icon class="text-4xl">menu_book</mat-icon>
-          <h2 class="text-lg font-bold text-app-text">Documentation Workspace</h2>
-          <p class="text-xs max-w-md mx-auto">Select a product guide from the sidebar panel or search keywords to learn setup details, API integrations, and costs.</p>
-        </div>
-      }
-    </main>
   </div>
 </div>

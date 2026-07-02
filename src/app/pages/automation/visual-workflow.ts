@@ -29,7 +29,7 @@ interface Workflow {
           <p class="text-xs text-app-muted mt-1">Design visual triggers and trigger-action workflows across your channels.</p>
         </div>
 
-        <button (click)="createNewWorkflow()" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+        <button (click)="createNewWorkflow()" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
           <mat-icon class="text-xs w-4 h-4 leading-none">add</mat-icon>
           Create New Workflow
         </button>

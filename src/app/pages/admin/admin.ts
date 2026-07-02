@@ -58,21 +58,21 @@ import { AdminBillingComponent } from './billing/billing.component';
                 <mat-icon class="!w-4 !h-4 !text-[16px] animate-bounce">auto_awesome</mat-icon>
                 Interactive Console Walkthrough (Step {{ currentTourStep() + 1 }} of {{ tourSteps.length }})
               </div>
-              <h3 class="text-lg font-black text-white">{{ tourSteps[currentTourStep()].title }}</h3>
+              <h3 class="text-lg font-black text-app-text">{{ tourSteps[currentTourStep()].title }}</h3>
               <p class="text-sm text-indigo-200/80 max-w-3xl leading-relaxed">{{ tourSteps[currentTourStep()].description }}</p>
             </div>
             
             <div class="shrink-0 flex items-center gap-3 relative z-10">
               @if (currentTourStep() < tourSteps.length - 1) {
-                <button (click)="nextTourStep()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+                <button (click)="nextTourStep()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
                   Next Step
                 </button>
               } @else {
-                <button (click)="dismissTour()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+                <button (click)="dismissTour()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
                   Complete Tour
                 </button>
               }
-              <button (click)="dismissTour()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-app-muted rounded-xl text-xs font-bold transition-all cursor-pointer border border-white/5">
+              <button (click)="dismissTour()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-app-muted rounded-xl text-xs font-bold transition-all cursor-pointer border border-app-border">
                 Skip
               </button>
             </div>
@@ -299,7 +299,7 @@ import { AdminBillingComponent } from './billing/billing.component';
 
                           <div class="col-span-full flex justify-end gap-3 pt-4 border-t border-app-border mt-4">
                             <button type="button" (click)="showProvisionForm.set(false)" class="px-4 py-2 bg-transparent text-app-muted text-xs font-semibold rounded-xl hover:text-app-text transition-colors">Discard</button>
-                            <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md">Deploy App Node</button>
+                            <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-xs font-bold transition-all shadow-md">Deploy App Node</button>
                           </div>
                        </form>
                     </div>
@@ -367,7 +367,7 @@ import { AdminBillingComponent } from './billing/billing.component';
                     </div>
 
                     <div class="flex justify-end pt-4 border-t border-app-border">
-                      <button (click)="saveWebsiteConfig()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-transform cursor-pointer">
+                      <button (click)="saveWebsiteConfig()" class="bg-indigo-600 hover:bg-indigo-500 text-app-text px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-transform cursor-pointer">
                         Commit Configurations
                       </button>
                     </div>
@@ -480,7 +480,7 @@ import { AdminBillingComponent } from './billing/billing.component';
                    </div>
 
                    <div class="flex justify-end">
-                     <button (click)="saveCommsConfig()" [disabled]="isSavingComms()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-transform cursor-pointer disabled:opacity-50">
+                     <button (click)="saveCommsConfig()" [disabled]="isSavingComms()" class="bg-indigo-600 hover:bg-indigo-500 text-app-text px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-transform cursor-pointer disabled:opacity-50">
                        {{ isSavingComms() ? 'Saving...' : 'Commit Gateway Keys' }}
                      </button>
                    </div>
@@ -540,7 +540,7 @@ import { AdminBillingComponent } from './billing/billing.component';
                         </h2>
                         <p class="text-app-muted text-xs mt-1">Configure split tests, override live telemetry, and deploy conversion triggers.</p>
                      </div>
-                     <button (click)="saveGrowthConfig()" [disabled]="isSavingGrowth() || !growthConfig()" class="bg-indigo-600 text-white hover:bg-indigo-500 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 hover:scale-102 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
+                     <button (click)="saveGrowthConfig()" [disabled]="isSavingGrowth() || !growthConfig()" class="bg-indigo-600 text-app-text hover:bg-indigo-500 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/20 hover:scale-102 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
                         <mat-icon>{{ isSavingGrowth() ? 'hourglass_empty' : 'bolt' }}</mat-icon>
                         {{ isSavingGrowth() ? 'Saving...' : 'Deploy Configurations' }}
                      </button>

@@ -72,7 +72,7 @@ export class SparkleEffect {
          (mouseleave)="resetTilt()">
       <div class="transition-all duration-500 ease-out preserve-3d"
            [style.transform]="tiltTransform()">
-        <div class="glass p-6 rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden group-hover:neon-border">
+        <div class="glass p-6 rounded-[32px] border border-app-border shadow-2xl relative overflow-hidden group-hover:neon-border">
           <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
           
           <!-- Sparkle Effect on Hover -->

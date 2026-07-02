@@ -100,7 +100,7 @@ import { ButtonLoaderDirective } from '../../../shared/button-loader.directive';
          </div>
 
          <div class="flex gap-4 pt-4 border-t border-app-border">
-            <button (click)="onSaveFirebaseConfig()" [appButtonLoader]="isSavingFirebase()" [disabled]="!firebaseModel.projectId || !firebaseModel.apiKey" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-bold transition flex items-center gap-2 cursor-pointer border border-orange-500 disabled:opacity-50">
+            <button (click)="onSaveFirebaseConfig()" [appButtonLoader]="isSavingFirebase()" [disabled]="!firebaseModel.projectId || !firebaseModel.apiKey" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-app-text rounded-lg text-sm font-bold transition flex items-center gap-2 cursor-pointer border border-orange-500 disabled:opacity-50">
                Save Config
             </button>
             <button (click)="onTestFirebaseConnection()" [disabled]="!firebaseModel.projectId || !firebaseModel.apiKey || isTestingConnection()" class="px-5 py-2.5 bg-app-bg hover:bg-app-card text-app-text border border-app-border rounded-lg text-sm font-bold transition flex items-center gap-2 cursor-pointer">
@@ -146,7 +146,7 @@ import { ButtonLoaderDirective } from '../../../shared/button-loader.directive';
          </div>
 
          <div class="flex gap-4 pt-4 border-t border-app-border">
-            <button (click)="onSaveWhatsappConfig()" [appButtonLoader]="isSavingWhatsapp()" [disabled]="!whatsappModel.phoneNumber || !whatsappModel.apiKey || !whatsappModel.wabaId" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold transition flex items-center gap-2 cursor-pointer border border-emerald-500 disabled:opacity-50">
+            <button (click)="onSaveWhatsappConfig()" [appButtonLoader]="isSavingWhatsapp()" [disabled]="!whatsappModel.phoneNumber || !whatsappModel.apiKey || !whatsappModel.wabaId" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-app-text rounded-lg text-sm font-bold transition flex items-center gap-2 cursor-pointer border border-emerald-500 disabled:opacity-50">
                Save Config
             </button>
          </div>
@@ -161,7 +161,7 @@ import { ButtonLoaderDirective } from '../../../shared/button-loader.directive';
             Deleting this application will permanently remove all deployment states, keys, logs, and database mappings on this cluster.
          </p>
          <div class="flex">
-            <button (click)="onDelete()" class="px-4 py-2 bg-rose-600 hover:bg-rose-750 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <button (click)="onDelete()" class="px-4 py-2 bg-rose-600 hover:bg-rose-750 text-app-text rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                <mat-icon class="!w-4 !h-4 !text-[16px]">delete_forever</mat-icon>
                Destroy Application Instance
             </button>

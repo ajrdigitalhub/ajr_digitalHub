@@ -38,7 +38,7 @@ interface GoogleCampaign {
           <p class="text-xs text-app-muted mt-1">Manage active search ads, keywords, quality scores, and daily budgets.</p>
         </div>
 
-        <button (click)="showConnectModal.set(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+        <button (click)="showConnectModal.set(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
           <mat-icon class="text-xs w-4 h-4 leading-none">link</mat-icon>
           Link Google Ads Account
         </button>
@@ -148,7 +148,7 @@ interface GoogleCampaign {
               </div>
               <div class="flex justify-end gap-2 pt-2">
                 <button (click)="showBudgetModal.set(false)" class="px-4 py-2 border border-app-border hover:bg-app-bg text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Cancel</button>
-                <button (click)="saveBudget()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors">Save</button>
+                <button (click)="saveBudget()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Save</button>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ interface GoogleCampaign {
               </div>
               <div class="flex justify-end gap-2 pt-2">
                 <button (click)="showConnectModal.set(false)" class="px-4 py-2 border border-app-border hover:bg-app-bg text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Cancel</button>
-                <button (click)="connectAccount()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors">Link Account</button>
+                <button (click)="connectAccount()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Link Account</button>
               </div>
             </div>
           </div>

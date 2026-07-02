@@ -21,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
           <p class="text-xs text-app-muted mt-1">Design responsive high-converting pages, configure search engine parameters, and map domains.</p>
         </div>
 
-        <button (click)="createPage()" class="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+        <button (click)="createPage()" class="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
           <mat-icon class="text-xs w-4 h-4 leading-none">add</mat-icon>
           Create Landing Page
         </button>
@@ -37,10 +37,10 @@ import { MatIconModule } from '@angular/material/icon';
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @for (page of pages(); track page.id) {
               <div class="bg-app-bg border border-app-border rounded-2xl overflow-hidden hover:border-purple-500/50 shadow-sm transition-all group">
-                <div class="h-32 bg-slate-900 flex items-center justify-center text-app-muted relative">
+                <div class="h-32 bg-app-card flex items-center justify-center text-app-muted relative">
                   <mat-icon class="text-3xl">pageview</mat-icon>
                   <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-all">
-                    <button (click)="editTemplate(page)" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-colors">Edit Visuals</button>
+                    <button (click)="editTemplate(page)" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-app-text rounded-lg text-[10px] font-bold cursor-pointer transition-colors">Edit Visuals</button>
                     <a [href]="'http://' + page.domain" target="_blank" class="px-2.5 py-1 bg-app-card hover:bg-app-bg text-app-text border border-app-border rounded-lg text-[10px] font-bold cursor-pointer transition-colors">Preview</a>
                   </div>
                 </div>
@@ -84,7 +84,7 @@ import { MatIconModule } from '@angular/material/icon';
                 <input type="checkbox" [(ngModel)]="abTestEnabled" class="h-4 w-4 rounded border-app-border text-purple-600 focus:ring-purple-500 cursor-pointer">
               </div>
 
-              <button (click)="saveConfigurations()" class="w-full mt-2 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+              <button (click)="saveConfigurations()" class="w-full mt-2 py-2 bg-purple-600 hover:bg-purple-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
                 Save Configurations
               </button>
             </div>

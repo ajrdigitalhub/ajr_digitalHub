@@ -31,7 +31,7 @@ import { MatIconModule } from '@angular/material/icon';
           </p>
         </div>
         <div class="flex-shrink-0">
-          <a routerLink="/marketplace" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-1 transition-all flex items-center gap-2">
+          <a routerLink="/marketplace" class="bg-indigo-600 text-app-text px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-1 transition-all flex items-center gap-2">
             Browse Services <mat-icon class="text-[20px] w-[20px] h-[20px]">shopping_bag</mat-icon>
           </a>
         </div>

@@ -943,3 +943,118 @@ CREATE TABLE IF NOT EXISTS documentation_pages (
 );
 
 CREATE TRIGGER set_timestamp_documentation_pages BEFORE UPDATE ON documentation_pages FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
+
+-- Extends documentation_pages to support detailed portal sections & workflow metadata
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS purpose TEXT;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS business_use_cases JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS security_recommendations JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS performance_tips JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS billing_explanation TEXT;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS external_references JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'published';
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS search_keywords JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS seo_settings JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS likes INTEGER DEFAULT 0;
+ALTER TABLE documentation_pages ADD COLUMN IF NOT EXISTS dislikes INTEGER DEFAULT 0;
+
+-- Feedback tracking ("Was this helpful?")
+CREATE TABLE IF NOT EXISTS documentation_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    helpful BOOLEAN NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Bookmarked/Favorite documentation articles
+CREATE TABLE IF NOT EXISTS documentation_bookmarks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_bookmark UNIQUE (user_id, article_id)
+);
+
+-- Recently viewed documentation history per user/session
+CREATE TABLE IF NOT EXISTS documentation_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    session_id VARCHAR(100),
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Version history rollback tracking
+CREATE TABLE IF NOT EXISTS documentation_versions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    article_id UUID REFERENCES documentation_pages(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content_json JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Transaction Audits & Gateway logs
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    invoice_id UUID REFERENCES invoices(id) ON DELETE SET NULL,
+    provider VARCHAR(50) NOT NULL, -- Stripe, Razorpay, etc.
+    gateway_transaction_id VARCHAR(255),
+    amount NUMERIC(12,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'INR',
+    status VARCHAR(50) DEFAULT 'pending', -- success, failed, pending
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Payment Tax Receipts
+CREATE TABLE IF NOT EXISTS payment_receipts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    payment_id UUID REFERENCES payments(id) ON DELETE CASCADE,
+    receipt_number VARCHAR(100) UNIQUE NOT NULL,
+    gstin VARCHAR(50),
+    amount NUMERIC(12,2) NOT NULL,
+    tax_amount NUMERIC(12,2) DEFAULT 0.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Billing Subscriptions History Log
+CREATE TABLE IF NOT EXISTS billing_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    previous_plan VARCHAR(100),
+    new_plan VARCHAR(100) NOT NULL,
+    action VARCHAR(50) NOT NULL, -- upgrade, renew, cancellation
+    details TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Telemetry & Usage Accumulator
+CREATE TABLE IF NOT EXISTS customer_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    metric_name VARCHAR(100) NOT NULL, -- whatsapp_msgs, firebase_reads, ads_sync
+    usage_count INTEGER DEFAULT 0,
+    recorded_date DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Client Security Audit Logs
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    event VARCHAR(100) NOT NULL, -- profile_update, credential_change, login
+    details JSONB DEFAULT '{}'::jsonb,
+    ip_address INET,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_tx_customer ON payment_transactions (customer_id);
+CREATE INDEX IF NOT EXISTS idx_customer_usage_date ON customer_usage (customer_id, recorded_date);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_event ON audit_logs (customer_id, event);
+

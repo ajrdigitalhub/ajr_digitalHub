@@ -24,19 +24,19 @@ import { PwaInstallPromptComponent } from './shared/pwa-install-prompt';
 
     <!-- Global Floating Countdown in Top Right Corner in the last 1 minute -->
     @if (idle.showWarningModal() && auth.isAuthenticated()) {
-      <div id="session-countdown-pill" class="fixed top-4 right-4 z-50 flex items-center gap-2 bg-rose-600 text-white font-mono text-sm px-4 py-2.5 rounded-full shadow-lg border border-rose-500 animate-pulse">
-        <mat-icon class="text-white text-base">timer</mat-icon>
+      <div id="session-countdown-pill" class="fixed top-4 right-4 z-50 flex items-center gap-2 bg-rose-600 text-app-text font-mono text-sm px-4 py-2.5 rounded-full shadow-lg border border-rose-500 animate-pulse">
+        <mat-icon class="text-app-text text-base">timer</mat-icon>
         <span>Session expires in {{ idle.countdownStr() }}</span>
       </div>
 
       <!-- Warning Modal Overlay (At 9 minutes) -->
-      <div id="session-warning-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div id="session-warning-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-app-card/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full p-6 text-center">
           <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 text-rose-600 mb-4">
             <mat-icon class="text-3xl h-8 w-8">warning_amber</mat-icon>
           </div>
           <h3 class="text-xl font-semibold text-slate-900 mb-2">Session Expiring</h3>
-          <p class="text-sm text-slate-500 mb-6 leading-relaxed">
+          <p class="text-sm text-app-muted mb-6 leading-relaxed">
             Your secure session has been idle for 9 minutes and is about to expire. Would you like to continue working?
           </p>
           
@@ -49,7 +49,7 @@ import { PwaInstallPromptComponent } from './shared/pwa-install-prompt';
             <button 
               id="btn-session-continue"
               (click)="idle.continueSession()"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm transition-all text-sm cursor-pointer"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-app-text font-medium rounded-xl shadow-sm transition-all text-sm cursor-pointer"
             >
               <mat-icon class="text-sm">refresh</mat-icon>
               Keep Me Logged In

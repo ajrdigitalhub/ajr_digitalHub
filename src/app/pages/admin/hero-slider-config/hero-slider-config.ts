@@ -36,11 +36,11 @@ export interface HeroSlide {
         </div>
         
         <div class="flex items-center gap-3">
-          <button (click)="addSlide()" class="px-5 py-2.5 bg-[#222] hover:bg-[#2e2e2e] text-white border border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer">
+          <button (click)="addSlide()" class="px-5 py-2.5 bg-[#222] hover:bg-[#2e2e2e] text-app-text border border-app-border rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer">
             <mat-icon class="!w-4 !h-4 !text-[16px]">add_circle</mat-icon> Add Slide
           </button>
           
-          <button (click)="saveAll()" [disabled]="isSaving()" class="px-6 py-2.5 bg-indigo-600 hover:scale-105 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-indigo-600/20 disabled:opacity-50">
+          <button (click)="saveAll()" [disabled]="isSaving()" class="px-6 py-2.5 bg-indigo-600 hover:scale-105 active:scale-95 text-app-text rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-indigo-600/20 disabled:opacity-50">
             @if (isSaving()) {
               <mat-icon class="animate-spin !w-4 !h-4 !text-[16px]">refresh</mat-icon> Saving...
             } @else {
@@ -88,16 +88,16 @@ export interface HeroSlide {
                     <!-- Slide Reordering & Delete controls -->
                     <div class="flex items-center gap-1">
                       <!-- Move Up -->
-                      <button (click)="moveSlide(idx, -1); $event.stopPropagation()" [disabled]="idx === 0" class="p-1 text-app-muted hover:text-white rounded hover:bg-white/5 cursor-pointer disabled:opacity-20">
+                      <button (click)="moveSlide(idx, -1); $event.stopPropagation()" [disabled]="idx === 0" class="p-1 text-app-muted hover:text-app-text rounded hover:bg-white/5 cursor-pointer disabled:opacity-20">
                         <mat-icon class="!w-4 !h-4 !text-[16px]">arrow_upward</mat-icon>
                       </button>
                       <!-- Move Down -->
-                      <button (click)="moveSlide(idx, 1); $event.stopPropagation()" [disabled]="idx === slides().length - 1" class="p-1 text-app-muted hover:text-white rounded hover:bg-white/5 cursor-pointer disabled:opacity-20">
+                      <button (click)="moveSlide(idx, 1); $event.stopPropagation()" [disabled]="idx === slides().length - 1" class="p-1 text-app-muted hover:text-app-text rounded hover:bg-white/5 cursor-pointer disabled:opacity-20">
                         <mat-icon class="!w-4 !h-4 !text-[16px]">arrow_downward</mat-icon>
                       </button>
                       <div class="w-px h-4 bg-app-border/40 mx-1"></div>
                       <!-- Delete slide -->
-                      <button (click)="deleteSlide(idx); $event.stopPropagation()" class="p-1 text-rose-500 hover:text-white rounded hover:bg-rose-600/25 cursor-pointer">
+                      <button (click)="deleteSlide(idx); $event.stopPropagation()" class="p-1 text-rose-500 hover:text-app-text rounded hover:bg-rose-600/25 cursor-pointer">
                         <mat-icon class="!w-4 !h-4 !text-[16px]">delete</mat-icon>
                       </button>
                     </div>
@@ -177,7 +177,7 @@ export interface HeroSlide {
                           }
 
                           <div class="flex flex-col flex-grow">
-                            <button type="button" (click)="fileInput.click()" class="px-3 py-1.5 bg-[#252528] border border-white/5 rounded-lg text-[10px] font-black uppercase tracking-wider text-white hover:bg-[#333] cursor-pointer transition-colors max-w-min whitespace-nowrap">
+                            <button type="button" (click)="fileInput.click()" class="px-3 py-1.5 bg-[#252528] border border-app-border rounded-lg text-[10px] font-black uppercase tracking-wider text-app-text hover:bg-[#333] cursor-pointer transition-colors max-w-min whitespace-nowrap">
                               Upload Background
                             </button>
                             <input #fileInput type="file" accept="image/*" class="hidden" (change)="uploadSlideImage($event, idx)" />
@@ -201,7 +201,7 @@ export interface HeroSlide {
             </h3>
 
             <!-- Simulated device viewport frame -->
-            <div class="border border-white/10 rounded-2xl overflow-hidden aspect-video relative group select-none shadow-2xl bg-slate-950">
+            <div class="border border-app-border rounded-2xl overflow-hidden aspect-video relative group select-none shadow-2xl bg-app-bg">
               
               <!-- Gradient Mask from Active Slide settings -->
               @if (currentActiveSlide()) {
@@ -218,11 +218,11 @@ export interface HeroSlide {
 
                 <!-- Slide details -->
                 <div class="absolute inset-0 flex flex-col justify-end p-5 select-none z-10">
-                  <span class="text-[8px] bg-indigo-600/80 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-widest max-w-min mb-1 select-none">
+                  <span class="text-[8px] bg-indigo-600/80 text-app-text px-2 py-0.5 rounded-full font-black uppercase tracking-widest max-w-min mb-1 select-none">
                     {{ currentActiveSlide()!.subtitle || 'CORE CLUSTER' }}
                   </span>
                   
-                  <h4 class="text-sm font-black text-white leading-tight mb-1 font-sans select-none tracking-tight">
+                  <h4 class="text-sm font-black text-app-text leading-tight mb-1 font-sans select-none tracking-tight">
                     {{ currentActiveSlide()!.title }}
                   </h4>
                   
@@ -231,7 +231,7 @@ export interface HeroSlide {
                   </p>
 
                   <div class="flex items-center gap-2">
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[8px] px-3.5 py-1.5 rounded-lg uppercase tracking-wider flex items-center gap-1">
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-app-text font-extrabold text-[8px] px-3.5 py-1.5 rounded-lg uppercase tracking-wider flex items-center gap-1">
                       {{ currentActiveSlide()!.buttonText }}
                       <mat-icon class="!w-2 !h-2 !text-[8px] flex items-center justify-center">arrow_forward</mat-icon>
                     </button>
@@ -248,7 +248,7 @@ export interface HeroSlide {
             </div>
 
             <!-- Simulation Controls -->
-            <div class="flex items-center justify-between border-t border-white/5 pt-4 mt-6">
+            <div class="flex items-center justify-between border-t border-app-border pt-4 mt-6">
               <span class="text-[10px] font-bold text-app-muted block uppercase">CMS Auto-Saving State</span>
               <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

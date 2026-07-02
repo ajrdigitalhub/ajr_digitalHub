@@ -35,7 +35,7 @@ import { ToastService, ToastMessage } from '../services/toast.service';
           <!-- Content Message -->
           <div class="flex-grow flex flex-col justify-center min-w-0 pr-2">
             <span class="text-xs uppercase font-bold tracking-wider opacity-60 mb-0.5">{{ getTitlePrefix(toast.type) }}</span>
-            <p class="text-sm font-semibold leading-relaxed tracking-tight break-words text-slate-800 dark:text-slate-100">
+            <p class="text-sm font-semibold leading-relaxed tracking-tight break-words text-slate-800 dark:text-app-text">
               {{ toast.message }}
             </p>
           </div>
@@ -43,7 +43,7 @@ import { ToastService, ToastMessage } from '../services/toast.service';
           <!-- Quick close button -->
           <button 
             (click)="$event.stopPropagation(); toastService.remove(toast.id)" 
-            class="shrink-0 hover:scale-110 active:scale-90 transition-transform w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-200 hover:bg-white/10"
+            class="shrink-0 hover:scale-110 active:scale-90 transition-transform w-6 h-6 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-white/10"
             aria-label="Close notification"
           >
             <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">close</mat-icon>

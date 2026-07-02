@@ -139,13 +139,13 @@ import { MatIconModule } from '@angular/material/icon';
 
               <!-- Tier 2 -->
               <div class="border-2 border-indigo-600 bg-app-bg/50 rounded-2xl p-4 flex flex-col justify-between relative shadow-lg">
-                <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-white bg-indigo-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
+                <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-app-text bg-indigo-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Popular</span>
                 <div>
                   <h4 class="text-xs font-bold text-app-text">Enterprise Pro</h4>
                   <p class="text-[10px] text-app-muted mt-1">Unlimited templates, CRM.</p>
                   <h3 class="text-xl font-black text-app-text mt-3 font-mono">₹7,999<span class="text-xs font-normal">/mo</span></h3>
                 </div>
-                <button (click)="selectPlan('Pro')" class="w-full mt-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl cursor-pointer transition-colors">Current Plan</button>
+                <button (click)="selectPlan('Pro')" class="w-full mt-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-app-text text-xs font-bold rounded-xl cursor-pointer transition-colors">Current Plan</button>
               </div>
 
               <!-- Tier 3 -->
@@ -227,7 +227,7 @@ import { MatIconModule } from '@angular/material/icon';
               </select>
             </div>
 
-            <button (click)="generateReport()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+            <button (click)="generateReport()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
               Export and Download Report
             </button>
           </div>

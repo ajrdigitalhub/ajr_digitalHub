@@ -39,7 +39,7 @@ interface Form {
         <button 
           id="btn-create-new-form"
           (click)="openBuildPanel()"
-          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm text-sm transition-all cursor-pointer"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-app-text font-medium rounded-xl shadow-sm text-sm transition-all cursor-pointer"
         >
           <mat-icon class="text-sm">add_circle</mat-icon>
           Create New Form
@@ -80,7 +80,7 @@ interface Form {
               </p>
               <button 
                 (click)="openBuildPanel()"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors cursor-pointer"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-app-text text-sm font-medium rounded-xl shadow-sm transition-colors cursor-pointer"
               >
                 <mat-icon class="text-sm">add_circle</mat-icon>
                 Build Your First Form
@@ -139,7 +139,7 @@ interface Form {
                     <!-- View Responses Dashboard -->
                     <a 
                       [routerLink]="['/dashboard/forms', form.id, 'responses']"
-                      class="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all text-center"
+                      class="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-app-text rounded-xl text-xs font-semibold shadow-sm transition-all text-center"
                     >
                       <mat-icon class="text-xs leading-none">assignment</mat-icon>
                       View CRM ({{ form.submissionsCount || 0 }})
@@ -341,7 +341,7 @@ interface Form {
                 id="btn-save-form"
                 (click)="onSaveForm()"
                 [disabled]="isSaving() || !newFormName"
-                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-app-text font-semibold rounded-xl text-sm shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 @if (isSaving()) {
                   <div class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

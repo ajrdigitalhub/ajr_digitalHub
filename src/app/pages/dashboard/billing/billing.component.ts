@@ -38,8 +38,58 @@ export class BillingDashboardComponent implements OnInit {
     googleAds: { spend: 0, cost: 0 }
   });
 
+  customerProfile = signal<any>(null);
+  isSavingGateway = signal<boolean>(false);
+
   ngOnInit() {
     this.loadBillingData();
+    this.loadCustomerProfile();
+  }
+
+  async loadCustomerProfile() {
+    try {
+      const { firstValueFrom } = await import('rxjs');
+      const custs = await firstValueFrom(this.api.get<any[]>('/customers'));
+      if (custs && custs.length > 0) {
+        const profile = await firstValueFrom(this.api.get<any>(`/customers/${custs[0].id}`));
+        
+        // Initialize payment_gateway if not present
+        if (!profile.integrations) {
+          profile.integrations = {};
+        }
+        if (!profile.integrations.payment_gateway) {
+          profile.integrations.payment_gateway = {
+            provider: 'Stripe',
+            apiKey: '',
+            secretKey: '',
+            active: false,
+            sandbox: true
+          };
+        }
+        this.customerProfile.set(profile);
+      }
+    } catch (e) {
+      console.error('Failed to load customer profile details', e);
+    }
+  }
+
+  async savePaymentGateway() {
+    const profile = this.customerProfile();
+    if (!profile) return;
+    this.isSavingGateway.set(true);
+    try {
+      const { firstValueFrom } = await import('rxjs');
+      await firstValueFrom(this.api.put(`/customers/${profile.id}`, {
+        integrations: {
+          payment_gateway: profile.integrations.payment_gateway
+        }
+      }));
+      alert('Payment gateway configurations saved successfully!');
+    } catch (e: any) {
+      alert('Failed to save gateway config: ' + e.message);
+    } finally {
+      this.isSavingGateway.set(false);
+    }
   }
 
   async loadBillingData() {

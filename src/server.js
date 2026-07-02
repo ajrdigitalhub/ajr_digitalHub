@@ -638,17 +638,17 @@ const distPath = path_1.default.join(__dirname, '../dist');
 // Serve static build from dist folder
 app.use(express_1.default.static(distPath));
 // Fallback all other client-side routing to index.html to allow SPA working cleanly
-app.get('*', (req, res) => {
-    const indexPath = path_1.default.join(distPath, 'index.html');
-    if (fs_1.default.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-    }
-    else {
-        // Fallback message while building
-        res.status(200).send('<h2>Deploying system assets, please reload in a moment...</h2>');
-    }
-});
-// Run Backend Express App
-// app.listen(PORT, '0.0.0.0', () => {
-//     console.log(`Dynamic Form Builder Server actively running at http://0.0.0.0:${PORT}`);
+// app.get('*', (req, res) => {
+//     const indexPath = path_1.default.join(distPath, 'index.html');
+//     if (fs_1.default.existsSync(indexPath)) {
+//         res.sendFile(indexPath);
+//     }
+//     else {
+//         // Fallback message while building
+//         res.status(200).send('<h2>Deploying system assets, please reload in a moment...</h2>');
+//     }
 // });
+// Run Backend Express App
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Dynamic Form Builder Server actively running at http://0.0.0.0:${PORT}`);
+});

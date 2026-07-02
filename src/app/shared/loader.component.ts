@@ -10,7 +10,7 @@ import { LoaderService } from '../services/loader.service';
     @if (mode() === 'fullscreen' && loaderService.isLoading()) {
       <div 
         id="fullscreen-loader" 
-        class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/45 dark:bg-black/60 backdrop-blur-md transition-all duration-300"
+        class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-app-bg/45 dark:bg-black/60 backdrop-blur-md transition-all duration-300"
       >
         <div class="relative flex items-center justify-center">
           <!-- Multi-ring dynamic cyber spin -->
@@ -30,7 +30,7 @@ import { LoaderService } from '../services/loader.service';
           <span class="text-xs uppercase font-bold tracking-[0.2em] text-indigo-400 animate-pulse">
             Processing Transaction
           </span>
-          <span class="text-[10px] text-slate-400 dark:text-slate-500 tracking-wider mt-1 font-mono">
+          <span class="text-[10px] text-app-muted dark:text-app-muted tracking-wider mt-1 font-mono">
             UPLINK ACTIVE • SYNC IN PROGRESS
           </span>
         </div>

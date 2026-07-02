@@ -44,7 +44,7 @@
     
     <div class="flex items-center gap-3">
       <!-- Send invoice button -->
-      <button (click)="sendInvoice()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 cursor-pointer">
+      <button (click)="sendInvoice()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-app-text px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 cursor-pointer">
         <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">{{ isSent() ? 'done' : 'send' }}</mat-icon>
         {{ isSent() ? 'Invoice Sent!' : 'Send Invoice' }}
       </button>
@@ -318,9 +318,9 @@
             @if (userPlan() === 'free') {
               <div class="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-6 text-center shadow-lg relative overflow-hidden">
                 <mat-icon class="text-indigo-400 !w-12 !h-12 !text-[48px] mb-3">workspace_premium</mat-icon>
-                <h3 class="text-base font-black text-white mb-2 uppercase font-display tracking-wider">Branding System Locked</h3>
+                <h3 class="text-base font-black text-app-text mb-2 uppercase font-display tracking-wider">Branding System Locked</h3>
                 <p class="text-xs text-indigo-200/80 mb-6 leading-relaxed">Unlock custom brand configurations, color schemes, logo alignments, signature uploads, and multi-brand templates by upgrading to a premium node.</p>
-                <button (click)="showUpgradeModal.set(true)" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
+                <button (click)="showUpgradeModal.set(true)" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
                   View Upgrades
                 </button>
               </div>
@@ -380,8 +380,8 @@
                       <div class="relative rounded-xl overflow-hidden aspect-video bg-black/60 border border-app-border group">
                         <img [src]="logoUrl()" alt="Company Logo Preview" class="w-full h-full object-contain p-2" referrerpolicy="no-referrer" />
                         <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <button (click)="logoInput.click()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Replace</button>
-                          <button (click)="logoUrl.set('')" class="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Remove</button>
+                          <button (click)="logoInput.click()" class="px-3 py-1.5 bg-indigo-600 text-app-text rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Replace</button>
+                          <button (click)="logoUrl.set('')" class="px-3 py-1.5 bg-rose-600 text-app-text rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Remove</button>
                         </div>
                       </div>
                     } @else {
@@ -446,8 +446,8 @@
                       <div class="relative rounded-xl overflow-hidden aspect-video bg-black/60 border border-app-border group">
                         <img [src]="signatureUrl()" alt="Authorized Signature Preview" class="w-full h-full object-contain p-2" referrerpolicy="no-referrer" />
                         <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <button (click)="sigInput.click()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Replace</button>
-                          <button (click)="signatureUrl.set('')" class="px-3 py-1.5 bg-rose-600 text-white rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Remove</button>
+                          <button (click)="sigInput.click()" class="px-3 py-1.5 bg-indigo-600 text-app-text rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Replace</button>
+                          <button (click)="signatureUrl.set('')" class="px-3 py-1.5 bg-rose-600 text-app-text rounded-lg text-[9px] font-black uppercase hover:scale-105 transition-transform cursor-pointer">Remove</button>
                         </div>
                       </div>
                     } @else {
@@ -467,7 +467,7 @@
 
                 <!-- Save General Config -->
                 <div class="pt-4 border-t border-app-border">
-                  <button (click)="saveConfig()" [disabled]="isSaving()" class="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer disabled:opacity-50">
+                  <button (click)="saveConfig()" [disabled]="isSaving()" class="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-app-text font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer disabled:opacity-50">
                     <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">save</mat-icon>
                     Save Branding Defaults & Configs
                   </button>
@@ -484,9 +484,9 @@
             @if (userPlan() === 'free') {
               <div class="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-6 text-center shadow-lg relative overflow-hidden">
                 <mat-icon class="text-indigo-400 !w-12 !h-12 !text-[48px] mb-3">low_priority</mat-icon>
-                <h3 class="text-base font-black text-white mb-2 uppercase font-display tracking-wider">Layout Positioning Locked</h3>
+                <h3 class="text-base font-black text-app-text mb-2 uppercase font-display tracking-wider">Layout Positioning Locked</h3>
                 <p class="text-xs text-indigo-200/80 mb-6 leading-relaxed">Customizing the drag-and-drop hierarchy layout of invoice nodes is exclusive to our Pro and Enterprise workspace plans.</p>
-                <button (click)="showUpgradeModal.set(true)" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
+                <button (click)="showUpgradeModal.set(true)" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
                   Upgrade Workspace
                 </button>
               </div>
@@ -529,7 +529,7 @@
     <main 
       [class.hidden]="activeViewMode() !== 'preview'"
       [class.flex]="activeViewMode() === 'preview'"
-      class="flex-grow p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-auto bg-slate-900 justify-center lg:!flex custom-scrollbar"
+      class="flex-grow p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-auto bg-app-card justify-center lg:!flex custom-scrollbar"
     >
       
       <!-- A4 Sheet wrapper -->
@@ -557,7 +557,7 @@
                         <img [src]="logoUrl()" alt="Issuer Logo" class="max-h-16 max-w-44 object-contain mb-3" referrerpolicy="no-referrer" />
                       }
                       <h2 class="text-xl font-black tracking-tight" [style.color]="primaryColor()">{{ sellerName() }}</h2>
-                      <p class="text-[10px] text-slate-400 font-medium whitespace-pre-line mt-1" [class.text-center]="logoPosition() === 'center'" [class.text-right]="logoPosition() === 'right'">{{ sellerAddress() }}</p>
+                      <p class="text-[10px] text-app-muted font-medium whitespace-pre-line mt-1" [class.text-center]="logoPosition() === 'center'" [class.text-right]="logoPosition() === 'right'">{{ sellerAddress() }}</p>
                     </div>
                   }
                 </div>
@@ -567,16 +567,16 @@
                   <h1 class="text-3xl font-black uppercase tracking-widest mb-4" [style.color]="primaryColor()">INVOICE</h1>
                   <div class="space-y-1.5 font-sans">
                     <div class="flex justify-between sm:justify-end gap-3 text-xs">
-                      <span class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Invoice ID:</span>
+                      <span class="text-app-muted font-bold uppercase tracking-wider text-[9px]">Invoice ID:</span>
                       <span class="font-bold text-slate-900 font-mono">{{ invoiceId() }}</span>
                     </div>
                     @if (showDates()) {
                       <div class="flex justify-between sm:justify-end gap-3 text-xs">
-                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Issued:</span>
+                        <span class="text-app-muted font-bold uppercase tracking-wider text-[9px]">Issued:</span>
                         <span class="font-bold text-slate-700">{{ invoiceDate() | date }}</span>
                       </div>
                       <div class="flex justify-between sm:justify-end gap-3 text-xs">
-                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Due Date:</span>
+                        <span class="text-app-muted font-bold uppercase tracking-wider text-[9px]">Due Date:</span>
                         <span class="font-bold text-slate-700">{{ dueDate() | date }}</span>
                       </div>
                     }
@@ -589,20 +589,20 @@
             @if (section === 'bill_to') {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-slate-100 pb-8 animate-in fade-in duration-300">
                 <div class="space-y-2">
-                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Bill To</span>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-app-muted block">Bill To</span>
                   <h3 class="text-base font-black text-slate-900">{{ clientName() || 'Client Acme Corp' }}</h3>
-                  <p class="text-xs text-slate-500 whitespace-pre-line leading-relaxed">{{ clientAddress() || 'Recipient Address details' }}</p>
+                  <p class="text-xs text-app-muted whitespace-pre-line leading-relaxed">{{ clientAddress() || 'Recipient Address details' }}</p>
                 </div>
 
                 <!-- Custom premium metadata parameters -->
                 @if (customFields().length > 0 && userPlan() !== 'free') {
                   <div class="space-y-2 flex flex-col items-start md:items-end">
-                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Reference Details</span>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-app-muted block">Reference Details</span>
                     <div class="space-y-1.5 text-xs text-right w-full max-w-[200px]">
                       @for (field of customFields(); track $index) {
                         @if (field.label && field.value) {
                           <div class="flex justify-between gap-3 text-right">
-                            <span class="text-slate-400 font-bold uppercase text-[9px]">{{ field.label }}:</span>
+                            <span class="text-app-muted font-bold uppercase text-[9px]">{{ field.label }}:</span>
                             <span class="font-bold text-slate-700 font-mono">{{ field.value }}</span>
                           </div>
                         }
@@ -618,7 +618,7 @@
               <div class="animate-in fade-in duration-300">
                 <table class="w-full text-left border-collapse">
                   <thead>
-                    <tr class="border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                    <tr class="border-b border-slate-200 text-app-muted text-[10px] font-black uppercase tracking-wider">
                       <th class="py-3 w-1/2">Product Description</th>
                       <th class="py-3 text-center w-1/12">Qty</th>
                       <th class="py-3 text-right w-2/12">Unit Rate</th>
@@ -630,10 +630,10 @@
                       <tr>
                         <td class="py-4.5 pr-4">
                           <span class="font-black text-slate-900 block">{{ item.name || 'Untitled Line Item' }}</span>
-                          <span class="text-[10px] text-slate-400 mt-0.5 block">{{ item.description }}</span>
+                          <span class="text-[10px] text-app-muted mt-0.5 block">{{ item.description }}</span>
                         </td>
-                        <td class="py-4.5 text-center font-mono text-slate-600">{{ item.quantity }}</td>
-                        <td class="py-4.5 text-right font-mono text-slate-600">₹{{ item.rate | number:'1.2-2' }}</td>
+                        <td class="py-4.5 text-center font-mono text-app-muted">{{ item.quantity }}</td>
+                        <td class="py-4.5 text-right font-mono text-app-muted">₹{{ item.rate | number:'1.2-2' }}</td>
                         <td class="py-4.5 text-right font-black font-mono text-slate-900">₹{{ (item.quantity * item.rate) | number:'1.2-2' }}</td>
                       </tr>
                     }
@@ -649,23 +649,23 @@
                 <div class="md:col-span-7 space-y-5">
                   @if (showNotes() && notes()) {
                     <div class="space-y-1.5">
-                      <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Notes & Payment Terms</span>
-                      <p class="text-[10px] text-slate-500 leading-relaxed whitespace-pre-line">{{ notes() }}</p>
+                      <span class="text-[9px] font-black uppercase tracking-wider text-app-muted block">Notes & Payment Terms</span>
+                      <p class="text-[10px] text-app-muted leading-relaxed whitespace-pre-line">{{ notes() }}</p>
                     </div>
                   }
 
                   <!-- Payment methods -->
                   <div class="space-y-1.5">
-                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Accepted payment gateways</span>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-app-muted block">Accepted payment gateways</span>
                     <div class="flex gap-2 flex-wrap">
                       @if (paymentMethods().card) {
-                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase">
-                          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-slate-400">credit_card</mat-icon> Credit Card
+                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-app-muted uppercase">
+                          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-app-muted">credit_card</mat-icon> Credit Card
                         </span>
                       }
                       @if (paymentMethods().bank) {
-                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase">
-                          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-slate-400">account_balance</mat-icon> Bank Transfer
+                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-app-muted uppercase">
+                          <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-app-muted">account_balance</mat-icon> Bank Transfer
                         </span>
                       }
                     </div>
@@ -674,7 +674,7 @@
                   <!-- Signature image or cursive text -->
                   @if (showSignature()) {
                     <div class="pt-4 flex flex-col items-start space-y-1.5">
-                      <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Authorized Signature</span>
+                      <span class="text-[9px] font-black uppercase tracking-wider text-app-muted block">Authorized Signature</span>
                       @if (signatureUrl()) {
                         <img [src]="signatureUrl()" alt="Issuer Signature" class="max-h-12 max-w-36 object-contain" referrerpolicy="no-referrer" />
                       } @else if (signatureText()) {
@@ -682,7 +682,7 @@
                           {{ signatureText() }}
                         </div>
                       } @else {
-                        <div class="text-[10px] text-slate-300 italic">No signature set.</div>
+                        <div class="text-[10px] text-app-text italic">No signature set.</div>
                       }
                     </div>
                   }
@@ -690,20 +690,20 @@
 
                 <!-- Math Totals calculation block -->
                 <div class="md:col-span-5 space-y-2.5 font-sans">
-                  <div class="flex justify-between items-center text-xs text-slate-400">
+                  <div class="flex justify-between items-center text-xs text-app-muted">
                     <span class="font-bold uppercase tracking-wider text-[9px]">Subtotal:</span>
                     <span class="font-bold text-slate-900 font-mono">₹{{ subtotal() | number:'1.2-2' }}</span>
                   </div>
                   
                   @if (discountVal() > 0) {
-                    <div class="flex justify-between items-center text-xs text-slate-400">
+                    <div class="flex justify-between items-center text-xs text-app-muted">
                       <span class="font-bold uppercase tracking-wider text-[9px]">Discount:</span>
                       <span class="font-bold text-rose-500 font-mono">- ₹{{ discountAmount() | number:'1.2-2' }}</span>
                     </div>
                   }
 
                   @if (taxRate() > 0) {
-                    <div class="flex justify-between items-center text-xs text-slate-400">
+                    <div class="flex justify-between items-center text-xs text-app-muted">
                       <span class="font-bold uppercase tracking-wider text-[9px]">Tax ({{ taxRate() }}%):</span>
                       <span class="font-bold text-slate-700 font-mono">+ ₹{{ taxAmount() | number:'1.2-2' }}</span>
                     </div>
@@ -723,7 +723,7 @@
         </div>
 
         <!-- Sheet Footer (Pixel-perfect indicator) -->
-        <footer class="mt-12 pt-6 border-t border-slate-100 flex justify-between items-center text-[8px] text-slate-400 font-mono">
+        <footer class="mt-12 pt-6 border-t border-slate-100 flex justify-between items-center text-[8px] text-app-muted font-mono">
           <span>AJR Cluster Secure Invoice &bull; Generated digitally</span>
           <span>Security hash: AJR-SEC-{{ invoiceId() }}</span>
         </footer>
@@ -766,13 +766,13 @@
                 <li class="flex items-center gap-1.5"><mat-icon class="text-emerald-500 !w-4 !h-4 !text-[14px]">done</mat-icon> Unlimited saved layouts</li>
               </ul>
             </div>
-            <button (click)="upgradeToPro()" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer">
+            <button (click)="upgradeToPro()" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer">
               Choose Pro
             </button>
           </div>
 
           <div class="bg-app-bg/50 border border-indigo-500/30 rounded-2xl p-5 hover:border-indigo-500/60 transition-colors flex flex-col justify-between relative">
-            <div class="absolute top-2 right-2 bg-indigo-600/90 text-white font-black text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">Popular</div>
+            <div class="absolute top-2 right-2 bg-indigo-600/90 text-app-text font-black text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">Popular</div>
             <div>
               <span class="text-[9px] font-black uppercase tracking-wider text-cyan-400 block mb-1">ENTERPRISE</span>
               <span class="text-lg font-black text-app-text">₹1,999 / mo</span>
@@ -782,7 +782,7 @@
                 <li class="flex items-center gap-1.5"><mat-icon class="text-cyan-400 !w-4 !h-4 !text-[14px]">done</mat-icon> Full multi-tenant node</li>
               </ul>
             </div>
-            <button (click)="upgradeToEnterprise()" class="mt-6 w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer">
+            <button (click)="upgradeToEnterprise()" class="mt-6 w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-app-text rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer">
               Choose Enterprise
             </button>
           </div>
@@ -816,7 +816,7 @@
         </p>
         
         <div class="flex flex-col gap-3">
-          <button (click)="confirmLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-12 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+          <button (click)="confirmLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-app-text font-bold h-12 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer">
             <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">login</mat-icon>
             <span>LOGIN</span>
           </button>

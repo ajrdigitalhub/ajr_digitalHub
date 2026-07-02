@@ -356,10 +356,10 @@
             @for (log of service.firebaseLogs(); track log.id) {
               <div class="flex justify-between items-start gap-4 hover:bg-white/5 p-1 rounded transition">
                 <div class="flex items-center gap-2 text-app-muted truncate">
-                  <span class="text-slate-500 font-bold">[{{ log.timestamp | date:'HH:mm:ss' }}]</span>
+                  <span class="text-app-muted font-bold">[{{ log.timestamp | date:'HH:mm:ss' }}]</span>
                   <span [class]="log.method === 'POST' ? 'text-indigo-400' : 'text-cyan-400'" class="font-black text-[9px]">{{ log.method }}</span>
                   <span class="text-amber-400 font-bold truncate max-w-[150px]">{{ log.endpoint }}</span>
-                  <span class="text-[8px] text-slate-500 font-normal">({{ log.appId.substring(0, 6) }})</span>
+                  <span class="text-[8px] text-app-muted font-normal">({{ log.appId.substring(0, 6) }})</span>
                 </div>
                 
                 <div class="flex items-center gap-3">

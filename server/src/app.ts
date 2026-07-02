@@ -10,7 +10,27 @@ import { requireAuth, requireRole } from './middlewares/auth.middleware';
 
 const app = express();
 
-app.use(cors());
+const ALLOWED_ORIGINS = [
+  /^http:\/\/localhost(:\d+)?$/,
+  /^https:\/\/localhost(:\d+)?$/,
+  /\.web\.app$/,
+  /\.firebaseapp\.com$/,
+  /\.run\.app$/,
+  /ajrdigitalhub\.com$/,
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowed = ALLOWED_ORIGINS.some(p => p.test(origin));
+    if (allowed) return callback(null, true);
+    return callback(new Error(`CORS: Origin '${origin}' not allowed`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-organization-id', 'x-workspace-id', 'x-application-id'],
+}));
+app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(usageTracker);

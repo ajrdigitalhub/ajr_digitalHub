@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { createNodeRequestHandler } from '@angular/ssr/node';
+import { createNodeRequestHandler, AngularNodeAppEngine, writeResponseToNodeResponse } from '@angular/ssr/node';
 import * as admin from 'firebase-admin';
 
 // Initialize Firebase Admin in src/server.ts if FIREBASE_SERVICE_ACCOUNT is available
@@ -37,7 +37,7 @@ const JWT_SECRET = 'saas_forms_super_secret_key_123';
 let currentDir = process.cwd();
 if (typeof __dirname !== 'undefined') {
   currentDir = __dirname;
-// @ts-ignore
+  // @ts-ignore
 } else if (typeof import.meta !== 'undefined' && import.meta.url) {
   currentDir = path.dirname(fileURLToPath(import.meta.url));
 }
@@ -128,7 +128,7 @@ function loadDatastore() {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-      db = { 
+      db = {
         users: parsed.users || [],
         forms: parsed.forms || [],
         responses: parsed.responses || [],
@@ -136,20 +136,20 @@ function loadDatastore() {
         purchases: parsed.purchases || [],
         products: parsed.products || []
       };
-      
+
       // Seed products if missing
       if (!db.products || db.products.length === 0) {
         db.products = [];
         seedDefaultProducts();
         saveDatastore();
       }
-      
+
       console.log('Datastore safely reloaded from local schema:', DATA_FILE);
     } else {
       // Default seeds
       const adminPass = bcrypt.hashSync('demopassword123', 8);
       const userPass = bcrypt.hashSync('demopassword123', 8);
-      
+
       db.users.push({
         id: 'admin-1',
         email: 'admin@saas.com',
@@ -262,20 +262,26 @@ app.use(cors({
     // Dynamic origin selection to perfectly support AI Studio web iframe & localhost dev
     if (!origin) return callback(null, true);
     if (
-      origin.startsWith('http://localhost') || 
-      origin.startsWith('https://localhost') || 
-      origin.endsWith('.run.app') || 
-      origin.includes('google.com') || 
-      origin.includes('aistudio')
+      origin.startsWith('http://localhost') ||
+      origin.startsWith('https://localhost') ||
+      origin.endsWith('.run.app') ||
+      origin.endsWith('.web.app') ||
+      origin.endsWith('.firebaseapp.com') ||
+      origin.includes('google.com') ||
+      origin.includes('aistudio') ||
+      origin.includes('ajrdigitalhub.com')
     ) {
       return callback(null, true);
     }
     return callback(null, true); // Fallback to always allow in the sandboxed preview
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-organization-id', 'x-workspace-id', 'x-application-id']
 }));
+
+// Handle OPTIONS preflight for all routes
+app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
 
@@ -347,7 +353,7 @@ app.post('/api/auth/register', async (req, res) => {
   const email = req.body?.data?.email || req.body?.email;
   const password = req.body?.data?.password || req.body?.password;
   const role = req.body?.data?.role || req.body?.role;
-  
+
   if (!email || !password) {
     console.log('[Register API] Missing email or password:', email, password);
     return res.status(400).json({ message: 'Email and password required' });
@@ -360,13 +366,13 @@ app.post('/api/auth/register', async (req, res) => {
     try {
       try {
         await pool.query(
-          'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3)', 
+          'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3)',
           [email.toLowerCase(), hashedPass, userRole]
         );
       } catch (e: any) {
         if (e.code === '42703') { // column "email" does not exist
           await pool.query(
-            'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)', 
+            'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
             [email.toLowerCase(), hashedPass, userRole]
           );
         } else {
@@ -417,7 +423,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   let dbUser;
-  
+
   if (pool) {
     try {
       // Handle the case where the DB uses 'username' instead of 'email'
@@ -436,7 +442,7 @@ app.post('/api/auth/login', async (req, res) => {
           throw e; // rethrow other DB errors
         }
       }
-      
+
       if (dbUser) {
         dbUser = {
           id: dbUser.id.toString(),
@@ -494,7 +500,7 @@ app.post('/api/auth/login', async (req, res) => {
 // POST /api/auth/google-login
 app.post('/api/auth/google-login', async (req, res) => {
   const { idToken, role } = req.body;
-  
+
   if (!idToken) {
     return res.status(400).json({ success: false, message: 'Google ID token required' });
   }
@@ -512,7 +518,7 @@ app.post('/api/auth/google-login', async (req, res) => {
             const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
             if (payload.email) email = payload.email;
             if (payload.name) fullName = payload.name;
-          } catch (e) {}
+          } catch (e) { }
         }
       } else {
         return res.status(500).json({ success: false, message: 'Firebase Admin not initialized' });
@@ -528,7 +534,7 @@ app.post('/api/auth/google-login', async (req, res) => {
     }
 
     let dbUser;
-    
+
     if (pool) {
       try {
         try {
@@ -545,19 +551,19 @@ app.post('/api/auth/google-login', async (req, res) => {
             throw e;
           }
         }
-        
+
         if (!dbUser) {
           const hashedPass = bcrypt.hashSync(Math.random().toString(36), 8);
           try {
             const insertResult = await pool.query(
-              'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING *', 
+              'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING *',
               [email.toLowerCase(), hashedPass, role || 'user']
             );
             dbUser = insertResult.rows[0];
           } catch (e: any) {
             if (e.code === '42703') {
               const insertResult = await pool.query(
-                'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING *', 
+                'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING *',
                 [email.toLowerCase(), hashedPass, role || 'user']
               );
               dbUser = insertResult.rows[0];
@@ -569,7 +575,7 @@ app.post('/api/auth/google-login', async (req, res) => {
             }
           }
         }
-        
+
         if (dbUser) {
           dbUser = {
             id: dbUser.id.toString(),
@@ -635,7 +641,7 @@ app.post('/api/auth/google-login', async (req, res) => {
 // POST /api/auth/refresh
 app.post('/api/auth/refresh', async (req, res) => {
   const { refreshToken } = req.body;
-  
+
   if (!refreshToken) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -725,11 +731,11 @@ app.post('/api/dynamic/orders', requireAuth, (req: any, res) => {
     status: 'completed',
     createdAt: new Date().toISOString()
   };
-  
+
   if (!db.purchases) db.purchases = [];
   db.purchases.push(newOrder);
   saveDatastore();
-  
+
   res.status(201).json(newOrder);
 });
 
@@ -794,7 +800,7 @@ app.get('/api/forms/:id', (req, res) => {
 // DELETE /api/forms/:id
 app.delete('/api/forms/:id', authenticateToken, (req: any, res) => {
   const formIndex = db.forms.findIndex(f => f.id === req.params.id);
-  
+
   if (formIndex === -1) {
     return res.status(404).json({ message: 'Form not found' });
   }
@@ -894,7 +900,7 @@ app.get('/api/forms/:id/analytics', authenticateToken, (req: any, res) => {
 
   // 2. Submissions grouped per day (over active range or last 10 days)
   const submissionsPerDayMap: Record<string, number> = {};
-  
+
   // Seed last 10 days with 0 counts to guarantee a nice timeline shape
   const now = new Date();
   for (let i = 9; i >= 0; i--) {
@@ -921,7 +927,7 @@ app.get('/api/forms/:id/analytics', authenticateToken, (req: any, res) => {
 
   // 3. Field-wise choice option distribution (for Dropdown, Radio, Checkboxes)
   const fieldStats: Record<string, Record<string, number>> = {};
-  
+
   form.fields.forEach(field => {
     if (['dropdown', 'radio', 'checkbox'].includes(field.type)) {
       fieldStats[field.id] = {};
@@ -973,19 +979,37 @@ const distPath = path.join(currentDir, 'dist/browser');
 // Serve static build from dist folder
 app.use(express.static(distPath));
 
-// Fallback all other client-side routing to index.html to allow SPA working cleanly
-app.get('*', (req, res) => {
-  let indexPath = path.join(distPath, 'index.html');
-  if (!fs.existsSync(indexPath)) {
-    indexPath = path.join(distPath, 'index.csr.html');
+const angularApp = new AngularNodeAppEngine();
+
+// Handle all other requests with Angular SSR
+app.use((req, res, next) => {
+  // Pass static assets (js, css, images, etc.) directly to next middleware/dev-server
+  const ext = path.extname(req.path);
+  if (ext && ext !== '.html') {
+    return next();
   }
-  
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    // Fallback message while building
-    res.status(200).send('<h2>Deploying system assets, please reload in a moment...</h2>');
-  }
+
+  angularApp
+    .handle(req)
+    .then((response) => {
+      if (response) {
+        writeResponseToNodeResponse(response, res);
+      } else {
+        next();
+      }
+    })
+    .catch((err) => {
+      // Fallback message if it fails or while building
+      let indexPath = path.join(distPath, 'index.html');
+      if (!fs.existsSync(indexPath)) {
+        indexPath = path.join(distPath, 'index.csr.html');
+      }
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(200).send('<h2>Deploying system assets, please reload in a moment...</h2>');
+      }
+    });
 });
 
 // Run Backend Express App

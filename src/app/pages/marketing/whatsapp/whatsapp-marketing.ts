@@ -64,7 +64,7 @@ interface Analytics {
             <mat-icon [class.animate-spin]="isSyncing()" class="text-xs w-4 h-4 leading-none text-emerald-400">sync</mat-icon>
             Sync Meta Templates
           </button>
-          <button (click)="showCampaignModal.set(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+          <button (click)="showCampaignModal.set(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-app-text rounded-xl text-xs font-bold transition-all cursor-pointer">
             <mat-icon class="text-xs w-4 h-4 leading-none">add</mat-icon>
             Launch Campaign
           </button>
@@ -209,7 +209,7 @@ interface Analytics {
 
               <div class="flex justify-end gap-2 pt-2">
                 <button type="button" (click)="showCampaignModal.set(false)" class="px-4 py-2 border border-app-border hover:bg-app-bg text-app-text rounded-xl text-xs font-bold cursor-pointer transition-colors">Cancel</button>
-                <button type="submit" [disabled]="campaignForm.invalid" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer transition-colors">Dispatch Campaign</button>
+                <button type="submit" [disabled]="campaignForm.invalid" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-app-text rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer transition-colors">Dispatch Campaign</button>
               </div>
             </form>
           </div>

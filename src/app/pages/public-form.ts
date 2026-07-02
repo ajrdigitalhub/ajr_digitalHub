@@ -237,7 +237,7 @@ interface Form {
                       id="btn-public-submit"
                       type="submit"
                       [disabled]="isSubmittingForm()"
-                      class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md cursor-pointer transition-all disabled:opacity-50"
+                      class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-app-text font-semibold rounded-xl text-sm shadow-md cursor-pointer transition-all disabled:opacity-50"
                     >
                       @if (isSubmittingForm()) {
                         <div class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

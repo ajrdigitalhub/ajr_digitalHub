@@ -52,6 +52,7 @@ export class MarketplaceComponent implements OnInit {
 
   ngOnInit() {
     this.loadProducts();
+    this.loadCustomerProfile();
     if (typeof window !== 'undefined') {
       const pendingRaw = localStorage.getItem('pendingPurchase');
       if (pendingRaw && this.authService.currentUser()) {
@@ -100,23 +101,66 @@ export class MarketplaceComponent implements OnInit {
     this.loadProducts();
   }
 
+  customerProfile = signal<any>(null);
+  showCheckoutModal = signal(false);
+  activeProductForCheckout = signal<any>(null);
+  isProcessingPayment = signal(false);
+
+  // Form states for checkout card details
+  cardNumber = '';
+  cardExpiry = '';
+  cardCvv = '';
+  cardholderName = '';
+
+  loadCustomerProfile() {
+    if (!this.authService.currentUser()) return;
+    this.apiService.get<any[]>('/customers').subscribe({
+      next: (custs) => {
+        if (custs && custs.length > 0) {
+          this.apiService.get<any>(`/customers/${custs[0].id}`).subscribe({
+            next: (profile) => this.customerProfile.set(profile),
+            error: () => console.warn('Integrations config not found')
+          });
+        }
+      }
+    });
+  }
+
   buyNow(product: any) {
     if (!this.authService.currentUser()) {
       localStorage.setItem('pendingPurchase', JSON.stringify(product));
       this.showLoginModal.set(true);
       return;
     }
-    
-    if (confirm(`Purchase ${product.title} for ₹${product.price}?`)) {
+    this.activeProductForCheckout.set(product);
+    this.showCheckoutModal.set(true);
+  }
+
+  confirmCheckout() {
+    const product = this.activeProductForCheckout();
+    if (!product) return;
+    this.isProcessingPayment.set(true);
+
+    // Simulate payment transaction through customer's active gateway config
+    setTimeout(() => {
       if (product.isDynamic) {
-        alert('Purchase successful! Dynamic Asset added to your dashboard.');
+        alert(`Payment successful! Item ${product.title} deployed.`);
+        this.showCheckoutModal.set(false);
+        this.isProcessingPayment.set(false);
       } else {
         this.apiService.purchaseProduct(product.id, product.price).subscribe({
-          next: () => alert('Purchase successful! Item added to your dashboard.'),
-          error: (err) => alert('Purchase failed: ' + (err.error?.message || err.error?.error || 'Unknown error'))
+          next: () => {
+            alert('Purchase successful! Item added to your dashboard.');
+            this.showCheckoutModal.set(false);
+            this.isProcessingPayment.set(false);
+          },
+          error: (err) => {
+            alert('Purchase failed: ' + (err.error?.message || err.error?.error || 'Unknown error'));
+            this.isProcessingPayment.set(false);
+          }
         });
       }
-    }
+    }, 1500);
   }
   
   viewPreview(product: any) {

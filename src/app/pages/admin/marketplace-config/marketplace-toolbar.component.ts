@@ -64,7 +64,7 @@ import { FormsModule } from '@angular/forms';
         <div class="flex items-center gap-3">
            <button (click)="exit.emit()" class="text-xs font-bold text-app-muted hover:text-app-text px-3 py-1.5 transition-colors">Exit</button>
            <button (click)="save.emit()" [disabled]="isSaving" 
-                   class="bg-indigo-600 text-white px-5 py-1.5 rounded-xl text-xs font-black shadow-lg shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                   class="bg-indigo-600 text-app-text px-5 py-1.5 rounded-xl text-xs font-black shadow-lg shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
               @if (isSaving) {
                 <mat-icon class="animate-spin !w-4 !h-4 !text-[16px]">refresh</mat-icon> Saving...
               } @else {

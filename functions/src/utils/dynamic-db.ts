@@ -1,20 +1,4 @@
-import { Pool } from 'pg';
-import * as dotenv from 'dotenv';
-dotenv.config();
-
-const connectionString = process.env['DATABASE_URL'];
-const isValidPostgres = !!(
-  connectionString && 
-  (connectionString.startsWith('postgres://') || connectionString.startsWith('postgresql://')) && 
-  !connectionString.includes('your_') &&
-  !connectionString.includes('base')
-);
-const pool = isValidPostgres ? new Pool({ 
-  connectionString,
-  connectionTimeoutMillis: 3000,
-  query_timeout: 3000
-}) : null;
-
+import { pool } from '../config/db';
 // In-memory fallback
 const mockRecords = new Map<string, any[]>();
 
@@ -29,7 +13,54 @@ export interface DynamicRecord {
 
 export const initDynamicDb = async () => {
   if (!pool) {
-    console.warn('⚠️ Dynamic DB: No DATABASE_URL found. Using in-memory fallback.');
+    console.warn('⚠️ Dynamic DB: No database configuration found. Using in-memory fallback.');
+    if (!mockRecords.has('landing_config')) {
+      mockRecords.set('landing_config', [{
+        id: 1,
+        data: {
+          heroText: 'Supercharge Your Digital Ecosystem',
+          buttonText: 'Explore Marketplace',
+          buttonLink: '/marketplace',
+          stats: [
+            { value: '1.2M+', label: 'API Calls / Day' },
+            { value: '99.9%', label: 'Uptime SLA' },
+            { value: '42+', label: 'Integrated Modules' }
+          ]
+        }
+      }]);
+    }
+    if (!mockRecords.has('testimonials')) {
+      mockRecords.set('testimonials', [
+        { id: 1, data: { name: 'Alex Rivera', role: 'CEO, TechFlow', rating: 5, comment: 'AJR Digital HUB revolutionized our multi-app management. The dynamic schema is a lifesaver!', image_url: 'https://picsum.photos/seed/alex/100/100' } },
+        { id: 2, data: { name: 'Sarah Chen', role: 'Lead Architect', rating: 5, comment: 'Scaling from one to fifty apps was seamless with the Master Control panel.', image_url: 'https://picsum.photos/seed/sarah/100/100' } }
+      ]);
+    }
+    if (!mockRecords.has('marketplace')) {
+      mockRecords.set('marketplace', [
+        {
+          id: 1,
+          data: {
+            title: 'Premium SaaS Dashboard',
+            description: 'A complete admin interface for digital products',
+            price: 149.99,
+            html: '<div class="p-8 bg-slate-900 rounded-3xl text-white"><h1>Dashboard Template</h1></div>',
+            status: 'active',
+            image: 'https://picsum.photos/seed/dashboard/800/600'
+          }
+        },
+        {
+          id: 2,
+          data: {
+            title: 'Clean E-commerce Template',
+            description: 'Minimalist shop layout with advanced filtering',
+            price: 89.00,
+            html: '<div class="p-8 bg-white rounded-3xl text-slate-900"><h1>Shop Interface</h1></div>',
+            status: 'active',
+            image: 'https://picsum.photos/seed/shop/800/600'
+          }
+        }
+      ]);
+    }
     return;
   }
   try {
@@ -73,6 +104,33 @@ export const initDynamicDb = async () => {
         await pool.query("INSERT INTO dynamic_records (collection_name, data) VALUES ('testimonials', $1)", [JSON.stringify(t)]);
       }
       console.log('🌱 Seeded default testimonials');
+    }
+
+    // Seed marketplace if not exists
+    const mCheck = await pool.query("SELECT id FROM dynamic_records WHERE collection_name = 'marketplace' LIMIT 1");
+    if (mCheck.rowCount === 0) {
+      const defaultMarketplace = [
+        { 
+          title: 'Premium SaaS Dashboard', 
+          description: 'A complete admin interface for digital products', 
+          price: 149.99,
+          html: '<div class="p-8 bg-slate-900 rounded-3xl text-white"><h1>Dashboard Template</h1></div>',
+          status: 'active',
+          image: 'https://picsum.photos/seed/dashboard/800/600'
+        },
+        { 
+          title: 'Clean E-commerce Template', 
+          description: 'Minimalist shop layout with advanced filtering', 
+          price: 89.00,
+          html: '<div class="p-8 bg-white rounded-3xl text-slate-900"><h1>Shop Interface</h1></div>',
+          status: 'active',
+          image: 'https://picsum.photos/seed/shop/800/600'
+        }
+      ];
+      for (const item of defaultMarketplace) {
+        await pool.query("INSERT INTO dynamic_records (collection_name, data) VALUES ('marketplace', $1)", [JSON.stringify(item)]);
+      }
+      console.log('🌱 Seeded default marketplace items');
     }
 
     console.log('✅ Dynamic Records table initialized.');
