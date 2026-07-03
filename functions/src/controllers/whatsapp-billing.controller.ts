@@ -9,7 +9,7 @@ const firebaseService = new FirebaseService();
 // ────────────────────────────────────────────────────────────────────────────
 //  Pricing matrix (Meta WhatsApp Business Messaging)
 // ────────────────────────────────────────────────────────────────────────────
-const METADATA_PRICING_TABLE: Record<string, Record<string, { price: number; currency: string }>> = {
+export const METADATA_PRICING_TABLE: Record<string, Record<string, { price: number; currency: string }>> = {
   IN: {
     utility: { price: 0.11255, currency: 'INR' },
     marketing: { price: 0.86, currency: 'INR' },
@@ -30,7 +30,7 @@ const METADATA_PRICING_TABLE: Record<string, Record<string, { price: number; cur
   }
 };
 
-function getCountryCode(phone: string): string {
+export function getCountryCode(phone: string): string {
   if (!phone) return 'IN';
   const clean = phone.replace(/\D/g, '');
   if (clean.startsWith('91')) return 'IN';
@@ -65,7 +65,7 @@ const TEMPLATE_PRICING: Record<string, number> = {
 
 // Preset statistics from Meta Business Suite screenshots (June 2026)
 // Blends dynamically based on days filter
-function getPresetStatsForTemplate(name: string, days: number, appId?: string): {
+export function getPresetStatsForTemplate(name: string, days: number, appId?: string): {
   sent: number;
   delivered: number;
   read: number;

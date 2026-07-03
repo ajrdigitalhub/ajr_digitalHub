@@ -17,6 +17,7 @@ import { ProjectDeploymentsComponent } from './deployments';
 import { ProjectIntegrationsComponent } from './integrations';
 import { ProjectSecurityComponent } from './security-center';
 import { WhatsAppBillingComponent } from './whatsapp-billing';
+import { ProjectPushNotificationsComponent } from './push-notifications';
 
 @Component({
   selector: 'app-project-detail',
@@ -36,7 +37,8 @@ import { WhatsAppBillingComponent } from './whatsapp-billing';
     ProjectDeploymentsComponent,
     ProjectIntegrationsComponent,
     ProjectSecurityComponent,
-    WhatsAppBillingComponent
+    WhatsAppBillingComponent,
+    ProjectPushNotificationsComponent
   ],
    template: `
     <div class="min-h-screen bg-app-bg font-sans pb-20 fade-in text-app-text flex flex-col">
@@ -565,6 +567,10 @@ import { WhatsAppBillingComponent } from './whatsapp-billing';
                      <app-whatsapp-billing [project]="project"></app-whatsapp-billing>
                   }
 
+                  @case ('push_notifications') {
+                     <app-project-push-notifications [project]="project"></app-project-push-notifications>
+                  }
+
                  @case ('analytics') {
                      <app-project-api-monitor [project]="project"></app-project-api-monitor>
                   }
@@ -1068,6 +1074,7 @@ export class ProjectDetailComponent implements OnInit {
       items: [
         { id: 'analytics', label: 'Analytics & Stream', icon: 'stream' },
         { id: 'whatsapp_billing', label: 'WhatsApp Billing', icon: 'chat' },
+        { id: 'push_notifications', label: 'Push Notifications', icon: 'notifications_active' },
         { id: 'database', label: 'Database & Backups', icon: 'storage' },
         { id: 'deployments', label: 'Deployments', icon: 'rocket_launch' },
         { id: 'workflows', label: 'Alerts & Workflows', icon: 'account_tree' },

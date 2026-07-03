@@ -2,11 +2,11 @@ import { Component, ChangeDetectionStrategy, inject, signal, HostListener, compu
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../services/auth.service';
 import { TopNavComponent } from '../shared/top-nav.component';
+import { FcmPopupComponent } from '../shared/fcm-popup/fcm-popup.component';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, TopNavComponent, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, TopNavComponent, CommonModule, FcmPopupComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-app-bg text-app-text flex flex-col">
@@ -50,11 +50,11 @@ import { TopNavComponent } from '../shared/top-nav.component';
           </div>
         </div>
       }
+      <app-fcm-popup></app-fcm-popup>
     </div>
   `
 })
 export class Dashboard {
-  authService = inject(AuthService);
   private router = inject(Router);
 
   showPalette = signal(false);

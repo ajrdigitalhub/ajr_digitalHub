@@ -26,7 +26,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/firebase-messaging-sw.js"
             ],
             "styles": [
               "src/styles.scss"

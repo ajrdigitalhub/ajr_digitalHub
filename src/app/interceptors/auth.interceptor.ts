@@ -42,7 +42,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(clonedReq).pipe(
     catchError((error: HttpErrorResponse) => {
       console.error('[API Error]:', error.url, error.status, error.message, error.error);
-      if (error.status === 401 && !clonedReq.url.includes('/auth/login') && !clonedReq.url.includes('/auth/refresh')) {
+      if (error.status === 401 && !clonedReq.url.includes('/auth/login') && !clonedReq.url.includes('/auth/refresh') && !clonedReq.url.includes('/auth/logout')) {
         return handle401Error(clonedReq, next, authService);
       }
       return throwError(() => error);

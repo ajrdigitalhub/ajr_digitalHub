@@ -10,17 +10,17 @@ const app = mod.default || mod;
 
 exports.api = functions.https.onRequest(app);
 
-// exports.monthlyBillingCron = onSchedule({
-//     schedule: '0 0 1 * *', // 1st of every month at midnight
-//     timeoutSeconds: 300,
-//     memory: '1GiB'vc bvcb
-// }, async (event) => {
-//     if (mod.billingService) {
-//         await mod.billingService.runMonthlyBilling();
-//     } else {
-//         console.error('billingService is not exported in the server bundle');
-//     }
-// });
+exports.monthlyBillingCron = onSchedule({
+    schedule: '0 0 * * *', // Run daily at midnight to check per-app billing schedules
+    timeoutSeconds: 300,
+    memory: '1GiB'
+}, async (event) => {
+    if (mod.billingService) {
+        await mod.billingService.runCustomerMonthlyBilling(false);
+    } else {
+        console.error('billingService is not exported in the server bundle');
+    }
+});
 
 // exports.aggregateAnalyticsCron = onSchedule({
 //     schedule: '* * * * *', // Every minute

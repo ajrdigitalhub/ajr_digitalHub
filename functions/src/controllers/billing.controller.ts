@@ -15,7 +15,7 @@ export const billingController = {
 
   async runCustomerBilling(req: Request, res: Response) {
     try {
-      const result = await billingService.runCustomerMonthlyBilling();
+      const result = await billingService.runCustomerMonthlyBilling(true);
       res.json({ message: 'Customer billing run completed', result });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -260,6 +260,200 @@ export const billingController = {
       );
 
       res.json({ message: 'Invoice paid successfully', transaction: tx.rows[0] });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getGlobalConfig(req: Request, res: Response) {
+    try {
+      const result = await query("SELECT value FROM settings WHERE key = 'global_billing_config'");
+      if (result.rows.length === 0) {
+        return res.json({
+          default_billing_day: 5,
+          cron_schedule: '0 9 5 * *',
+          whatsapp_template: 'kall_me_attach',
+          invoice_template: 'default_template',
+          pdf_layout: 'Modern',
+          company_branding: {
+            name: 'AJR Digital HUB',
+            logo: 'assets/images/logo.png',
+            primaryColor: '#6366f1',
+            secondaryColor: '#06b6d4',
+            address: '123 Tech Park, Bangalore, India'
+          },
+          footer_notes: 'Thank you for your business!',
+          payment_instructions: 'Please pay via the payment link attached to the invoice.',
+          gst_settings: {
+            cgst: 9,
+            sgst: 9,
+            igst: 18,
+            gstin: '29AAAAA0000A1Z5'
+          },
+          currency_format: 'INR',
+          billing_calculation_rules: {
+            whatsappRate: 0.86,
+            firebaseInvocationRate: 1.0892,
+            platformBaseCharge: 0
+          },
+          notification_retry_count: 3
+        });
+      }
+      res.json(result.rows[0].value);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async saveGlobalConfig(req: Request, res: Response) {
+    try {
+      const config = req.body;
+      await query(
+        `INSERT INTO settings (key, value) VALUES ('global_billing_config', $1)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+        [JSON.stringify(config)]
+      );
+      
+      const userId = (req as any).user?.id || null;
+      await query(`
+        INSERT INTO audit_logs (user_id, event, details)
+        VALUES ($1, $2, $3)
+      `, [userId, 'UPDATE_GLOBAL_BILLING_CONFIG', JSON.stringify({})]);
+
+      res.json({ success: true, message: 'Global billing configuration saved successfully' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getCronLogs(req: Request, res: Response) {
+    try {
+      const result = await query(`
+        SELECT l.*, a.name as app_name
+        FROM cron_logs l
+        LEFT JOIN apps a ON l.app_id = a.id
+        ORDER BY l.created_at DESC
+        LIMIT 200
+      `);
+      res.json(result.rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getNotificationLogs(req: Request, res: Response) {
+    try {
+      const result = await query(`
+        SELECT l.*, a.name as app_name
+        FROM notification_logs l
+        LEFT JOIN apps a ON l.app_id = a.id
+        ORDER BY l.created_at DESC
+        LIMIT 200
+      `);
+      res.json(result.rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getCustomerBillingConfig(req: Request, res: Response) {
+    try {
+      const userRes = await query('SELECT customer_id FROM users WHERE id = $1', [req.user?.id]);
+      const customerId = userRes.rows[0]?.customer_id;
+      if (!customerId) return res.status(404).json({ error: 'No customer profile linked' });
+
+      const appRes = await query('SELECT app_id FROM customer_profiles WHERE id = $1', [customerId]);
+      const appId = appRes.rows[0]?.app_id;
+      if (!appId) return res.status(404).json({ error: 'No app linked to customer profile' });
+
+      const customer = await query('SELECT * FROM customer_profiles WHERE app_id = $1', [appId]);
+      const billing = await query('SELECT * FROM billing_configuration WHERE app_id = $1', [appId]);
+      const notification = await query('SELECT * FROM notification_configuration WHERE app_id = $1', [appId]);
+
+      res.json({
+        customer: customer.rows[0] || null,
+        billing: billing.rows[0] || null,
+        notification: notification.rows[0] || null
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async updateCustomerBillingConfig(req: Request, res: Response) {
+    try {
+      const userRes = await query('SELECT customer_id FROM users WHERE id = $1', [req.user?.id]);
+      const customerId = userRes.rows[0]?.customer_id;
+      if (!customerId) return res.status(404).json({ error: 'No customer profile linked' });
+
+      const appRes = await query('SELECT app_id FROM customer_profiles WHERE id = $1', [customerId]);
+      const appId = appRes.rows[0]?.app_id;
+      if (!appId) return res.status(404).json({ error: 'No app linked to customer profile' });
+
+      const { customer, billing, notification } = req.body;
+
+      if (customer) {
+        await query(
+          `UPDATE customer_profiles SET 
+            company_name = COALESCE($1, company_name),
+            customer_name = COALESCE($2, customer_name),
+            designation = COALESCE($3, designation),
+            primary_email = COALESCE($4, primary_email),
+            secondary_email = COALESCE($5, secondary_email),
+            mobile_number = COALESCE($6, mobile_number),
+            whatsapp_number = COALESCE($7, whatsapp_number),
+            alternative_contact_number = COALESCE($8, alternative_contact_number),
+            billing_email = COALESCE($9, billing_email),
+            billing_whatsapp_number = COALESCE($10, billing_whatsapp_number),
+            company_address = COALESCE($11, company_address),
+            city = COALESCE($12, city),
+            state = COALESCE($13, state),
+            country = COALESCE($14, country),
+            postal_code = COALESCE($15, postal_code),
+            timezone = COALESCE($16, timezone),
+            preferred_currency = COALESCE($17, preferred_currency)
+           WHERE app_id = $18`,
+          [
+            customer.company_name, customer.customer_name, customer.designation,
+            customer.primary_email, customer.secondary_email, customer.mobile_number,
+            customer.whatsapp_number, customer.alternative_contact_number,
+            customer.billing_email, customer.billing_whatsapp_number,
+            customer.company_address, customer.city, customer.state,
+            customer.country, customer.postal_code, customer.timezone,
+            customer.preferred_currency, appId
+          ]
+        );
+      }
+
+      if (billing) {
+        await query(
+          `UPDATE billing_configuration SET 
+            whatsapp_invoice_enabled = COALESCE($1, whatsapp_invoice_enabled),
+            email_invoice_enabled = COALESCE($2, email_invoice_enabled)
+           WHERE app_id = $3`,
+          [billing.whatsapp_invoice_enabled, billing.email_invoice_enabled, appId]
+        );
+      }
+
+      if (notification) {
+        await query(
+          `UPDATE notification_configuration SET 
+            whatsapp_enabled = COALESCE($1, whatsapp_enabled),
+            email_enabled = COALESCE($2, email_enabled),
+            push_enabled = COALESCE($3, push_enabled),
+            preferences = COALESCE($4, preferences)
+           WHERE app_id = $5`,
+          [
+            notification.whatsapp_enabled, 
+            notification.email_enabled, 
+            notification.push_enabled,
+            notification.preferences ? JSON.stringify(notification.preferences) : null,
+            appId
+          ]
+        );
+      }
+
+      res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

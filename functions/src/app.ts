@@ -13,6 +13,8 @@ import aiAssistantRoutes from './routes/ai-assistant.routes';
 import customersRoutes from './routes/customers.routes';
 import documentationRoutes from './routes/documentation.routes';
 import customerBillingRoutes from './routes/customer-billing.routes';
+import notificationRoutes from './routes/notification.routes';
+import firebaseNotificationRoutes from './routes/firebaseNotification.routes';
 import settingsRoutes from './modules/settings/settings.routes';
 import { BaseService } from './core/base.service';
 import { usageTracker } from './middlewares/usage';
@@ -85,6 +87,8 @@ app.use('/api/ai-assistant', aiAssistantRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/documentation', documentationRoutes);
 app.use('/api/billing', customerBillingRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin/firebase', firebaseNotificationRoutes);
 
 app.use('/api/shops', shopsRoutes);
 app.use('/api/admin/upload', uploadRoutes);

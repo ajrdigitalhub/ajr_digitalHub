@@ -251,160 +251,160 @@ import { ThemeService } from '../services/theme.service';
         </div>
 
       </div>
+    </nav>
 
-      <!-- Mobile Slide Drawer Overlay Backdrop -->
-      <div 
-        class="drawer-backdrop lg:hidden"
-        [class.active]="isMobileMenuOpen()"
-        (click)="isMobileMenuOpen.set(false)"
-      ></div>
+    <!-- Mobile Slide Drawer Overlay Backdrop -->
+    <div 
+      class="drawer-backdrop lg:hidden"
+      [class.active]="isMobileMenuOpen()"
+      (click)="isMobileMenuOpen.set(false)"
+    ></div>
 
-      <!-- Mobile Slide Drawer Content Panel -->
-      <div 
-        class="drawer-content lg:hidden"
-        [class.active]="isMobileMenuOpen()"
-      >
-        <!-- Drawer Header -->
-        <div class="flex items-center justify-between p-4 border-b border-app-border bg-app-card bg-opacity-95">
-          <div class="flex items-center gap-2">
-            <div class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-app-text">
-              <mat-icon class="text-sm leading-none">hub</mat-icon>
-            </div>
-            <span class="text-xs font-black text-app-text uppercase tracking-wider font-display">AJR HUB</span>
+    <!-- Mobile Slide Drawer Content Panel -->
+    <div 
+      class="drawer-content lg:hidden"
+      [class.active]="isMobileMenuOpen()"
+    >
+      <!-- Drawer Header -->
+      <div class="flex items-center justify-between p-4 border-b border-app-border bg-app-card bg-opacity-95">
+        <div class="flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-app-text">
+            <mat-icon class="text-sm leading-none">hub</mat-icon>
           </div>
-          <button (click)="isMobileMenuOpen.set(false)" class="text-app-muted hover:text-app-text p-1 cursor-pointer">
-            <mat-icon class="!text-[20px] !w-[20px] !h-[20px]">close</mat-icon>
-          </button>
+          <span class="text-xs font-black text-app-text uppercase tracking-wider font-display">AJR HUB</span>
         </div>
+        <button (click)="isMobileMenuOpen.set(false)" class="text-app-muted hover:text-app-text p-1 cursor-pointer">
+          <mat-icon class="!text-[20px] !w-[20px] !h-[20px]">close</mat-icon>
+        </button>
+      </div>
 
-        <!-- Drawer Links List -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-app-card bg-opacity-95">
-          <div class="flex flex-col gap-1">
-            <a 
-              routerLink="/dashboard" 
-              routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
-              [routerLinkActiveOptions]="{exact: true}"
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">dashboard</mat-icon>
-              Dashboard
-            </a>
+      <!-- Drawer Links List -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-app-card bg-opacity-95">
+        <div class="flex flex-col gap-1">
+          <a 
+            routerLink="/dashboard" 
+            routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
+            [routerLinkActiveOptions]="{exact: true}"
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">dashboard</mat-icon>
+            Dashboard
+          </a>
 
-            <!-- Mobile Digital Marketing Section -->
-            <div class="px-3 py-2.5 border border-app-border my-2 bg-app-bg/30 rounded-xl">
-              <span class="text-[9px] font-bold text-app-muted uppercase tracking-wider block mb-2">Digital Marketing</span>
-              <div class="grid grid-cols-2 gap-2">
-                <a routerLink="/dashboard/whatsapp" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-emerald-400">sms</mat-icon> WhatsApp
-                </a>
-                <a routerLink="/dashboard/google-ads" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-yellow-400">ads_click</mat-icon> Google Ads
-                </a>
-                <a routerLink="/dashboard/meta-ads" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-blue-400">campaign</mat-icon> Meta Ads
-                </a>
-                <a routerLink="/dashboard/landing-builder" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-purple-400">web</mat-icon> Landing Builder
-                </a>
-                <a routerLink="/dashboard/ai-assistant" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-indigo-400">auto_awesome</mat-icon> AI Writer
-                </a>
-              </div>
+          <!-- Mobile Digital Marketing Section -->
+          <div class="px-3 py-2.5 border border-app-border my-2 bg-app-bg/30 rounded-xl">
+            <span class="text-[9px] font-bold text-app-muted uppercase tracking-wider block mb-2">Digital Marketing</span>
+            <div class="grid grid-cols-2 gap-2">
+              <a routerLink="/dashboard/whatsapp" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-emerald-400">sms</mat-icon> WhatsApp
+              </a>
+              <a routerLink="/dashboard/google-ads" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-yellow-400">ads_click</mat-icon> Google Ads
+              </a>
+              <a routerLink="/dashboard/meta-ads" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-blue-400">campaign</mat-icon> Meta Ads
+              </a>
+              <a routerLink="/dashboard/landing-builder" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-purple-400">web</mat-icon> Landing Builder
+              </a>
+              <a routerLink="/dashboard/ai-assistant" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-indigo-400">auto_awesome</mat-icon> AI Writer
+              </a>
             </div>
+          </div>
 
-            <!-- Mobile CRM Section -->
-            <div class="px-3 py-2.5 border border-app-border mb-2 bg-app-bg/30 rounded-xl">
-              <span class="text-[9px] font-bold text-app-muted uppercase tracking-wider block mb-2">CRM Hub</span>
-              <div class="grid grid-cols-2 gap-2">
-                <a routerLink="/dashboard/crm" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-rose-400">view_kanban</mat-icon> Pipeline
-                </a>
-                <a routerLink="/dashboard/crm" [queryParams]="{tab: 'leads'}" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
-                  <mat-icon class="!text-[12px] !w-3 !h-3 text-sky-400">groups</mat-icon> Leads
-                </a>
-              </div>
+          <!-- Mobile CRM Section -->
+          <div class="px-3 py-2.5 border border-app-border mb-2 bg-app-bg/30 rounded-xl">
+            <span class="text-[9px] font-bold text-app-muted uppercase tracking-wider block mb-2">CRM Hub</span>
+            <div class="grid grid-cols-2 gap-2">
+              <a routerLink="/dashboard/crm" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-rose-400">view_kanban</mat-icon> Pipeline
+              </a>
+              <a routerLink="/dashboard/crm" [queryParams]="{tab: 'leads'}" (click)="isMobileMenuOpen.set(false)" class="text-[10px] text-app-text hover:text-indigo-400 py-1 flex items-center gap-1 font-semibold">
+                <mat-icon class="!text-[12px] !w-3 !h-3 text-sky-400">groups</mat-icon> Leads
+              </a>
             </div>
-
-            <a 
-              routerLink="/dashboard/workflow" 
-              routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">alt_route</mat-icon>
-              Automation
-            </a>
-
-            <a 
-              routerLink="/dashboard/analytics" 
-              routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">insights</mat-icon>
-              Analytics
-            </a>
-
-            <a 
-              routerLink="/invoice-builder" 
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">receipt_long</mat-icon>
-              Invoicing
-            </a>
-
-            <a 
-              routerLink="/marketplace" 
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">store</mat-icon>
-              Marketplace
-            </a>
-
-            <a 
-              routerLink="/documentation" 
-              routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">description</mat-icon>
-              Documentation
-            </a>
-
-            <a 
-              routerLink="/dashboard/billing" 
-              routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">payment</mat-icon>
-              Billing
-            </a>
-
-            <a 
-              routerLink="/dashboard/settings" 
-              routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
-              (click)="isMobileMenuOpen.set(false)"
-              class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
-            >
-              <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">settings</mat-icon>
-              Settings
-            </a>
           </div>
-        </div>
 
-        <!-- Drawer Footer -->
-        <div class="p-4 border-t border-app-border bg-app-bg/50 shrink-0">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] font-mono text-emerald-500 font-bold uppercase tracking-wider">Node Status: Online</span>
-            <span class="text-[9px] font-mono text-app-muted font-bold">v1.0.0</span>
-          </div>
+          <a 
+            routerLink="/dashboard/workflow" 
+            routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">alt_route</mat-icon>
+            Automation
+          </a>
+
+          <a 
+            routerLink="/dashboard/analytics" 
+            routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">insights</mat-icon>
+            Analytics
+          </a>
+
+          <a 
+            routerLink="/invoice-builder" 
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">receipt_long</mat-icon>
+            Invoicing
+          </a>
+
+          <a 
+            routerLink="/marketplace" 
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">store</mat-icon>
+            Marketplace
+          </a>
+
+          <a 
+            routerLink="/documentation" 
+            routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">description</mat-icon>
+            Documentation
+          </a>
+
+          <a 
+            routerLink="/dashboard/billing" 
+            routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">payment</mat-icon>
+            Billing
+          </a>
+
+          <a 
+            routerLink="/dashboard/settings" 
+            routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold border border-indigo-500/20 shadow-sm"
+            (click)="isMobileMenuOpen.set(false)"
+            class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold text-app-text hover:text-indigo-400 transition-all text-left"
+          >
+            <mat-icon class="!w-[16px] !h-[16px] !text-[16px] text-indigo-400">settings</mat-icon>
+            Settings
+          </a>
         </div>
       </div>
-    </nav>
+
+      <!-- Drawer Footer -->
+      <div class="p-4 border-t border-app-border bg-app-bg/50 shrink-0">
+        <div class="flex items-center justify-between">
+          <span class="text-[9px] font-mono text-emerald-500 font-bold uppercase tracking-wider">Node Status: Online</span>
+          <span class="text-[9px] font-mono text-app-muted font-bold">v1.0.0</span>
+        </div>
+      </div>
+    </div>
   `
 })
 export class TopNavComponent {

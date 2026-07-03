@@ -152,6 +152,258 @@ import { ButtonLoaderDirective } from '../../../shared/button-loader.directive';
          </div>
       </div>
 
+      <!-- Customer Information Card -->
+      <div class="bg-app-bg border border-app-border rounded-xl p-6 space-y-6">
+         <h3 class="text-sm font-bold text-app-text flex items-center gap-2">
+            <mat-icon class="text-indigo-400">person</mat-icon> Customer Information
+         </h3>
+         <p class="text-xs text-app-muted">
+            Manage primary contact, address, tax details, currency, and status settings for this account.
+         </p>
+         
+         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Company Name</label>
+               <input type="text" [(ngModel)]="customerModel.company_name" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text font-semibold focus:border-indigo-500/50 outline-none transition-all">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Customer Name</label>
+               <input type="text" [(ngModel)]="customerModel.customer_name" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-semibold">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Designation</label>
+               <input type="text" [(ngModel)]="customerModel.designation" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all">
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Primary Email</label>
+               <input type="email" [(ngModel)]="customerModel.primary_email" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Secondary Email</label>
+               <input type="email" [(ngModel)]="customerModel.secondary_email" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Mobile Number</label>
+               <input type="text" [(ngModel)]="customerModel.mobile_number" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">WhatsApp Number</label>
+               <input type="text" [(ngModel)]="customerModel.whatsapp_number" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Alt Contact Number</label>
+               <input type="text" [(ngModel)]="customerModel.alternative_contact_number" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Billing Email</label>
+               <input type="email" [(ngModel)]="customerModel.billing_email" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Billing WhatsApp Number</label>
+               <input type="text" [(ngModel)]="customerModel.billing_whatsapp_number" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+         </div>
+
+         <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Company Address</label>
+            <textarea rows="3" [(ngModel)]="customerModel.company_address" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all"></textarea>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">City</label>
+               <input type="text" [(ngModel)]="customerModel.city" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">State</label>
+               <input type="text" [(ngModel)]="customerModel.state" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Country</label>
+               <input type="text" [(ngModel)]="customerModel.country" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Postal Code</label>
+               <input type="text" [(ngModel)]="customerModel.postal_code" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">GST Number</label>
+               <input type="text" [(ngModel)]="customerModel.gst_number" placeholder="29AAAAA0000A1Z5" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">PAN Number</label>
+               <input type="text" [(ngModel)]="customerModel.pan_number" placeholder="ABCDE1234F" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Time Zone</label>
+               <select [(ngModel)]="customerModel.timezone" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text outline-none cursor-pointer">
+                  <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                  <option value="America/New_York">America/New_York (EST)</option>
+                  <option value="Europe/London">Europe/London (GMT)</option>
+                  <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+               </select>
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Preferred Currency</label>
+               <select [(ngModel)]="customerModel.preferred_currency" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text outline-none cursor-pointer">
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="EUR">EUR (€)</option>
+               </select>
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Customer Status</label>
+               <select [(ngModel)]="customerModel.customer_status" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text outline-none cursor-pointer">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+               </select>
+            </div>
+         </div>
+      </div>
+
+      <!-- Billing Configuration Card -->
+      <div class="bg-app-bg border border-app-border rounded-xl p-6 space-y-6">
+         <h3 class="text-sm font-bold text-app-text flex items-center gap-2">
+            <mat-icon class="text-emerald-500">receipt_long</mat-icon> Billing Configuration
+         </h3>
+         <p class="text-xs text-app-muted">
+            Configure automated charges tracking, date schedules, taxes, payment gateway features, and reminders.
+         </p>
+
+         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">Enable Monthly Billing</span>
+               <input type="checkbox" [(ngModel)]="billingModel.monthly_billing_enabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">WhatsApp Invoices Delivery</span>
+               <input type="checkbox" [(ngModel)]="billingModel.whatsapp_invoice_enabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">Email Invoices Delivery</span>
+               <input type="checkbox" [(ngModel)]="billingModel.email_invoice_enabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">Auto Retry Failures</span>
+               <input type="checkbox" [(ngModel)]="billingModel.auto_retry_failed" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+         </div>
+
+         <div class="pt-4 border-t border-app-border">
+            <span class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-3">Charges Inclusion Toggles</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Include WhatsApp API Costs</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.include_whatsapp_charges" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Include Firebase API Costs</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.include_firebase_charges" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Include Marketplace Purchases</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.include_marketplace_purchases" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Include Base Subscription Plan</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.include_subscription_charges" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Apply GST / Tax (18%)</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.include_gst_tax" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Generate PDF Attachment</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.enable_pdf_attachment" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Enable Payments Checkout Link</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.enable_payment_link" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+               <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+                  <span class="text-sm font-semibold text-app-text">Include Detailed Analytics usage</span>
+                  <input type="checkbox" [(ngModel)]="billingModel.enable_detailed_usage_report" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+               </label>
+            </div>
+         </div>
+
+         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-4 border-t border-app-border">
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Billing Day</label>
+               <input type="number" min="1" max="28" [(ngModel)]="billingModel.billing_day" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Billing Time</label>
+               <input type="time" [(ngModel)]="billingModel.billing_time" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Reminder Due (Days)</label>
+               <input type="number" min="0" [(ngModel)]="billingModel.reminder_before_due_days" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+            <div>
+               <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Payment Terms (Days)</label>
+               <input type="number" min="1" [(ngModel)]="billingModel.due_date_days" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+            </div>
+         </div>
+
+         <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Custom Invoice Notes / Footer Message</label>
+            <textarea rows="2" [(ngModel)]="billingModel.custom_billing_notes" placeholder="e.g. Terms apply. Please clear before due date." class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all"></textarea>
+         </div>
+      </div>
+
+      <!-- Notification Preferences Card -->
+      <div class="bg-app-bg border border-app-border rounded-xl p-6 space-y-6">
+         <h3 class="text-sm font-bold text-app-text flex items-center gap-2">
+            <mat-icon class="text-cyan-400">notifications</mat-icon> Notification Preferences
+         </h3>
+         <p class="text-xs text-app-muted">
+            Configure notification methods and target recipients for invoice announcements.
+         </p>
+
+         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">WhatsApp Alerts</span>
+               <input type="checkbox" [(ngModel)]="notificationModel.whatsapp_enabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">Email Alerts</span>
+               <input type="checkbox" [(ngModel)]="notificationModel.email_enabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+            <label class="flex items-center justify-between p-3 rounded-lg border border-app-border bg-app-bg hover:bg-app-card cursor-pointer transition">
+               <span class="text-sm font-semibold text-app-text">In-App Notification</span>
+               <input type="checkbox" [(ngModel)]="notificationModel.in_app_enabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer">
+            </label>
+         </div>
+
+         <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-2">Additional Recipients (comma separated emails/phones)</label>
+            <input type="text" [(ngModel)]="notificationModel.recipients" placeholder="partner@acme.com, accounts@acme.com" class="w-full px-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-indigo-500/50 outline-none transition-all font-mono">
+         </div>
+
+         <div class="flex gap-4 pt-4 border-t border-app-border">
+            <button (click)="onSaveBillingAutomationConfig()" [appButtonLoader]="isSavingBillingAutomation()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-lg text-sm font-bold transition flex items-center gap-2 cursor-pointer border border-indigo-500">
+               Save Automation Settings
+            </button>
+         </div>
+      </div>
+
       <!-- Danger Zone -->
       <div class="bg-rose-500/5 border border-rose-500/20 rounded-xl p-6 mt-8 space-y-4">
          <h3 class="text-sm font-bold text-rose-400 flex items-center gap-2">
@@ -205,9 +457,60 @@ export class ProjectConfigComponent implements OnInit {
     enabled: false
   };
 
+  customerModel = {
+    company_name: '',
+    customer_name: '',
+    designation: '',
+    primary_email: '',
+    secondary_email: '',
+    mobile_number: '',
+    whatsapp_number: '',
+    alternative_contact_number: '',
+    billing_email: '',
+    billing_whatsapp_number: '',
+    company_address: '',
+    city: '',
+    state: '',
+    country: '',
+    postal_code: '',
+    gst_number: '',
+    pan_number: '',
+    timezone: 'Asia/Kolkata',
+    preferred_currency: 'INR',
+    customer_status: 'active'
+  };
+
+  billingModel = {
+    monthly_billing_enabled: true,
+    whatsapp_invoice_enabled: true,
+    email_invoice_enabled: true,
+    include_whatsapp_charges: true,
+    include_firebase_charges: true,
+    include_marketplace_purchases: true,
+    include_subscription_charges: true,
+    include_gst_tax: true,
+    billing_day: 5,
+    billing_time: '09:00:00',
+    reminder_before_due_days: 2,
+    due_date_days: 7,
+    auto_retry_failed: true,
+    enable_payment_link: true,
+    enable_pdf_attachment: true,
+    enable_detailed_usage_report: true,
+    custom_billing_notes: ''
+  };
+
+  notificationModel = {
+    whatsapp_enabled: true,
+    email_enabled: true,
+    in_app_enabled: true,
+    recipients: ''
+  };
+
   isTestingConnection = signal(false);
   isSavingFirebase = signal(false);
   isSavingWhatsapp = signal(false);
+  isSavingBillingAutomation = signal(false);
 
   ngOnInit() {
     const p = this.project();
@@ -242,6 +545,42 @@ export class ProjectConfigComponent implements OnInit {
         enabled: p.whatsapp.enabled ?? false
       };
     }
+
+    this.loadBillingAutomationConfig();
+  }
+
+  loadBillingAutomationConfig() {
+    const appId = this.project().id;
+    this.apiService.get<any>(`/admin/apps/${appId}/billing-automation-config`).subscribe({
+      next: (res) => {
+        if (res.customer) this.customerModel = { ...this.customerModel, ...res.customer };
+        if (res.billing) this.billingModel = { ...this.billingModel, ...res.billing };
+        if (res.notification) this.notificationModel = { ...this.notificationModel, ...res.notification };
+      },
+      error: (err) => {
+        console.error('Failed to load billing automation config:', err);
+      }
+    });
+  }
+
+  onSaveBillingAutomationConfig() {
+    this.isSavingBillingAutomation.set(true);
+    const appId = this.project().id;
+    const payload = {
+      customer: this.customerModel,
+      billing: this.billingModel,
+      notification: this.notificationModel
+    };
+    this.apiService.put<any>(`/admin/apps/${appId}/billing-automation-config`, payload).subscribe({
+      next: () => {
+        this.store.showToast('Billing & customer automation configurations saved!', 'success');
+        this.isSavingBillingAutomation.set(false);
+      },
+      error: (err) => {
+        this.store.showToast('Failed to save config: ' + (err.error?.error || err.message), 'error');
+        this.isSavingBillingAutomation.set(false);
+      }
+    });
   }
 
   onSave() {

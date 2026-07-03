@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import authRoutes from '../modules/auth/auth.routes';
+import authRoutes from '../routes/auth.routes';
 import dynamicRoutes from '../modules/dynamic/dynamic.routes';
 import logsRoutes from '../modules/logs/logs.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
@@ -15,6 +15,19 @@ import adminSystemRoutes from '../modules/admin-system/admin-system.routes';
 import invoiceRoutes from '../modules/invoice/invoice.routes';
 import { broadcastToSse } from '../modules/admin-system/admin-system.controller';
 import { BaseService } from './base.service';
+
+import adminDataRoutes from '../routes/admin-data.routes';
+import billingRoutes from '../routes/billing.routes';
+import crmRoutes from '../routes/crm.routes';
+import whatsappMarketingRoutes from '../routes/whatsapp-marketing.routes';
+import adsRoutes from '../routes/ads.routes';
+import aiAssistantRoutes from '../routes/ai-assistant.routes';
+import customersRoutes from '../routes/customers.routes';
+import documentationRoutes from '../routes/documentation.routes';
+import customerBillingRoutes from '../routes/customer-billing.routes';
+import notificationRoutes from '../routes/notification.routes';
+import firebaseNotificationRoutes from '../routes/firebaseNotification.routes';
+import { requireAuth, requireRole } from '../middlewares/auth.middleware';
 
 import cookieParser from 'cookie-parser';
 
@@ -208,24 +221,39 @@ app.use(async (req, res, next) => {
 });
 
 // API Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/admin/marketplace', marketplaceRoutes);
 app.use('/api/admin/marketplace-items', marketplaceRoutes);
 app.use('/api/marketplace-items', marketplaceRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/admin/settings', settingsRoutes);
+
 app.use('/api/admin/apps', appsRoutes);
-app.use('/api/admin/upload', uploadRoutes);
+app.use('/api/admin/data', requireAuth, requireRole('admin'), adminDataRoutes);
+app.use('/api/admin/billing', requireAuth, requireRole('admin'), billingRoutes);
+app.use('/api/crm', crmRoutes);
+app.use('/api/whatsapp-marketing', whatsappMarketingRoutes);
+app.use('/api/ads', adsRoutes);
+app.use('/api/ai-assistant', aiAssistantRoutes);
+app.use('/api/customers', customersRoutes);
+app.use('/api/documentation', documentationRoutes);
+app.use('/api/billing', customerBillingRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin/firebase', firebaseNotificationRoutes);
+
 app.use('/api/shops', shopsRoutes);
+app.use('/api/admin/upload', uploadRoutes);
+app.use('/api/admin', adminSystemRoutes);
+app.use('/api/invoice', invoiceRoutes);
+
+// Settings routes (landing_config, growth/track, hero-slider key, etc.)
+app.use('/api/settings', settingsRoutes);
+app.use('/api/admin/settings', requireAuth, requireRole('admin'), settingsRoutes);
+
 app.use('/api/dynamic', dynamicRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/internal/log', logsRoutes);
 app.use('/api/admin/analytics', analyticsRoutes);
-
-// Unified dynamic real-time administrative system APIs
-app.use('/api/admin', adminSystemRoutes);
-app.use('/api/invoice', invoiceRoutes);
 
 // Shared aliases
 app.use('/api', dynamicRoutes);

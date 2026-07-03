@@ -351,5 +351,170 @@ export const saasController = {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  },
+
+  async getBillingAutomationConfig(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+
+      // Fetch customer profile
+      const customerRes = await query('SELECT * FROM customer_profiles WHERE app_id = $1', [id]);
+      const customer = customerRes.rows[0] || null;
+      if (customer) {
+        customer.gst_number = decryptValue(customer.gst_number);
+        customer.pan_number = decryptValue(customer.pan_number);
+      }
+
+      // Fetch billing config
+      const billingRes = await query('SELECT * FROM billing_configuration WHERE app_id = $1', [id]);
+      const billing = billingRes.rows[0] || null;
+
+      // Fetch notification config
+      const notificationRes = await query('SELECT * FROM notification_configuration WHERE app_id = $1', [id]);
+      const notification = notificationRes.rows[0] || null;
+
+      res.json({ customer, billing, notification });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async updateBillingAutomationConfig(req: Request, res: Response): Promise<any> {
+    if (!pool) return res.status(500).json({ error: 'Database pool unavailable' });
+    const client = await pool.connect();
+    try {
+      const { id } = req.params;
+      const { customer, billing, notification } = req.body;
+
+      await client.query('BEGIN');
+
+      // 1. Upsert Customer Profile
+      if (customer) {
+        const encryptedGst = encryptValue(customer.gst_number || '');
+        const encryptedPan = encryptValue(customer.pan_number || '');
+        await client.query(`
+          INSERT INTO customer_profiles (
+            app_id, company_name, customer_name, designation, primary_email, secondary_email,
+            mobile_number, whatsapp_number, alternative_contact_number, billing_email, billing_whatsapp_number,
+            company_address, city, state, country, postal_code, gst_number, pan_number, timezone, preferred_currency, customer_status
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+          ON CONFLICT (app_id) DO UPDATE SET
+            company_name = EXCLUDED.company_name, customer_name = EXCLUDED.customer_name, designation = EXCLUDED.designation,
+            primary_email = EXCLUDED.primary_email, secondary_email = EXCLUDED.secondary_email, mobile_number = EXCLUDED.mobile_number,
+            whatsapp_number = EXCLUDED.whatsapp_number, alternative_contact_number = EXCLUDED.alternative_contact_number,
+            billing_email = EXCLUDED.billing_email, billing_whatsapp_number = EXCLUDED.billing_whatsapp_number,
+            company_address = EXCLUDED.company_address, city = EXCLUDED.city, state = EXCLUDED.state, country = EXCLUDED.country,
+            postal_code = EXCLUDED.postal_code, gst_number = EXCLUDED.gst_number, pan_number = EXCLUDED.pan_number,
+            timezone = EXCLUDED.timezone, preferred_currency = EXCLUDED.preferred_currency, customer_status = EXCLUDED.customer_status,
+            updated_at = NOW()
+        `, [
+          id, customer.company_name || '', customer.customer_name || '', customer.designation || null,
+          customer.primary_email || null, customer.secondary_email || null, customer.mobile_number || null,
+          customer.whatsapp_number || null, customer.alternative_contact_number || null,
+          customer.billing_email || null, customer.billing_whatsapp_number || null,
+          customer.company_address || null, customer.city || null, customer.state || null, customer.country || null,
+          customer.postal_code || null, encryptedGst, encryptedPan, customer.timezone || 'Asia/Kolkata', customer.preferred_currency || 'INR', customer.customer_status || 'active'
+        ]);
+      }
+
+      // 2. Upsert Billing Configuration
+      if (billing) {
+        await client.query(`
+          INSERT INTO billing_configuration (
+            app_id, monthly_billing_enabled, whatsapp_invoice_enabled, email_invoice_enabled,
+            include_whatsapp_charges, include_firebase_charges, include_marketplace_purchases, include_subscription_charges, include_gst_tax,
+            billing_day, billing_time, reminder_before_due_days, due_date_days, auto_retry_failed,
+            enable_payment_link, enable_pdf_attachment, enable_detailed_usage_report, custom_billing_notes
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          ON CONFLICT (app_id) DO UPDATE SET
+            monthly_billing_enabled = EXCLUDED.monthly_billing_enabled, whatsapp_invoice_enabled = EXCLUDED.whatsapp_invoice_enabled,
+            email_invoice_enabled = EXCLUDED.email_invoice_enabled, include_whatsapp_charges = EXCLUDED.include_whatsapp_charges,
+            include_firebase_charges = EXCLUDED.include_firebase_charges, include_marketplace_purchases = EXCLUDED.include_marketplace_purchases,
+            include_subscription_charges = EXCLUDED.include_subscription_charges, include_gst_tax = EXCLUDED.include_gst_tax,
+            billing_day = EXCLUDED.billing_day, billing_time = EXCLUDED.billing_time, reminder_before_due_days = EXCLUDED.reminder_before_due_days,
+            due_date_days = EXCLUDED.due_date_days, auto_retry_failed = EXCLUDED.auto_retry_failed, enable_payment_link = EXCLUDED.enable_payment_link,
+            enable_pdf_attachment = EXCLUDED.enable_pdf_attachment, enable_detailed_usage_report = EXCLUDED.enable_detailed_usage_report,
+            custom_billing_notes = EXCLUDED.custom_billing_notes, updated_at = NOW()
+        `, [
+          id, billing.monthly_billing_enabled !== false, billing.whatsapp_invoice_enabled !== false, billing.email_invoice_enabled !== false,
+          billing.include_whatsapp_charges !== false, billing.include_firebase_charges !== false, billing.include_marketplace_purchases !== false, billing.include_subscription_charges !== false, billing.include_gst_tax !== false,
+          billing.billing_day || 5, billing.billing_time || '09:00:00', billing.reminder_before_due_days || 2, billing.due_date_days || 7, billing.auto_retry_failed !== false,
+          billing.enable_payment_link !== false, billing.enable_pdf_attachment !== false, billing.enable_detailed_usage_report !== false, billing.custom_billing_notes || null
+        ]);
+      }
+
+      // 3. Upsert Notification Configuration
+      if (notification) {
+        await client.query(`
+          INSERT INTO notification_configuration (
+            app_id, whatsapp_enabled, email_enabled, in_app_enabled, recipients
+          ) VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (app_id) DO UPDATE SET
+            whatsapp_enabled = EXCLUDED.whatsapp_enabled, email_enabled = EXCLUDED.email_enabled,
+            in_app_enabled = EXCLUDED.in_app_enabled, recipients = EXCLUDED.recipients, updated_at = NOW()
+        `, [
+          id, notification.whatsapp_enabled !== false, notification.email_enabled !== false, notification.in_app_enabled !== false, notification.recipients || null
+        ]);
+      }
+
+      // Log configuration change audit log
+      const userId = (req as any).user?.id || null;
+      
+      await client.query(`
+        INSERT INTO audit_logs (user_id, event, details)
+        VALUES ($1, $2, $3)
+      `, [userId, 'UPDATE_BILLING_AUTOMATION_CONFIG', JSON.stringify({ app_id: id })]);
+
+      await client.query('COMMIT');
+      res.json({ success: true, message: 'Billing automation configuration saved successfully' });
+    } catch (err: any) {
+      await client.query('ROLLBACK');
+      res.status(500).json({ error: err.message });
+    } finally {
+      client.release();
+    }
   }
 };
+
+// ============================================================
+//  AES-256-CBC Encryption / Decryption Helpers
+// ============================================================
+import crypto from 'crypto';
+
+const ALGORITHM = 'aes-256-cbc';
+const ENCRYPTION_KEY = process.env['ENCRYPTION_KEY'] || 'ajr-encryption-key-32chars-2026';
+const IV_LENGTH = 16;
+
+function encryptValue(text: string): string {
+  if (!text) return '';
+  let key = ENCRYPTION_KEY;
+  if (key.length < 32) key = key.padEnd(32, '0');
+  else if (key.length > 32) key = key.substring(0, 32);
+
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(key), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decryptValue(text: string): string {
+  if (!text) return '';
+  try {
+    let key = ENCRYPTION_KEY;
+    if (key.length < 32) key = key.padEnd(32, '0');
+    else if (key.length > 32) key = key.substring(0, 32);
+
+    const parts = text.split(':');
+    if (parts.length < 2) return text;
+    const iv = Buffer.from(parts.shift() || '', 'hex');
+    const encryptedText = Buffer.from(parts.join(':'), 'hex');
+    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (e) {
+    return text;
+  }
+}
+

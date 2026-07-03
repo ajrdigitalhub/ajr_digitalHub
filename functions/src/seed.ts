@@ -352,6 +352,322 @@ export const seedDatabase = async () => {
       console.error('Failed schema migration for transactional tables:', err);
     }
 
+    // Migration: Setup Customer Profiles, Billing Configuration, Notification Configuration, and PDF Documents
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS customer_profiles (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            app_id UUID UNIQUE REFERENCES apps(id) ON DELETE CASCADE,
+            company_name VARCHAR(255) NOT NULL,
+            customer_name VARCHAR(255) NOT NULL,
+            designation VARCHAR(100),
+            primary_email CITEXT,
+            secondary_email CITEXT,
+            mobile_number VARCHAR(20),
+            whatsapp_number VARCHAR(20),
+            alternative_contact_number VARCHAR(20),
+            billing_email CITEXT,
+            billing_whatsapp_number VARCHAR(20),
+            company_address TEXT,
+            city VARCHAR(100),
+            state VARCHAR(100),
+            country VARCHAR(100),
+            postal_code VARCHAR(20),
+            gst_number VARCHAR(100),
+            pan_number VARCHAR(100),
+            timezone VARCHAR(50) DEFAULT 'Asia/Kolkata',
+            preferred_currency VARCHAR(10) DEFAULT 'INR',
+            customer_status VARCHAR(20) DEFAULT 'active' CHECK (customer_status IN ('active', 'inactive')),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS billing_configuration (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            app_id UUID UNIQUE REFERENCES apps(id) ON DELETE CASCADE,
+            monthly_billing_enabled BOOLEAN DEFAULT true,
+            whatsapp_invoice_enabled BOOLEAN DEFAULT true,
+            email_invoice_enabled BOOLEAN DEFAULT true,
+            include_whatsapp_charges BOOLEAN DEFAULT true,
+            include_firebase_charges BOOLEAN DEFAULT true,
+            include_marketplace_purchases BOOLEAN DEFAULT true,
+            include_subscription_charges BOOLEAN DEFAULT true,
+            include_gst_tax BOOLEAN DEFAULT true,
+            billing_day INTEGER DEFAULT 5,
+            billing_time TIME DEFAULT '09:00:00',
+            reminder_before_due_days INTEGER DEFAULT 2,
+            due_date_days INTEGER DEFAULT 7,
+            auto_retry_failed BOOLEAN DEFAULT true,
+            enable_payment_link BOOLEAN DEFAULT true,
+            enable_pdf_attachment BOOLEAN DEFAULT true,
+            enable_detailed_usage_report BOOLEAN DEFAULT true,
+            custom_billing_notes TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS notification_configuration (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            app_id UUID UNIQUE REFERENCES apps(id) ON DELETE CASCADE,
+            whatsapp_enabled BOOLEAN DEFAULT true,
+            email_enabled BOOLEAN DEFAULT true,
+            in_app_enabled BOOLEAN DEFAULT true,
+            recipients TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS pdf_documents (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            app_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+            invoice_id UUID,
+            file_name VARCHAR(255) NOT NULL,
+            file_url TEXT NOT NULL,
+            file_size INTEGER,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        ALTER TABLE invoices ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE customer_contacts ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE customer_contacts ADD COLUMN IF NOT EXISTS customer_profile_id UUID REFERENCES customer_profiles(id) ON DELETE CASCADE;
+        ALTER TABLE billing_history ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE customer_usage ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE cron_logs ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS app_id UUID REFERENCES apps(id) ON DELETE CASCADE;
+        ALTER TABLE notification_configuration ADD COLUMN IF NOT EXISTS push_enabled BOOLEAN DEFAULT true;
+        ALTER TABLE notification_configuration ADD COLUMN IF NOT EXISTS preferences JSONB DEFAULT '{}'::jsonb;
+
+        CREATE INDEX IF NOT EXISTS idx_customer_profiles_app ON customer_profiles(app_id);
+        CREATE INDEX IF NOT EXISTS idx_billing_config_app ON billing_configuration(app_id);
+        CREATE INDEX IF NOT EXISTS idx_notification_config_app ON notification_configuration(app_id);
+        CREATE INDEX IF NOT EXISTS idx_pdf_documents_invoice ON pdf_documents(invoice_id);
+      `);
+
+      // Auto-update triggers
+      try {
+        await query(`DROP TRIGGER IF EXISTS set_timestamp_customer_profiles ON customer_profiles`);
+        await query(`CREATE TRIGGER set_timestamp_customer_profiles BEFORE UPDATE ON customer_profiles FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp()`);
+      } catch (triggerErr) {}
+
+      try {
+        await query(`DROP TRIGGER IF EXISTS set_timestamp_billing_configuration ON billing_configuration`);
+        await query(`CREATE TRIGGER set_timestamp_billing_configuration BEFORE UPDATE ON billing_configuration FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp()`);
+      } catch (triggerErr) {}
+
+      try {
+        await query(`DROP TRIGGER IF EXISTS set_timestamp_notification_configuration ON notification_configuration`);
+        await query(`CREATE TRIGGER set_timestamp_notification_configuration BEFORE UPDATE ON notification_configuration FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp()`);
+      } catch (triggerErr) {}
+
+      console.log('🌱 Schema Migration: Created/updated billing automation and customer profile tables');
+    } catch (err: any) {
+      console.error('Failed schema migration for billing automation tables:', err);
+    }
+
+    // Migration: Setup Firebase Cloud Messaging Web Push Notification tables
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS notification_settings (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            enabled BOOLEAN DEFAULT true,
+            firebase_config JSONB DEFAULT '{}'::jsonb,
+            vapid_key TEXT,
+            service_account JSONB DEFAULT '{}'::jsonb,
+            default_title VARCHAR(255),
+            default_icon TEXT,
+            default_url TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS notification_tokens (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+            application_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            token TEXT UNIQUE NOT NULL,
+            browser VARCHAR(100),
+            device VARCHAR(100),
+            os VARCHAR(100),
+            language VARCHAR(50),
+            timezone VARCHAR(100),
+            notification_enabled BOOLEAN DEFAULT true,
+            last_seen TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS notification_history (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            title VARCHAR(255) NOT NULL,
+            body TEXT,
+            image TEXT,
+            url TEXT,
+            sent_by UUID REFERENCES users(id) ON DELETE SET NULL,
+            sent_to UUID REFERENCES users(id) ON DELETE SET NULL,
+            status VARCHAR(50) DEFAULT 'sent',
+            response JSONB DEFAULT '{}'::jsonb,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS notification_logs (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            level VARCHAR(20) DEFAULT 'error',
+            message TEXT,
+            stack TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Enforce columns if table existed prior
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS level VARCHAR(20) DEFAULT 'error';
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS message TEXT;
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS stack TEXT;
+
+        CREATE INDEX IF NOT EXISTS idx_notification_tokens_user ON notification_tokens(user_id);
+        CREATE INDEX IF NOT EXISTS idx_notification_tokens_app ON notification_tokens(application_id);
+        CREATE INDEX IF NOT EXISTS idx_notification_history_to ON notification_history(sent_to);
+      `);
+
+      // Seed default notification settings row
+      const nsCheck = await query('SELECT id FROM notification_settings LIMIT 1');
+      if (nsCheck.rowCount === 0) {
+        await query(`
+          INSERT INTO notification_settings (enabled, default_title, default_icon, default_url)
+          VALUES (true, 'AJR Digital HUB', '/assets/icons/icon-72x72.png', 'https://ajrdigitalhub.com')
+        `);
+        console.log('🌱 Seeded: Default FCM notification settings');
+      }
+
+      console.log('🌱 Schema Migration: Created Firebase Messaging tables');
+    } catch (err: any) {
+      console.error('Failed schema migration for Firebase Messaging tables:', err);
+    }
+
+    // Migration: Setup Firebase Cloud Messaging Push Notification Monitoring & Billing tables
+    try {
+      await query(`
+        CREATE TABLE IF NOT EXISTS firebase_notification_settings (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            app_id UUID UNIQUE REFERENCES apps(id) ON DELETE CASCADE,
+            enabled BOOLEAN DEFAULT true,
+            free_quota_enabled BOOLEAN DEFAULT true,
+            free_notifications INTEGER DEFAULT 10000,
+            price_per_1000 NUMERIC(10,4) DEFAULT 0.50,
+            platform_service_charge NUMERIC(10,2) DEFAULT 10.00,
+            gst_percentage NUMERIC(5,2) DEFAULT 18.00,
+            currency VARCHAR(10) DEFAULT 'INR',
+            billing_frequency VARCHAR(50) DEFAULT 'monthly',
+            threshold_alerts JSONB DEFAULT '[]'::jsonb,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS firebase_notification_tokens (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+            application_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            token TEXT UNIQUE NOT NULL,
+            browser VARCHAR(100),
+            device VARCHAR(100),
+            os VARCHAR(100),
+            platform VARCHAR(100) DEFAULT 'Web',
+            language VARCHAR(50),
+            timezone VARCHAR(100),
+            notification_enabled BOOLEAN DEFAULT true,
+            token_status VARCHAR(50) DEFAULT 'active',
+            last_active TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS firebase_notification_logs (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            application_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            notification_id VARCHAR(255),
+            title VARCHAR(255),
+            body TEXT,
+            notification_type VARCHAR(50) DEFAULT 'transactional',
+            sent_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            delivery_status VARCHAR(50) DEFAULT 'pending',
+            read_status VARCHAR(50) DEFAULT 'unread',
+            failure_reason TEXT,
+            retry_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS firebase_notification_usage (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            application_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            usage_date DATE DEFAULT CURRENT_DATE,
+            sent_count INTEGER DEFAULT 0,
+            success_count INTEGER DEFAULT 0,
+            failure_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_app_usage_date UNIQUE (application_id, usage_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS firebase_notification_billing (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            application_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+            customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+            billing_period_start DATE NOT NULL,
+            billing_period_end DATE NOT NULL,
+            total_notifications_sent INTEGER DEFAULT 0,
+            free_quota_used INTEGER DEFAULT 0,
+            billable_notifications INTEGER DEFAULT 0,
+            notification_cost NUMERIC(10,2) DEFAULT 0.00,
+            platform_charge NUMERIC(10,2) DEFAULT 0.00,
+            gst NUMERIC(10,2) DEFAULT 0.00,
+            total_amount NUMERIC(10,2) DEFAULT 0.00,
+            currency VARCHAR(10) DEFAULT 'INR',
+            status VARCHAR(50) DEFAULT 'pending',
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS firebase_notification_reports (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            report_name VARCHAR(255) NOT NULL,
+            report_type VARCHAR(50) NOT NULL,
+            filters JSONB DEFAULT '{}'::jsonb,
+            file_url TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_fb_tokens_app ON firebase_notification_tokens(application_id);
+        CREATE INDEX IF NOT EXISTS idx_fb_logs_app ON firebase_notification_logs(application_id);
+        CREATE INDEX IF NOT EXISTS idx_fb_billing_app ON firebase_notification_billing(application_id);
+      `);
+
+      // Seed settings for apps
+      const appsResult = await query('SELECT id FROM apps');
+      for (const app of appsResult.rows) {
+        const checkSetting = await query('SELECT id FROM firebase_notification_settings WHERE app_id = $1', [app.id]);
+        if (checkSetting.rowCount === 0) {
+          await query(`
+            INSERT INTO firebase_notification_settings (app_id, enabled, free_quota_enabled, free_notifications, price_per_1000, platform_service_charge, gst_percentage, currency, billing_frequency)
+            VALUES ($1, true, true, 10000, 0.50, 10.00, 18.00, 'INR', 'monthly')
+          `, [app.id]);
+        }
+      }
+
+      // Populate firebase_notification_tokens from notification_tokens
+      await query(`
+        INSERT INTO firebase_notification_tokens (user_id, application_id, customer_id, token, browser, device, os, platform, language, timezone, notification_enabled, token_status, last_active, created_at)
+        SELECT user_id, application_id, customer_id, token, browser, device, os, 
+               CASE WHEN os IN ('Android', 'iOS') THEN os ELSE 'Web' END,
+               language, timezone, notification_enabled, 'active', last_seen, created_at
+        FROM notification_tokens
+        ON CONFLICT (token) DO NOTHING
+      `);
+
+      console.log('🌱 Schema Migration: Created Firebase Push Notification Monitoring & Billing tables');
+    } catch (err: any) {
+      console.error('Failed schema migration for Firebase Push Notification Monitoring & Billing tables:', err);
+    }
+
+
 
 
     // 2. Check and Seed Admin and User

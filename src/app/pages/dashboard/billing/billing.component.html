@@ -2,10 +2,10 @@
   
   <!-- Top Title Header -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-    <div>
-      <h1 class="text-2xl font-black tracking-tight text-app-text font-display">Billing & Invoices</h1>
-      <p class="text-xs text-app-muted mt-1">Review active plan quotas, compute spends, and download invoice history.</p>
-    </div>
+     <div>
+       <h1 class="text-2xl font-black tracking-tight text-app-text font-display">Billing & Invoices</h1>
+       <p class="text-xs text-app-muted mt-1">Review active plan quotas, compute spends, and download invoice history.</p>
+     </div>
   </div>
 
   @if (loading()) {
@@ -18,7 +18,7 @@
       <!-- Spend Estimate Card -->
       <div class="glass p-5 rounded-2xl border border-app-border">
         <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">Current Month Spend</span>
-        <div class="text-3xl font-black text-app-text mt-1">₹{{ stats().currentSpend | number:'1.2-2' }}</div>
+        <div class="text-3xl font-black text-app-text mt-1 font-mono">₹{{ stats().currentSpend | number:'1.2-2' }}</div>
         <span class="text-[9px] text-app-muted mt-2 block">Accumulated Platform + Provider fees</span>
       </div>
 
@@ -32,15 +32,15 @@
       <!-- WhatsApp usage card -->
       <div class="glass p-5 rounded-2xl border border-app-border">
         <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">WhatsApp API Spend</span>
-        <div class="text-2xl font-black text-emerald-400 mt-1">₹{{ stats().whatsapp?.cost | number:'1.2-2' }}</div>
+        <div class="text-2xl font-black text-emerald-400 mt-1 font-mono">₹{{ stats().whatsapp?.cost | number:'1.2-2' }}</div>
         <span class="text-[9px] text-app-muted mt-2 block">{{ stats().whatsapp?.msgs || 0 }} conversations logged</span>
       </div>
 
-      <!-- Ads Spend Card -->
+      <!-- Marketplace Spend Card -->
       <div class="glass p-5 rounded-2xl border border-app-border">
-        <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">Google Ads spend</span>
-        <div class="text-2xl font-black text-rose-400 mt-1">₹{{ stats().googleAds?.spend | number:'1.2-2' }}</div>
-        <span class="text-[9px] text-app-muted mt-2 block">Sync charges: ₹{{ stats().googleAds?.cost | number:'1.2-2' }}</span>
+        <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">Marketplace purchases</span>
+        <div class="text-2xl font-black text-rose-400 mt-1 font-mono">₹{{ stats().marketplace?.cost | number:'1.2-2' }}</div>
+        <span class="text-[9px] text-app-muted mt-2 block">Acquired product add-ons</span>
       </div>
     </div>
 
@@ -48,6 +48,7 @@
       
       <!-- Left: Invoices Table -->
       <div class="lg:col-span-2 space-y-6">
+        <!-- Invoices History Table Card -->
         <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
           <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest">Invoices History</h3>
           
@@ -71,9 +72,9 @@
                     <td class="py-3.5 px-4 text-app-muted font-medium">
                       {{ inv.billing_period_start | date:'d MMM' }} - {{ inv.billing_period_end | date:'d MMM' }}
                     </td>
-                    <td class="py-3.5 px-4 text-right tabular-nums text-app-text">₹{{ inv.amount | number:'1.2-2' }}</td>
-                    <td class="py-3.5 px-4 text-right tabular-nums text-app-muted">₹{{ inv.gst | number:'1.2-2' }}</td>
-                    <td class="py-3.5 px-4 text-right tabular-nums font-bold text-indigo-400">₹{{ inv.total_amount | number:'1.2-2' }}</td>
+                    <td class="py-3.5 px-4 text-right tabular-nums text-app-text font-mono">₹{{ inv.amount | number:'1.2-2' }}</td>
+                    <td class="py-3.5 px-4 text-right tabular-nums text-app-muted font-mono">₹{{ inv.gst | number:'1.2-2' }}</td>
+                    <td class="py-3.5 px-4 text-right tabular-nums font-bold text-indigo-400 font-mono">₹{{ inv.total_amount | number:'1.2-2' }}</td>
                     <td class="py-3.5 px-4 text-center">
                       <span class="inline-flex px-2 py-0.5 rounded text-[9px] uppercase tracking-widest font-black"
                         [ngClass]="{
@@ -106,6 +107,184 @@
             </table>
           </div>
         </div>
+
+        <!-- Live Usage Details Card -->
+        <div class="glass p-5 rounded-2xl border border-app-border space-y-6">
+          <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+            <mat-icon class="text-indigo-400">insights</mat-icon> Live Usage Details (Current Period)
+          </h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- WhatsApp Breakdown -->
+            <div class="space-y-3">
+              <span class="block text-[10px] font-bold text-app-muted uppercase tracking-widest">WhatsApp Cloud API Conversations</span>
+              <div class="bg-app-bg/50 rounded-xl border border-app-border p-4 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-app-muted">Utility Conversations</span>
+                  <span class="font-mono text-app-text font-bold">{{ stats().whatsapp?.details?.utility?.count || 0 }} (₹{{ stats().whatsapp?.details?.utility?.cost || 0 }})</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-app-muted">Marketing Conversations</span>
+                  <span class="font-mono text-app-text font-bold">{{ stats().whatsapp?.details?.marketing?.count || 0 }} (₹{{ stats().whatsapp?.details?.marketing?.cost || 0 }})</span>
+                </div>
+                <div class="flex justify-between items-center text-xs border-t border-app-border/40 pt-2">
+                  <span class="text-app-text font-bold">Total Conversations</span>
+                  <span class="font-mono text-indigo-400 font-bold">{{ stats().whatsapp?.msgs || 0 }} (₹{{ stats().whatsapp?.cost || 0 }})</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Firebase Breakdown -->
+            <div class="space-y-3">
+              <span class="block text-[10px] font-bold text-app-muted uppercase tracking-widest">Firebase hosting & Compute Metrics</span>
+              <div class="bg-app-bg/50 rounded-xl border border-app-border p-4 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-app-muted">Hosting Storage used</span>
+                  <span class="font-mono text-app-text font-bold">{{ stats().firebase?.details?.hostingStorageBytes / (1024 * 1024) | number:'1.1-1' }} MB</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-app-muted">Firestore Read Operations</span>
+                  <span class="font-mono text-app-text font-bold">{{ stats().firebase?.details?.firestoreReads | number }}</span>
+                </div>
+                <div class="flex justify-between items-center text-xs border-t border-app-border/40 pt-2">
+                  <span class="text-app-text font-bold">Cloud Functions compute</span>
+                  <span class="font-mono text-indigo-400 font-bold">{{ stats().firebase?.details?.cloudFunctionInvocations | number }} execution runs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Marketplace purchases list -->
+          <div class="space-y-3">
+            <span class="block text-[10px] font-bold text-app-muted uppercase tracking-widest">Marketplace Purchases (Monthly Add-ons)</span>
+            <div class="bg-app-bg/50 rounded-xl border border-app-border overflow-hidden">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-app-border/50 text-[9px] uppercase tracking-wider text-app-muted bg-app-bg/30">
+                    <th class="py-2 px-4 font-bold">Item Name</th>
+                    <th class="py-2 px-4 font-bold">Date Purchased</th>
+                    <th class="py-2 px-4 font-bold text-right">Amount Paid</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-app-border/30">
+                  @for (item of stats().marketplace?.items; track item.name) {
+                    <tr>
+                      <td class="py-2.5 px-4 text-app-text font-semibold">{{ item.name }}</td>
+                      <td class="py-2.5 px-4 text-app-muted">{{ item.date | date }}</td>
+                      <td class="py-2.5 px-4 text-right font-mono font-bold text-indigo-400">₹{{ item.amount | number:'1.2-2' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="py-4 text-center text-app-muted">No marketplace plugins acquired this month.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Firebase Push Notifications Metrics Section -->
+        <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
+          <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+            <mat-icon class="text-indigo-400">notifications_active</mat-icon> Firebase Push Notifications Telemetry
+          </h3>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="bg-app-bg/50 border border-app-border rounded-xl p-4 text-center">
+              <span class="text-[9px] text-app-muted uppercase block font-bold">Active Devices</span>
+              <span class="text-xl font-black text-app-text mt-1 block font-mono">{{ pushStats()?.stats?.activeSubscribers || 0 }}</span>
+            </div>
+            <div class="bg-app-bg/50 border border-app-border rounded-xl p-4 text-center">
+              <span class="text-[9px] text-app-muted uppercase block font-bold">Pushes Sent (Month)</span>
+              <span class="text-xl font-black text-app-text mt-1 block font-mono">{{ pushStats()?.stats?.sentThisMonth || 0 }}</span>
+            </div>
+            <div class="bg-app-bg/50 border border-app-border rounded-xl p-4 text-center">
+              <span class="text-[9px] text-app-muted uppercase block font-bold">Free Quota Remaining</span>
+              <span class="text-xl font-black text-emerald-400 mt-1 block font-mono">
+                {{ getRemainingFreeQuota(pushStats()?.stats?.sentThisMonth) }}
+              </span>
+            </div>
+            <div class="bg-app-bg/50 border border-app-border rounded-xl p-4 text-center">
+              <span class="text-[9px] text-app-muted uppercase block font-bold">Estimated Charges</span>
+              <span class="text-xl font-black text-indigo-400 mt-1 block font-mono">
+                {{ pushStats()?.stats?.estimatedMonthlyCost | currency:pushStats()?.stats?.currency || 'INR':'symbol':'1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Device List and History -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-app-border/40">
+            <div class="space-y-3">
+              <span class="block text-[10px] font-bold text-app-muted uppercase tracking-widest">Device List</span>
+              <div class="bg-app-bg/50 border border-app-border rounded-xl max-h-60 overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="border-b border-app-border/40 text-[9px] uppercase tracking-wider text-app-muted bg-app-bg/30">
+                      <th class="py-2 px-3 font-bold">Platform / OS</th>
+                      <th class="py-2 px-3 font-bold">Browser</th>
+                      <th class="py-2 px-3 font-bold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-app-border/30">
+                    @for (device of clientDevices(); track device.id) {
+                      <tr>
+                        <td class="py-2 px-3 text-app-text font-semibold">{{ device.platform }} / {{ device.os }}</td>
+                        <td class="py-2 px-3 text-app-muted">{{ device.browser }}</td>
+                        <td class="py-2 px-3">
+                          <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide border font-mono"
+                            [class]="device.token_status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-500/10 text-slate-400 border-slate-500/20'">
+                            {{ device.token_status }}
+                          </span>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="3" class="py-4 text-center text-app-muted">No device tokens registered.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <span class="block text-[10px] font-bold text-app-muted uppercase tracking-widest">Notification History</span>
+              <div class="bg-app-bg/50 border border-app-border rounded-xl max-h-60 overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="border-b border-app-border/40 text-[9px] uppercase tracking-wider text-app-muted bg-app-bg/30">
+                      <th class="py-2 px-3 font-bold">Title</th>
+                      <th class="py-2 px-3 font-bold">Status</th>
+                      <th class="py-2 px-3 font-bold text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-app-border/30">
+                    @for (h of clientNotificationHistory(); track h.id) {
+                      <tr>
+                        <td class="py-2 px-3 text-app-text font-semibold font-sans">
+                          <span class="block truncate max-w-[150px]" [title]="h.body">{{ h.title }}</span>
+                        </td>
+                        <td class="py-2 px-3">
+                          <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide border font-mono"
+                            [class]="h.delivery_status === 'delivered' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'">
+                            {{ h.delivery_status }}
+                          </span>
+                        </td>
+                        <td class="py-2 px-3 text-right text-app-muted font-mono text-[10px]">{{ h.sent_time | date:'shortDate' }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="3" class="py-4 text-center text-app-muted">No push logs sent to your apps.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Right: Quota tracker & Cost trends -->
@@ -144,25 +323,117 @@
           <div class="h-40 flex items-end justify-between gap-3 border-b border-app-border pb-2 pt-6">
             <div class="flex-1 flex flex-col items-center gap-2 group">
               <div class="w-full bg-indigo-500/20 rounded-t-lg transition-all group-hover:bg-indigo-600 h-10 relative flex justify-center">
-                <span class="absolute -top-7 text-[9px] font-bold text-indigo-400 opacity-0 group-hover:opacity-100 bg-app-card px-1.5 py-0.5 border border-indigo-500/35 rounded font-mono">₹1,500</span>
+                <span class="absolute -top-7 text-[9px] font-bold text-indigo-400 opacity-0 group-hover:opacity-100 bg-app-card px-1.5 py-0.5 border border-indigo-500/35 rounded font-mono font-mono">₹1,500</span>
               </div>
               <span class="text-[9px] font-bold text-app-muted">April</span>
             </div>
 
             <div class="flex-1 flex flex-col items-center gap-2 group">
               <div class="w-full bg-indigo-500/20 rounded-t-lg transition-all group-hover:bg-indigo-600 h-16 relative flex justify-center">
-                <span class="absolute -top-7 text-[9px] font-bold text-indigo-400 opacity-0 group-hover:opacity-100 bg-app-card px-1.5 py-0.5 border border-indigo-500/35 rounded font-mono">₹2,350</span>
+                <span class="absolute -top-7 text-[9px] font-bold text-indigo-400 opacity-0 group-hover:opacity-100 bg-app-card px-1.5 py-0.5 border border-indigo-500/35 rounded font-mono font-mono">₹2,350</span>
               </div>
               <span class="text-[9px] font-bold text-app-muted">May</span>
             </div>
 
             <div class="flex-1 flex flex-col items-center gap-2 group">
               <div class="w-full bg-indigo-500/20 rounded-t-lg transition-all group-hover:bg-indigo-600 h-28 relative flex justify-center">
-                <span class="absolute -top-7 text-[9px] font-bold text-indigo-400 opacity-0 group-hover:opacity-100 bg-app-card px-1.5 py-0.5 border border-indigo-500/35 rounded font-mono">₹4,200</span>
+                <span class="absolute -top-7 text-[9px] font-bold text-indigo-400 opacity-0 group-hover:opacity-100 bg-app-card px-1.5 py-0.5 border border-indigo-500/35 rounded font-mono font-mono">₹4,200</span>
               </div>
               <span class="text-[9px] font-bold text-app-muted">June</span>
             </div>
           </div>
+        </div>
+
+        <!-- Billing Contact Info & Notification Settings -->
+        <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
+          <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+            <mat-icon class="text-sm !w-4 !h-4">contact_mail</mat-icon> Billing Contact Settings
+          </h3>
+          
+          <form (ngSubmit)="saveContactInfo()" class="space-y-3">
+            <div>
+              <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Company Name</label>
+              <input type="text" [(ngModel)]="customerModel.company_name" name="companyName" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-semibold">
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Customer Contact Name</label>
+              <input type="text" [(ngModel)]="customerModel.customer_name" name="customerName" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-semibold">
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Billing Email</label>
+                <input type="email" [(ngModel)]="customerModel.billing_email" name="billingEmail" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Billing WhatsApp</label>
+                <input type="text" [(ngModel)]="customerModel.billing_whatsapp_number" name="billingWhatsapp" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono font-semibold">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Company Billing Address</label>
+              <textarea rows="2" [(ngModel)]="customerModel.company_address" name="companyAddress" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500"></textarea>
+            </div>
+
+            <div class="pt-3 border-t border-app-border/40 space-y-2">
+              <span class="block text-[9px] font-bold text-app-muted uppercase tracking-widest">Notification Delivery Options</span>
+              <label class="flex items-center justify-between p-2 rounded-lg border border-app-border bg-app-bg/50 hover:bg-app-card cursor-pointer transition">
+                <span class="text-[11px] font-semibold text-app-text">Deliver PDF invoice via WhatsApp</span>
+                <input type="checkbox" [(ngModel)]="billingModel.whatsapp_invoice_enabled" name="waInv" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-3.5 h-3.5 cursor-pointer">
+              </label>
+              <label class="flex items-center justify-between p-2 rounded-lg border border-app-border bg-app-bg/50 hover:bg-app-card cursor-pointer transition">
+                <span class="text-[11px] font-semibold text-app-text">Deliver PDF invoice via Email</span>
+                <input type="checkbox" [(ngModel)]="billingModel.email_invoice_enabled" name="emailInv" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-3.5 h-3.5 cursor-pointer">
+              </label>
+              <label class="flex items-center justify-between p-2 rounded-lg border border-app-border bg-app-bg/50 hover:bg-app-card cursor-pointer transition">
+                <span class="text-[11px] font-semibold text-app-text text-indigo-400 flex items-center gap-1"><mat-icon class="!w-4 !h-4 !text-[16px]">notifications_active</mat-icon> Enable Web Push Notifications</span>
+                <input type="checkbox" [(ngModel)]="notificationModel.push_enabled" name="pushEnabled" class="rounded bg-app-card border-slate-600 text-indigo-500 focus:ring-0 w-3.5 h-3.5 cursor-pointer">
+              </label>
+
+              @if (notificationModel.push_enabled) {
+                <div class="pl-4 border-l-2 border-indigo-500/30 space-y-2 mt-2">
+                  <span class="block text-[8px] font-bold text-app-muted uppercase tracking-widest">Push Alert Categories</span>
+                  
+                  <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-[10px] text-app-muted">Billing Alerts</span>
+                    <input type="checkbox" [(ngModel)]="notificationModel.preferences.billing" name="prefBilling" class="rounded w-3 h-3 text-indigo-500 cursor-pointer">
+                  </label>
+                  <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-[10px] text-app-muted">Invoice Alerts</span>
+                    <input type="checkbox" [(ngModel)]="notificationModel.preferences.invoices" name="prefInvoices" class="rounded w-3 h-3 text-indigo-500 cursor-pointer">
+                  </label>
+                  <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-[10px] text-app-muted">Marketing Alerts</span>
+                    <input type="checkbox" [(ngModel)]="notificationModel.preferences.marketing" name="prefMarketing" class="rounded w-3 h-3 text-indigo-500 cursor-pointer">
+                  </label>
+                  <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-[10px] text-app-muted">Marketplace Alerts</span>
+                    <input type="checkbox" [(ngModel)]="notificationModel.preferences.marketplace" name="prefMarketplace" class="rounded w-3 h-3 text-indigo-500 cursor-pointer">
+                  </label>
+                  <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-[10px] text-app-muted">Maintenance Alerts</span>
+                    <input type="checkbox" [(ngModel)]="notificationModel.preferences.maintenance" name="prefMaintenance" class="rounded w-3 h-3 text-indigo-500 cursor-pointer">
+                  </label>
+                  <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-[10px] text-app-muted">System Notifications</span>
+                    <input type="checkbox" [(ngModel)]="notificationModel.preferences.system" name="prefSystem" class="rounded w-3 h-3 text-indigo-500 cursor-pointer">
+                  </label>
+                </div>
+              }
+            </div>
+
+            <button type="submit" [disabled]="isSavingContact()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-app-text text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 border border-indigo-500/20">
+              @if (isSavingContact()) {
+                <div class="w-4 h-4 border-2 border-app-text border-t-transparent rounded-full animate-spin"></div>
+                <span>SAVING...</span>
+              } @else {
+                <mat-icon class="!text-[14px] !w-3.5 !h-3.5">save</mat-icon>
+                <span>SAVE PREFERENCES</span>
+              }
+            </button>
+          </form>
         </div>
 
         <!-- Payment Gateway Configuration Settings -->

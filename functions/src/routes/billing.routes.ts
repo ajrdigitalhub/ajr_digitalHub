@@ -16,4 +16,10 @@ router.post('/invoice/manual', billingController.createInvoiceManual);
 router.post('/invoice/:id/refund', billingController.refundInvoice);
 router.get('/transactions', billingController.getTransactions);
 
+// Global Automation Settings & Logging
+router.get('/global-config', billingController.getGlobalConfig);
+router.post('/global-config', billingController.saveGlobalConfig);
+router.get('/logs/cron', billingController.getCronLogs);
+router.get('/logs/notifications', billingController.getNotificationLogs);
+
 export default router;

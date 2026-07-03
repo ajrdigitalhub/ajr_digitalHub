@@ -10,12 +10,14 @@ import { UiConfigService } from '../../services/ui-config.service';
 import { HeroSliderConfigComponent } from './hero-slider-config/hero-slider-config';
 import { ApiService } from '../../services/api.service';
 import { AdminBillingComponent } from './billing/billing.component';
+import { AdminNotificationsComponent } from './notifications/notifications.component';
+import { FirebaseMonitorComponent } from './firebase-monitor/firebase-monitor.component';
 
 @Component({
   selector: 'app-admin-master',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, MatIconModule, AjrAdminAppCard, AjrRateConfig, HeroSliderConfigComponent, AdminBillingComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, AjrAdminAppCard, AjrRateConfig, HeroSliderConfigComponent, AdminBillingComponent, AdminNotificationsComponent, FirebaseMonitorComponent],
   template: `
     <div class="min-h-screen bg-app-bg font-sans pb-20 text-app-text fade-in">
       
@@ -98,6 +100,12 @@ import { AdminBillingComponent } from './billing/billing.component';
                <button (click)="activeSection.set('config')" [class]="activeSection() === 'config' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all text-left">
                   <mat-icon class="!w-[18px] !h-[18px] !text-[18px]">settings</mat-icon> Global Config
                </button>
+                <button (click)="activeSection.set('notifications')" [class]="activeSection() === 'notifications' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all text-left">
+                   <mat-icon class="!w-[18px] !h-[18px] !text-[18px]">notifications_active</mat-icon> Push Notifications
+                </button>
+                <button (click)="activeSection.set('firebase-monitor')" [class]="activeSection() === 'firebase-monitor' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all text-left">
+                   <mat-icon class="!w-[18px] !h-[18px] !text-[18px]">analytics</mat-icon> Firebase Monitor ⭐
+                </button>
                <button (click)="activeSection.set('ratelimit')" [class]="activeSection() === 'ratelimit' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all text-left">
                   <mat-icon class="!w-[18px] !h-[18px] !text-[18px]">security</mat-icon> Engine & Limits
                </button>
@@ -162,6 +170,12 @@ import { AdminBillingComponent } from './billing/billing.component';
                          <button (click)="activeSection.set('config'); isMobileMenuOpen.set(false)" [class]="activeSection() === 'config' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-left">
                             <mat-icon class="!w-[16px] !h-[16px] !text-[16px]">settings</mat-icon> Global Config
                          </button>
+                         <button (click)="activeSection.set('notifications'); isMobileMenuOpen.set(false)" [class]="activeSection() === 'notifications' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-left">
+                            <mat-icon class="!w-[16px] !h-[16px] !text-[16px]">notifications_active</mat-icon> Push Notifications
+                         </button>
+                         <button (click)="activeSection.set('firebase-monitor'); isMobileMenuOpen.set(false)" [class]="activeSection() === 'firebase-monitor' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-left">
+                            <mat-icon class="!w-[16px] !h-[16px] !text-[16px]">analytics</mat-icon> Firebase Monitor ⭐
+                         </button>
                          <button (click)="activeSection.set('ratelimit'); isMobileMenuOpen.set(false)" [class]="activeSection() === 'ratelimit' ? 'bg-indigo-50/20 text-indigo-500 font-bold border border-indigo-500/10' : 'text-app-text hover:bg-app-bg hover:text-indigo-400 border border-transparent'" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-left">
                             <mat-icon class="!w-[16px] !h-[16px] !text-[16px]">security</mat-icon> Engine & Limits
                          </button>
@@ -221,6 +235,13 @@ import { AdminBillingComponent } from './billing/billing.component';
             @if (activeSection() === 'heroslider') {
                <div class="animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <app-hero-slider-config></app-hero-slider-config>
+               </div>
+            }
+           
+            <!-- Firebase Monitor View -->
+            @if (activeSection() === 'firebase-monitor') {
+               <div class="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <app-firebase-monitor></app-firebase-monitor>
                </div>
             }
            
@@ -372,6 +393,13 @@ import { AdminBillingComponent } from './billing/billing.component';
                       </button>
                     </div>
                  </div>
+              </div>
+           }
+
+           <!-- Push Notifications View -->
+           @if (activeSection() === 'notifications') {
+              <div class="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                 <app-admin-notifications></app-admin-notifications>
               </div>
            }
 
@@ -785,7 +813,7 @@ export class AdminComponent implements OnInit {
   uiConfig = inject(UiConfigService);
   apiService = inject(ApiService);
   
-  activeSection = signal<'applications' | 'config' | 'ratelimit' | 'analytics' | 'heroslider' | 'growth' | 'comms' | 'services' | 'billing'>('applications');
+  activeSection = signal<'applications' | 'config' | 'ratelimit' | 'analytics' | 'heroslider' | 'growth' | 'comms' | 'services' | 'billing' | 'notifications' | 'firebase-monitor'>('applications');
   isMobileMenuOpen = signal(false);
 
   getActiveSectionIcon(): string {
@@ -800,6 +828,8 @@ export class AdminComponent implements OnInit {
       case 'analytics': return 'insights';
       case 'heroslider': return 'slideshow';
       case 'growth': return 'trending_up';
+      case 'notifications': return 'notifications_active';
+      case 'firebase-monitor': return 'analytics';
       default: return 'menu';
     }
   }
@@ -816,6 +846,8 @@ export class AdminComponent implements OnInit {
       case 'analytics': return 'Telemetry & Stats';
       case 'heroslider': return 'Website Hero Slider';
       case 'growth': return 'Growth & A/B Test';
+      case 'notifications': return 'Push Notifications';
+      case 'firebase-monitor': return 'Firebase Monitor';
       default: return 'Menu';
     }
   }

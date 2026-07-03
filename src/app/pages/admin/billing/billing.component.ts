@@ -20,9 +20,13 @@ import { ApiService } from '../../../services/api.service';
           <p class="text-xs text-app-muted mt-1">Manage monthly invoices, WhatsApp notifications, and HTML templates.</p>
         </div>
         <div class="flex gap-2">
+          <button (click)="runCustomerBillingJob()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-app-text rounded-xl text-xs font-bold transition shadow-md cursor-pointer">
+            <mat-icon class="text-sm mr-1.5 inline-block align-middle">play_arrow</mat-icon>
+            Run SaaS Billing
+          </button>
           <button (click)="runBillingJob()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-app-text rounded-xl text-xs font-bold transition shadow-md cursor-pointer">
             <mat-icon class="text-sm mr-1.5 inline-block align-middle">play_arrow</mat-icon>
-            Run Billing Job
+            Run App Billing
           </button>
           <button (click)="exportReport('CSV')" class="px-4 py-2 bg-app-card hover:bg-app-card/85 text-app-text border border-app-border rounded-xl text-xs font-bold transition cursor-pointer">
             Export CSV
@@ -87,6 +91,24 @@ import { ApiService } from '../../../services/api.service';
           class="pb-3 text-xs font-bold uppercase tracking-wider text-app-muted hover:text-app-text transition cursor-pointer"
         >
           Template Config
+        </button>
+        <button 
+          (click)="activeTab.set('global-config')" 
+          [class.border-b-2]="activeTab() === 'global-config'"
+          [class.border-indigo-500]="activeTab() === 'global-config'"
+          [class.text-indigo-400]="activeTab() === 'global-config'"
+          class="pb-3 text-xs font-bold uppercase tracking-wider text-app-muted hover:text-app-text transition cursor-pointer"
+        >
+          Global Config
+        </button>
+        <button 
+          (click)="activeTab.set('logs')" 
+          [class.border-b-2]="activeTab() === 'logs'"
+          [class.border-indigo-500]="activeTab() === 'logs'"
+          [class.text-indigo-400]="activeTab() === 'logs'"
+          class="pb-3 text-xs font-bold uppercase tracking-wider text-app-muted hover:text-app-text transition cursor-pointer"
+        >
+          Execution Logs
         </button>
       </div>
 
@@ -243,6 +265,229 @@ import { ApiService } from '../../../services/api.service';
         </div>
       </div>
 
+      <!-- Global Config Tab -->
+      <div *ngIf="activeTab() === 'global-config'" class="glass p-6 rounded-3xl border border-app-border space-y-6 max-w-xl mx-auto">
+        <h3 class="text-sm font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+          <mat-icon>settings_suggest</mat-icon> Global Billing Config
+        </h3>
+        
+        <form (ngSubmit)="saveGlobalConfig()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Default Billing Day</label>
+              <input type="number" min="1" max="28" [(ngModel)]="globalConfig.default_billing_day" name="default_billing_day" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Cron Schedule Expression</label>
+              <input type="text" [(ngModel)]="globalConfig.cron_schedule" name="cron_schedule" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">WhatsApp Template Name</label>
+              <input type="text" [(ngModel)]="globalConfig.whatsapp_template" name="whatsapp_template" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">PDF Layout Template</label>
+              <select [(ngModel)]="globalConfig.pdf_layout" name="pdf_layout" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer">
+                <option value="Classic">Classic Layout</option>
+                <option value="Modern">Modern Minimalist</option>
+                <option value="Elegant">Elegant Premium</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-app-border">
+            <span class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-3">Company Branding & Header Details</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Company Name</label>
+                <input type="text" [(ngModel)]="globalConfig.company_branding.name" name="brandingName" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500">
+              </div>
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Branding Logo URL</label>
+                <input type="text" [(ngModel)]="globalConfig.company_branding.logo" name="brandingLogo" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Primary Brand Color</label>
+                <div class="flex gap-2">
+                  <input type="color" [(ngModel)]="globalConfig.company_branding.primaryColor" name="primaryColor" class="h-8 w-8 bg-transparent cursor-pointer rounded">
+                  <input type="text" [(ngModel)]="globalConfig.company_branding.primaryColor" name="primaryColorHex" class="flex-grow px-3 py-1.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Secondary Brand Color</label>
+                <div class="flex gap-2">
+                  <input type="color" [(ngModel)]="globalConfig.company_branding.secondaryColor" name="secondaryColor" class="h-8 w-8 bg-transparent cursor-pointer rounded">
+                  <input type="text" [(ngModel)]="globalConfig.company_branding.secondaryColor" name="secondaryColorHex" class="flex-grow px-3 py-1.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+                </div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Company Billing Address</label>
+              <textarea rows="2" [(ngModel)]="globalConfig.company_branding.address" name="brandingAddress" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500"></textarea>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-app-border grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">CGST Rate (%)</label>
+              <input type="number" [(ngModel)]="globalConfig.gst_settings.cgst" name="cgst" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">SGST Rate (%)</label>
+              <input type="number" [(ngModel)]="globalConfig.gst_settings.sgst" name="sgst" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="col-span-2">
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Company GSTIN</label>
+              <input type="text" [(ngModel)]="globalConfig.gst_settings.gstin" name="gstin" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Currency Format</label>
+              <select [(ngModel)]="globalConfig.currency_format" name="currency_format" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer">
+                <option value="INR">INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-app-border">
+            <span class="block text-xs font-bold uppercase tracking-wider text-app-muted mb-3">Billing Calculation Rules</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">WhatsApp rate (₹)</label>
+                <input type="number" step="0.00001" [(ngModel)]="globalConfig.billing_calculation_rules.whatsappRate" name="waRate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+              </div>
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Firebase Inv Rate (₹)</label>
+                <input type="number" step="0.0001" [(ngModel)]="globalConfig.billing_calculation_rules.firebaseInvocationRate" name="fbRate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+              </div>
+              <div>
+                <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Platform Base (₹)</label>
+                <input type="number" [(ngModel)]="globalConfig.billing_calculation_rules.platformBaseCharge" name="platformBase" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Notification Retry Count</label>
+              <input type="number" min="0" max="5" [(ngModel)]="globalConfig.notification_retry_count" name="retryCount" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono">
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Payment Instructions</label>
+            <textarea rows="2" [(ngModel)]="globalConfig.payment_instructions" name="payment_instructions" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[9px] uppercase font-bold text-app-muted mb-1.5">Branding Footer Note</label>
+            <textarea rows="2" [(ngModel)]="globalConfig.footer_notes" name="footer_notes" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500"></textarea>
+          </div>
+
+          <div class="flex gap-3 justify-end pt-4 border-t border-app-border">
+            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-app-text text-xs font-bold rounded-xl transition cursor-pointer border border-indigo-500">
+              Save Configuration
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Logs Tab -->
+      <div *ngIf="activeTab() === 'logs'" class="space-y-6">
+        <!-- Cron Logs Section -->
+        <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
+          <h3 class="text-sm font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+            <mat-icon class="text-indigo-400">schedule</mat-icon> Cron Execution Status
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-app-border text-[9px] uppercase tracking-wider text-app-muted">
+                  <th class="py-3 pr-4 font-bold">Execution Date</th>
+                  <th class="py-3 px-4 font-bold">Job Name</th>
+                  <th class="py-3 px-4 font-bold text-right">Elapsed (ms)</th>
+                  <th class="py-3 px-4 font-bold text-center">Status</th>
+                  <th class="py-3 pl-4 font-bold">Execution Details</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-app-border/40">
+                @for (log of cronLogs(); track log.id) {
+                  <tr class="hover:bg-app-card/30 transition-colors">
+                    <td class="py-3 pr-4 text-app-text font-mono">{{ log.created_at | date:'medium' }}</td>
+                    <td class="py-3 px-4 font-bold text-indigo-400">{{ log.job_name }}</td>
+                    <td class="py-3 px-4 text-right font-mono">{{ log.execution_time }} ms</td>
+                    <td class="py-3 px-4 text-center">
+                      <span class="inline-flex px-2 py-0.5 rounded text-[8px] uppercase tracking-widest font-black"
+                            [ngClass]="log.status === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'">
+                        {{ log.status }}
+                      </span>
+                    </td>
+                    <td class="py-3 pl-4 text-app-muted truncate max-w-xs" [title]="log.details">{{ log.details }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="py-8 text-center text-app-muted">No cron executions logged yet.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Notification Logs Section -->
+        <div class="glass p-5 rounded-2xl border border-app-border space-y-4">
+          <h3 class="text-sm font-black text-cyan-400 uppercase tracking-widest flex items-center gap-1">
+            <mat-icon class="text-cyan-400">send</mat-icon> Delivery Notification Logs
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-app-border text-[9px] uppercase tracking-wider text-app-muted">
+                  <th class="py-3 pr-4 font-bold">Dispatch Date</th>
+                  <th class="py-3 px-4 font-bold">Application</th>
+                  <th class="py-3 px-4 font-bold">Recipient</th>
+                  <th class="py-3 px-4 font-bold text-center">Channel</th>
+                  <th class="py-3 px-4 font-bold text-center">Status</th>
+                  <th class="py-3 pl-4 font-bold">Errors / Details</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-app-border/40">
+                @for (log of notificationLogs(); track log.id) {
+                  <tr class="hover:bg-app-card/30 transition-colors">
+                    <td class="py-3 pr-4 text-app-text font-mono">{{ log.created_at | date:'medium' }}</td>
+                    <td class="py-3 px-4 font-semibold text-app-text">{{ log.app_name || 'N/A' }}</td>
+                    <td class="py-3 px-4 text-app-muted font-mono">{{ log.recipient }}</td>
+                    <td class="py-3 px-4 text-center font-bold text-indigo-400 uppercase">{{ log.channel }}</td>
+                    <td class="py-3 px-4 text-center">
+                      <span class="inline-flex px-2 py-0.5 rounded text-[8px] uppercase tracking-widest font-black"
+                            [ngClass]="log.status === 'sent' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'">
+                        {{ log.status }}
+                      </span>
+                    </td>
+                    <td class="py-3 pl-4 text-rose-400 font-mono truncate max-w-xs" [title]="log.error_details || 'Success'">
+                      {{ log.error_details || 'Success' }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="py-8 text-center text-app-muted">No delivery notifications logged yet.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   `,
   styles: [`
@@ -252,7 +497,7 @@ import { ApiService } from '../../../services/api.service';
   `]
 })
 export class AdminBillingComponent implements OnInit {
-  activeTab = signal<'invoices' | 'transactions' | 'manual' | 'template'>('invoices');
+  activeTab = signal<'invoices' | 'transactions' | 'manual' | 'template' | 'global-config' | 'logs'>('invoices');
   filterApp = '';
   invoices = signal<any[]>([]);
   transactions = signal<any[]>([]);
@@ -265,6 +510,41 @@ export class AdminBillingComponent implements OnInit {
   // Manual Form
   selectedCustomerForInvoice = '';
   manualInvoiceAmount = 0;
+
+  // Logs
+  cronLogs = signal<any[]>([]);
+  notificationLogs = signal<any[]>([]);
+
+  // Global Config Form Model
+  globalConfig = {
+    default_billing_day: 5,
+    cron_schedule: '0 9 5 * *',
+    whatsapp_template: 'kall_me_attach',
+    invoice_template: 'default_template',
+    pdf_layout: 'Modern',
+    company_branding: {
+      name: 'AJR Digital HUB',
+      logo: 'assets/images/logo.png',
+      primaryColor: '#6366f1',
+      secondaryColor: '#06b6d4',
+      address: '123 Tech Park, Bangalore, India'
+    },
+    footer_notes: 'Thank you for your business!',
+    payment_instructions: 'Please pay via the payment link attached to the invoice.',
+    gst_settings: {
+      cgst: 9,
+      sgst: 9,
+      igst: 18,
+      gstin: '29AAAAA0000A1Z5'
+    },
+    currency_format: 'INR',
+    billing_calculation_rules: {
+      whatsappRate: 0.86,
+      firebaseInvocationRate: 1.0892,
+      platformBaseCharge: 0
+    },
+    notification_retry_count: 3
+  };
 
   private api = inject(ApiService);
 
@@ -279,6 +559,8 @@ export class AdminBillingComponent implements OnInit {
     this.loadAdminStats();
     this.loadTransactions();
     this.loadCustomers();
+    this.loadGlobalConfig();
+    this.loadLogs();
   }
 
   updatePreview() {
@@ -346,6 +628,41 @@ export class AdminBillingComponent implements OnInit {
     }
   }
 
+  loadGlobalConfig() {
+    this.api.get<any>('/admin/billing/global-config').subscribe({
+      next: (data) => {
+        if (data) {
+          this.globalConfig = {
+            ...this.globalConfig,
+            ...data,
+            company_branding: { ...this.globalConfig.company_branding, ...(data.company_branding || {}) },
+            gst_settings: { ...this.globalConfig.gst_settings, ...(data.gst_settings || {}) },
+            billing_calculation_rules: { ...this.globalConfig.billing_calculation_rules, ...(data.billing_calculation_rules || {}) }
+          };
+        }
+      },
+      error: (e) => console.error('Failed to load global config', e)
+    });
+  }
+
+  saveGlobalConfig() {
+    this.api.post<any>('/admin/billing/global-config', this.globalConfig).subscribe({
+      next: () => alert('Global billing configurations saved successfully!'),
+      error: (e) => alert('Failed to save config: ' + e.message)
+    });
+  }
+
+  loadLogs() {
+    this.api.get<any[]>('/admin/billing/logs/cron').subscribe({
+      next: (data) => this.cronLogs.set(data || []),
+      error: (e) => console.error('Failed to load cron logs', e)
+    });
+    this.api.get<any[]>('/admin/billing/logs/notifications').subscribe({
+      next: (data) => this.notificationLogs.set(data || []),
+      error: (e) => console.error('Failed to load notification logs', e)
+    });
+  }
+
   async createManualInvoice() {
     if (!this.selectedCustomerForInvoice || this.manualInvoiceAmount <= 0) {
       alert('Please fill out all manual invoice fields');
@@ -393,6 +710,22 @@ export class AdminBillingComponent implements OnInit {
       await this.loadAdminStats();
     } catch (err: any) {
       alert('Failed to run billing: ' + err.message);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async runCustomerBillingJob() {
+    this.isLoading.set(true);
+    try {
+      const { firstValueFrom } = await import('rxjs');
+      await firstValueFrom(this.api.post<any>('/admin/billing/run-customer', {}));
+      alert('SaaS Customer Monthly Billing job completed successfully!');
+      await this.loadInvoices();
+      await this.loadAdminStats();
+      this.loadLogs();
+    } catch (err: any) {
+      alert('Failed to run SaaS billing: ' + err.message);
     } finally {
       this.isLoading.set(false);
     }

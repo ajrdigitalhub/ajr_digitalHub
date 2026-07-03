@@ -11,6 +11,39 @@ export const whatsappService = {
     }
 
     try {
+      const isArray = Array.isArray(templateData);
+      const templateName = isArray ? 'kall_me_deliveryalert' : (templateData.templateName || 'kall_me_deliveryalert');
+      const languageCode = isArray ? 'en' : (templateData.languageCode || 'en');
+      const parameters = isArray ? templateData : (templateData.parameters || []);
+
+      const components: any[] = [];
+
+      // If document URL is supplied, add a header of type document
+      if (!isArray && templateData.documentUrl) {
+        components.push({
+          type: 'header',
+          parameters: [
+            {
+              type: 'document',
+              document: {
+                link: templateData.documentUrl,
+                filename: templateData.documentFilename || 'invoice.pdf'
+              }
+            }
+          ]
+        });
+      }
+
+      components.push({
+        type: 'body',
+        parameters: parameters.map((p: any) => {
+          if (typeof p === 'string') {
+            return { type: 'text', text: p };
+          }
+          return p;
+        })
+      });
+
       const response = await axios.post(
         `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_ID}/messages`,
         {
@@ -18,14 +51,9 @@ export const whatsappService = {
           to: phone,
           type: 'template',
           template: {
-            name: templateData.templateName || 'kall_me_deliveryalert',
-            language: { code: templateData.languageCode || 'en' },
-            components: [
-              {
-                type: 'body',
-                parameters: templateData.parameters || templateData
-              }
-            ]
+            name: templateName,
+            language: { code: languageCode },
+            components
           }
         },
         {

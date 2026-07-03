@@ -31,6 +31,8 @@ router.post('/:id/whatsapp-config', saasController.updateWhatsappConfig);
 router.post('/:id/email-config', saasController.updateEmailConfig);
 router.post('/:id/firebase-config', firebaseController.saveConfig);
 router.post('/:id/firebase/test-connection', firebaseController.testConnection);
+router.get('/:id/billing-automation-config', saasController.getBillingAutomationConfig);
+router.put('/:id/billing-automation-config', saasController.updateBillingAutomationConfig);
 
 // Services & Monitoring
 router.post('/:id/services/toggle', saasController.toggleService);
