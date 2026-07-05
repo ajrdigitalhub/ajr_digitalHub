@@ -44,7 +44,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 // Constants
-const PORT = 3000;
+// const PORT = 3000;
 const JWT_SECRET = 'saas_forms_super_secret_key_123';
 const DATA_FILE = path_1.default.join(__dirname, 'schema_datastores.json');
 let db = {
@@ -634,9 +634,9 @@ app.get('/api/forms/:id/analytics', authenticateToken, (req, res) => {
 // ----------------------------------------------------
 // STATIC SPA ROUTING CATCHALL
 // ----------------------------------------------------
-const distPath = path_1.default.join(__dirname, '../dist');
-// Serve static build from dist folder
-app.use(express_1.default.static(distPath));
+// const distPath = path_1.default.join(__dirname, '../dist');
+// // Serve static build from dist folder
+// app.use(express_1.default.static(distPath));
 // Fallback all other client-side routing to index.html to allow SPA working cleanly
 // app.get('*', (req, res) => {
 //     const indexPath = path_1.default.join(distPath, 'index.html');
@@ -649,6 +649,8 @@ app.use(express_1.default.static(distPath));
 //     }
 // });
 // Run Backend Express App
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Dynamic Form Builder Server actively running at http://0.0.0.0:${PORT}`);
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
 });
