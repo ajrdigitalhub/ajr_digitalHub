@@ -80984,6 +80984,9 @@ var init_firebase_service = __esm({
         let functionsExecTime = null;
         let memoryUsage = null;
         let messagingUsage = null;
+        let fnCost = 0;
+        let hostingCost = 0;
+        let gcpNonFirebaseCost = 0;
         if (accessToken) {
           hostingUsage = await this.queryMetric(projectId, accessToken, "firebasehosting.googleapis.com/network/request_count", startOfMonth, endTime);
           outboundBandwidth = await this.queryMetric(projectId, accessToken, "firebasehosting.googleapis.com/network/sent_bytes_count", startOfMonth, endTime);
@@ -81019,11 +81022,12 @@ var init_firebase_service = __esm({
             }
           }
           const fnCalls = functionsInvocations || 0;
-          const fnCost = Math.max(0.79, Math.round(fnCalls * 10892e-7 * 100) / 100);
+          fnCost = fnCalls > 0 ? Math.round((2 + fnCalls * 1049e-6) * 100) / 100 : 0;
           const sentBytes = outboundBandwidth || 0;
           const sentGB = sentBytes / (1024 * 1024 * 1024);
-          const hostingCost = Math.max(1.68, Math.round(sentGB * 12.45 * 100) / 100);
-          totalCost = Math.round((fnCost + hostingCost) * 100) / 100;
+          hostingCost = sentBytes > 0 ? Math.max(8, Math.round(sentGB * 12.45 * 100) / 100) : 0;
+          gcpNonFirebaseCost = fnCalls > 0 ? Math.round((4.51 + fnCalls * 5019e-7 + 2.75) * 100) / 100 : 0;
+          totalCost = Math.round((fnCost + hostingCost + gcpNonFirebaseCost) * 100) / 100;
         }
         return {
           totalCost,
@@ -81041,7 +81045,8 @@ var init_firebase_service = __esm({
           functionsInvocations,
           functionsExecTime,
           memoryUsage,
-          messagingUsage
+          messagingUsage,
+          gcpNonFirebaseCost
         };
       }
       // ── Real Analytics: Daily API hits & Cost from Cloud Monitoring ─
@@ -81130,19 +81135,20 @@ var init_firebase_service = __esm({
             const hits = dailyHits.get(date) || 0;
             const errors = errorData.get(date) || 0;
             const avg_latency = latencyData.get(date) || 0;
-            const functionsCost = Math.round(hits * 10892e-7 * 100) / 100;
+            const functionsCost = hits > 0 ? Math.round((2 / 30 + hits * 1049e-6) * 100) / 100 : 0;
             const sentBytes = dailyHostingBytes.get(date) || 0;
             const sentGB = sentBytes / (1024 * 1024 * 1024);
-            const hostingCost = Math.round(sentGB * 12.45 * 100) / 100;
+            const hostingCost = sentBytes > 0 ? Math.max(Math.round(8 / 30 * 100) / 100, Math.round(sentGB * 12.45 * 100) / 100) : 0;
+            const gcpNonFirebaseCost = hits > 0 ? Math.round(((4.51 + 2.75) / 30 + hits * 5019e-7) * 100) / 100 : 0;
             history.push({
               date,
               hits,
               errors,
               avg_latency,
-              cost: Math.round((functionsCost + hostingCost) * 100) / 100,
+              cost: Math.round((functionsCost + hostingCost + gcpNonFirebaseCost) * 100) / 100,
               functionsCost,
               hostingCost,
-              nonFirebaseCost: 0
+              nonFirebaseCost: gcpNonFirebaseCost
             });
           }
         } catch (err) {
@@ -90957,6 +90963,7 @@ var FirebaseBillingService = class {
     }
     let functionsCost = 0;
     let hostingCost = 0;
+    let gcpNonFirebaseCost = 0;
     let totalExecutions = 0;
     let hostingUsageBytes = 0;
     let fbBilling = null;
@@ -90964,10 +90971,11 @@ var FirebaseBillingService = class {
       fbBilling = await firebaseService6.getBillingCost(appId, month);
       if (fbBilling) {
         totalExecutions = fbBilling.functionsInvocations || 0;
-        functionsCost = Math.max(0.79, Math.round(totalExecutions * 10892e-7 * 100) / 100);
+        functionsCost = totalExecutions > 0 ? Math.round((2 + totalExecutions * 1049e-6) * 100) / 100 : 0;
         hostingUsageBytes = fbBilling.outboundBandwidth || 0;
         const sentGB = hostingUsageBytes / (1024 * 1024 * 1024);
-        hostingCost = Math.max(1.68, Math.round(sentGB * 12.45 * 100) / 100);
+        hostingCost = hostingUsageBytes > 0 ? Math.max(8, Math.round(sentGB * 12.45 * 100) / 100) : 0;
+        gcpNonFirebaseCost = fbBilling.gcpNonFirebaseCost || 0;
       }
     } catch (e) {
       console.warn("Failed to fetch firebase cost details for billing:", e);
@@ -91029,10 +91037,11 @@ var FirebaseBillingService = class {
     return {
       billingEnabled: fbBilling?.billingEnabled ?? false,
       billingAccountName: fbBilling?.billingAccountName ?? null,
-      totalCost: Math.round((functionsCost + hostingCost + nonFirebaseCost) * 100) / 100,
+      totalCost: Math.round((functionsCost + hostingCost + gcpNonFirebaseCost + nonFirebaseCost) * 100) / 100,
       currency: "INR",
       functionsCost,
       hostingCost,
+      gcpNonFirebaseCost,
       nonFirebaseCost,
       totalExecutions,
       hostingUsageBytes,
@@ -91324,10 +91333,12 @@ var NotificationTokenService = class {
       }
       let filtered = mockSubscribers;
       if (filters.platform) {
-        filtered = filtered.filter((s) => s.platform.toLowerCase() === filters.platform.toLowerCase());
+        const platformFilter = filters.platform.toLowerCase();
+        filtered = filtered.filter((s) => s.platform.toLowerCase() === platformFilter);
       }
       if (filters.status) {
-        filtered = filtered.filter((s) => s.token_status.toLowerCase() === filters.status.toLowerCase());
+        const statusFilter = filters.status.toLowerCase();
+        filtered = filtered.filter((s) => s.token_status.toLowerCase() === statusFilter);
       }
       if (filters.search) {
         const srch = filters.search.toLowerCase();
@@ -91606,6 +91617,77 @@ var firebaseMessagingService = {
       console.error("[FCM] Multicast delivery failed:", err);
       throw err;
     }
+  },
+  async sendGenericNotification(payload) {
+    let userIds = [];
+    if (payload.broadcast) {
+      const usersRes = await query2("SELECT id FROM records WHERE collection = 'users' AND data->>'status' = 'active'");
+      userIds = usersRes.rows.map((r) => r.id);
+    } else if (payload.targetUsers && payload.targetUsers.length > 0) {
+      userIds = payload.targetUsers.map((u) => String(u));
+    } else if (payload.targetRole) {
+      const usersRes = await query2("SELECT id FROM records WHERE collection = 'users' AND data->>'role' = $1 AND data->>'status' = 'active'", [payload.targetRole]);
+      userIds = usersRes.rows.map((r) => r.id);
+    } else if (payload.targetDepartment) {
+      const usersRes = await query2("SELECT id FROM records WHERE collection = 'users' AND data->>'department' = $1 AND data->>'status' = 'active'", [payload.targetDepartment]);
+      userIds = usersRes.rows.map((r) => r.id);
+    }
+    if (userIds.length === 0) {
+      console.log(`[FCM sendGenericNotification] No target users found for event ${payload.eventCode}`);
+      return { successCount: 0, failureCount: 0 };
+    }
+    let overallSuccessCount = 0;
+    let overallFailureCount = 0;
+    for (const userId of userIds) {
+      const tokensRes = await query2(
+        `SELECT token, application_id, customer_id FROM notification_tokens WHERE user_id = $1 AND notification_enabled = true`,
+        [userId]
+      );
+      const tokens = tokensRes.rows.map((r) => r.token);
+      let deliveryStatus = "failed";
+      let fcmResponse = {};
+      if (tokens.length > 0) {
+        try {
+          const result = await this.sendToTokens(tokens, {
+            title: payload.title,
+            body: payload.body,
+            image: payload.image,
+            url: payload.navigationUrl,
+            customData: payload.data
+          });
+          overallSuccessCount += result.successCount;
+          overallFailureCount += result.failureCount;
+          deliveryStatus = result.successCount > 0 ? "delivered" : "failed";
+          fcmResponse = result;
+        } catch (err) {
+          overallFailureCount += tokens.length;
+          fcmResponse = { error: err.message, stack: err.stack };
+          console.error(`[FCM sendGenericNotification] Failed to send to user ${userId}:`, err);
+        }
+      } else {
+        console.log(`[FCM sendGenericNotification] No active FCM tokens for user ${userId}`);
+        fcmResponse = { message: "No registered active tokens" };
+      }
+      try {
+        await query2(
+          "INSERT INTO notification_history (title, body, image, url, sent_by, sent_to, status, response, event_code, payload, read_status) VALUES ($1, $2, $3, $4, null, $5, $6, $7, $8, $9, 'unread')",
+          [
+            payload.title,
+            payload.body,
+            payload.image || null,
+            payload.navigationUrl || null,
+            userId,
+            deliveryStatus,
+            JSON.stringify(fcmResponse),
+            payload.eventCode,
+            JSON.stringify(payload.data || {})
+          ]
+        );
+      } catch (dbErr) {
+        console.error("[FCM sendGenericNotification] Failed to save history for user " + userId + ":", dbErr);
+      }
+    }
+    return { successCount: overallSuccessCount, failureCount: overallFailureCount };
   }
 };
 
@@ -92029,6 +92111,19 @@ var notificationController = {
            last_seen = CURRENT_TIMESTAMP`,
         [userId, appId, customerId, token, browser, device, os11, language, timezone]
       );
+      await query2(
+        `INSERT INTO firebase_notification_tokens (user_id, application_id, customer_id, token, browser, device, os, platform, language, timezone, notification_enabled, token_status, last_active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, 'active', CURRENT_TIMESTAMP)
+         ON CONFLICT (token) DO UPDATE SET 
+           user_id = EXCLUDED.user_id,
+           browser = COALESCE(EXCLUDED.browser, firebase_notification_tokens.browser),
+           device = COALESCE(EXCLUDED.device, firebase_notification_tokens.device),
+           os = COALESCE(EXCLUDED.os, firebase_notification_tokens.os),
+           platform = COALESCE(EXCLUDED.platform, firebase_notification_tokens.platform),
+           token_status = 'active',
+           last_active = CURRENT_TIMESTAMP`,
+        [userId, appId, customerId, token, browser, device, os11, os11 || "Web", language, timezone]
+      );
       res.json({ success: true, message: "FCM Token saved" });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -92139,6 +92234,164 @@ var notificationController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
+  },
+  async getMyNotifications(req, res) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const result = await query2(
+        `SELECT id, title, body, image, url, status, created_at, read_status, read_time, click_time, event_code, payload
+         FROM notification_history
+         WHERE sent_to = $1
+         ORDER BY created_at DESC
+         LIMIT 100`,
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async getUnreadCount(req, res) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const result = await query2(
+        `SELECT COUNT(*)::integer as count FROM notification_history WHERE sent_to = $1 AND read_status = 'unread'`,
+        [userId]
+      );
+      res.json({ count: result.rows[0]?.count || 0 });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async markRead(req, res) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const { ids } = req.body;
+      if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: "Invalid or missing IDs array" });
+      if (ids.length > 0) {
+        await query2(
+          `UPDATE notification_history 
+           SET read_status = 'read', read_time = CURRENT_TIMESTAMP 
+           WHERE sent_to = $1 AND id = ANY($2)`,
+          [userId, ids]
+        );
+      }
+      res.json({ success: true, message: "Notifications marked as read" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async markAllRead(req, res) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      await query2(
+        `UPDATE notification_history 
+         SET read_status = 'read', read_time = CURRENT_TIMESTAMP 
+         WHERE sent_to = $1 AND read_status = 'unread'`,
+        [userId]
+      );
+      res.json({ success: true, message: "All notifications marked as read" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async deleteNotification(req, res) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const { id } = req.params;
+      await query2(
+        `DELETE FROM notification_history WHERE sent_to = $1 AND id = $2`,
+        [userId, id]
+      );
+      res.json({ success: true, message: "Notification deleted" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async getConfigs(req, res) {
+    try {
+      const result = await query2("SELECT * FROM notification_events_config ORDER BY created_at DESC");
+      res.json(result.rows);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async createConfig(req, res) {
+    try {
+      const { name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value, schedule } = req.body;
+      const result = await query2(
+        `INSERT INTO notification_events_config 
+          (name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value, schedule)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         RETURNING *`,
+        [
+          name,
+          type || "push",
+          event_code,
+          api_endpoint,
+          http_method || "POST",
+          enabled ?? true,
+          title_template,
+          body_template,
+          navigation_url || null,
+          priority || "normal",
+          JSON.stringify(user_role_mapping || []),
+          target_type || "role",
+          target_value || null,
+          schedule || null
+        ]
+      );
+      res.json(result.rows[0]);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async updateConfig(req, res) {
+    try {
+      const { id } = req.params;
+      const { name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value, schedule } = req.body;
+      const result = await query2(
+        `UPDATE notification_events_config 
+         SET name = $1, type = $2, event_code = $3, api_endpoint = $4, http_method = $5, enabled = $6, title_template = $7, body_template = $8, navigation_url = $9, priority = $10, user_role_mapping = $11, target_type = $12, target_value = $13, schedule = $14, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $15
+         RETURNING *`,
+        [
+          name,
+          type,
+          event_code,
+          api_endpoint,
+          http_method,
+          enabled,
+          title_template,
+          body_template,
+          navigation_url,
+          priority,
+          JSON.stringify(user_role_mapping || []),
+          target_type,
+          target_value,
+          schedule,
+          id
+        ]
+      );
+      if (result.rows.length === 0) return res.status(404).json({ error: "Config not found" });
+      res.json(result.rows[0]);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+  async deleteConfig(req, res) {
+    try {
+      const { id } = req.params;
+      await query2("DELETE FROM notification_events_config WHERE id = $1", [id]);
+      res.json({ success: true, message: "Configuration event deleted" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };
 
@@ -92147,12 +92400,21 @@ var router11 = (0, import_express11.Router)();
 router11.post("/token", requireAuth, notificationController.saveToken);
 router11.delete("/token", requireAuth, notificationController.deleteToken);
 router11.get("/settings", requireAuth, notificationController.getSettings);
+router11.get("/my-notifications", requireAuth, notificationController.getMyNotifications);
+router11.get("/unread-count", requireAuth, notificationController.getUnreadCount);
+router11.post("/mark-read", requireAuth, notificationController.markRead);
+router11.post("/mark-all-read", requireAuth, notificationController.markAllRead);
+router11.delete("/delete/:id", requireAuth, notificationController.deleteNotification);
 router11.post("/admin/settings", requireAuth, requireRole("admin"), notificationController.saveSettings);
 router11.get("/admin/history", requireAuth, requireRole("admin"), notificationController.getHistory);
 router11.get("/admin/logs", requireAuth, requireRole("admin"), notificationController.getLogs);
 router11.post("/admin/send-to-user", requireAuth, requireRole("admin"), notificationController.sendToUser);
 router11.post("/admin/send-broadcast", requireAuth, requireRole("admin"), notificationController.sendBroadcast);
 router11.post("/admin/test", requireAuth, requireRole("admin"), notificationController.testNotification);
+router11.get("/admin/config", requireAuth, requireRole("admin"), notificationController.getConfigs);
+router11.post("/admin/config", requireAuth, requireRole("admin"), notificationController.createConfig);
+router11.put("/admin/config/:id", requireAuth, requireRole("admin"), notificationController.updateConfig);
+router11.delete("/admin/config/:id", requireAuth, requireRole("admin"), notificationController.deleteConfig);
 var notification_routes_default = router11;
 
 // src/routes/firebaseNotification.routes.ts
@@ -94094,6 +94356,44 @@ var seedDatabase = async () => {
     }
     try {
       await query(`
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS event_code VARCHAR(100);
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS payload JSONB DEFAULT '{}'::jsonb;
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS read_status VARCHAR(20) DEFAULT 'unread';
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS read_time TIMESTAMP WITH TIME ZONE;
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS click_time TIMESTAMP WITH TIME ZONE;
+
+        CREATE TABLE IF NOT EXISTS notification_events_config (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name VARCHAR(255) NOT NULL,
+            type VARCHAR(50) DEFAULT 'push',
+            event_code VARCHAR(100) UNIQUE NOT NULL,
+            api_endpoint VARCHAR(255) NOT NULL,
+            http_method VARCHAR(10) DEFAULT 'POST',
+            enabled BOOLEAN DEFAULT true,
+            title_template VARCHAR(255) NOT NULL,
+            body_template TEXT NOT NULL,
+            navigation_url VARCHAR(255),
+            priority VARCHAR(20) DEFAULT 'normal',
+            user_role_mapping JSONB DEFAULT '[]'::jsonb,
+            target_type VARCHAR(50) DEFAULT 'role',
+            target_value VARCHAR(255),
+            schedule VARCHAR(100),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      const configCheck = await query("SELECT id FROM notification_events_config LIMIT 1");
+      if (configCheck.rowCount === 0) {
+        await query(
+          `INSERT INTO notification_events_config (name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value) VALUES ('Task Assigned Notification', 'push', 'TASK_ASSIGNED', '/api/tasks', 'POST', true, 'New Task Assigned', 'A new task "{{response.body.taskName}}" has been assigned to you.', '/dashboard/tasks', 'high', '["user"]', 'user', '{{response.body.assignedTo}}'), ('Invoice Paid Notification', 'push', 'INVOICE_PAID', '/api/invoices/pay', 'POST', true, 'Invoice Paid', 'Invoice {{response.body.invoiceNumber}} for {{response.body.amount}} has been paid successfully.', '/dashboard/billing', 'normal', '["admin"]', 'role', 'admin')`
+        );
+        console.log("\u{1F331} Seeded: Default notification events configurations");
+      }
+    } catch (err) {
+      console.error("Failed schema migration for notification events config:", err);
+    }
+    try {
+      await query(`
         CREATE TABLE IF NOT EXISTS firebase_notification_settings (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             app_id UUID UNIQUE REFERENCES apps(id) ON DELETE CASCADE,
@@ -94357,6 +94657,121 @@ var seedDatabase = async () => {
     console.error("\u274C Database seeding failed:", err);
   }
 };
+
+// src/middlewares/notification-trigger.middleware.ts
+init_db2();
+function resolvePlaceholder(path17, obj) {
+  const parts = path17.split(".");
+  let current = obj;
+  for (const part of parts) {
+    if (current == null) return "";
+    current = current[part];
+  }
+  return current != null ? String(current) : "";
+}
+function renderTemplate(template, context2) {
+  return template.replace(/\{\{([^}]+)\}\}/g, (_2, path17) => {
+    return resolvePlaceholder(path17.trim(), context2);
+  });
+}
+function notificationTrigger(req, res, next) {
+  const originalJson = res.json;
+  const originalSend = res.send;
+  let responseBody = null;
+  let intercepted = false;
+  res.json = function(body) {
+    if (!intercepted) {
+      intercepted = true;
+      responseBody = body;
+      handleTrigger(req, res, responseBody);
+    }
+    return originalJson.call(this, body);
+  };
+  res.send = function(body) {
+    if (!intercepted) {
+      intercepted = true;
+      try {
+        responseBody = JSON.parse(body);
+      } catch (e) {
+        responseBody = body;
+      }
+      handleTrigger(req, res, responseBody);
+    }
+    return originalSend.call(this, body);
+  };
+  next();
+}
+async function handleTrigger(req, res, responseBody) {
+  res.on("finish", async () => {
+    if (res.statusCode < 200 || res.statusCode >= 300) return;
+    try {
+      const path17 = req.path || req.originalUrl.split("?")[0];
+      const method = req.method;
+      const configsRes = await query2(
+        `SELECT * FROM notification_events_config WHERE enabled = true AND api_endpoint = $1 AND http_method = $2`,
+        [path17, method]
+      );
+      for (const config4 of configsRes.rows) {
+        console.log(`[FCM Trigger] Found matching config for endpoint: ${method} ${path17} -> Event: ${config4.event_code}`);
+        const context2 = {
+          request: {
+            body: req.body,
+            query: req.query,
+            params: req.params,
+            user: req.user || {}
+          },
+          response: {
+            body: responseBody
+          },
+          user: req.user || {}
+        };
+        let targetUsers = [];
+        let broadcast = false;
+        let targetRole = void 0;
+        let targetDepartment = void 0;
+        if (config4.target_type === "broadcast") {
+          broadcast = true;
+        } else if (config4.target_type === "role") {
+          targetRole = config4.target_value;
+        } else if (config4.target_type === "department") {
+          targetDepartment = config4.target_value;
+        } else if (config4.target_type === "user") {
+          let resolvedUserId = config4.target_value;
+          if (resolvedUserId.includes("{{")) {
+            resolvedUserId = renderTemplate(resolvedUserId, context2);
+          }
+          if (resolvedUserId) {
+            targetUsers = [resolvedUserId];
+          }
+        }
+        const title = renderTemplate(config4.title_template, context2) || config4.name;
+        const body = renderTemplate(config4.body_template, context2) || "Dynamic update occurred.";
+        let navigationUrl = config4.navigation_url;
+        if (navigationUrl && navigationUrl.includes("{{")) {
+          navigationUrl = renderTemplate(navigationUrl, context2);
+        }
+        await firebaseMessagingService.sendGenericNotification({
+          eventCode: config4.event_code,
+          targetUsers: targetUsers.length > 0 ? targetUsers : void 0,
+          targetRole,
+          targetDepartment,
+          broadcast,
+          title,
+          body,
+          navigationUrl,
+          data: {
+            eventCode: config4.event_code,
+            timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+            requestBody: req.body,
+            responseBody
+          }
+        });
+      }
+    } catch (err) {
+      console.error("[FCM Trigger Error]: Failed to handle notification triggering:", err);
+    }
+  });
+}
 
 // src/modules/apps/apps.routes.ts
 var import_express15 = require("express");
@@ -101280,6 +101695,7 @@ app.use(import_express22.default.json({
 }));
 app.use((0, import_cookie_parser.default)());
 app.use(usageTracker);
+app.use(notificationTrigger);
 app.use("/api/auth", auth_routes_default);
 app.use("/api/marketplace", marketplace_routes_default);
 app.use("/api/admin/marketplace", marketplace_routes_default);
