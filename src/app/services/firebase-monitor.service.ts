@@ -91,7 +91,7 @@ export class FirebaseMonitorService {
     return this.api.post<any>('/admin/firebase/configuration', { appId, settings });
   }
 
-  testNotification(payload: { appId: string; token: string; title: string; body: string; image?: string; url?: string }): Observable<any> {
+  testNotification(payload: { appId: string; token?: string; target?: string; title: string; body: string; image?: string; url?: string }): Observable<any> {
     return this.api.post<any>('/admin/firebase/test-notification', payload);
   }
 

@@ -170,6 +170,16 @@ export const seedDatabase = async () => {
         waba_id TEXT,
         api_key TEXT,
         enabled BOOLEAN DEFAULT false,
+        permanent_token TEXT,
+        business_name TEXT,
+        webhook_verify_token TEXT,
+        webhook_secret TEXT,
+        api_version TEXT,
+        currency TEXT,
+        country TEXT,
+        business_manager_id TEXT,
+        display_name TEXT,
+        timezone TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -194,14 +204,24 @@ export const seedDatabase = async () => {
       // Ignore error if column RENAME failed (already renamed or doesn't exist)
     }
 
-    // Migration: Add waba_id to whatsapp_config if missing
+    // Migration: Add new columns to whatsapp_config if missing
     try {
       await query(`
         ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS waba_id TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS permanent_token TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS business_name TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS webhook_verify_token TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS webhook_secret TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS api_version TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS currency TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS country TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS business_manager_id TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS display_name TEXT;
+        ALTER TABLE whatsapp_config ADD COLUMN IF NOT EXISTS timezone TEXT;
       `);
-      console.log('🌱 Schema Migration: Added waba_id to whatsapp_config');
+      console.log('🌱 Schema Migration: Added missing columns to whatsapp_config');
     } catch (err: any) {
-      // Ignore error
+      console.error('Failed to run schema migrations for whatsapp_config:', err.message);
     }
 
     // 1c. Add UNIQUE constraint to app_integrations if somehow missing on exists
@@ -541,6 +561,51 @@ export const seedDatabase = async () => {
       console.log('🌱 Schema Migration: Created Firebase Messaging tables');
     } catch (err: any) {
       console.error('Failed schema migration for Firebase Messaging tables:', err);
+    }
+
+    // Migration: Setup Notification Events Configuration and History Extensions
+    try {
+      await query(`
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS event_code VARCHAR(100);
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS payload JSONB DEFAULT '{}'::jsonb;
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS read_status VARCHAR(20) DEFAULT 'unread';
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS read_time TIMESTAMP WITH TIME ZONE;
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS click_time TIMESTAMP WITH TIME ZONE;
+
+        CREATE TABLE IF NOT EXISTS notification_events_config (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name VARCHAR(255) NOT NULL,
+            type VARCHAR(50) DEFAULT 'push',
+            event_code VARCHAR(100) UNIQUE NOT NULL,
+            api_endpoint VARCHAR(255) NOT NULL,
+            http_method VARCHAR(10) DEFAULT 'POST',
+            enabled BOOLEAN DEFAULT true,
+            title_template VARCHAR(255) NOT NULL,
+            body_template TEXT NOT NULL,
+            navigation_url VARCHAR(255),
+            priority VARCHAR(20) DEFAULT 'normal',
+            user_role_mapping JSONB DEFAULT '[]'::jsonb,
+            target_type VARCHAR(50) DEFAULT 'role',
+            target_value VARCHAR(255),
+            schedule VARCHAR(100),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      // Seed default configs if empty
+      const configCheck = await query('SELECT id FROM notification_events_config LIMIT 1');
+      if (configCheck.rowCount === 0) {
+        await query(
+          "INSERT INTO notification_events_config (name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value) " +
+          "VALUES " +
+          "('Task Assigned Notification', 'push', 'TASK_ASSIGNED', '/api/tasks', 'POST', true, 'New Task Assigned', 'A new task \"{{response.body.taskName}}\" has been assigned to you.', '/dashboard/tasks', 'high', '[\"user\"]', 'user', '{{response.body.assignedTo}}'), " +
+          "('Invoice Paid Notification', 'push', 'INVOICE_PAID', '/api/invoices/pay', 'POST', true, 'Invoice Paid', 'Invoice {{response.body.invoiceNumber}} for {{response.body.amount}} has been paid successfully.', '/dashboard/billing', 'normal', '[\"admin\"]', 'role', 'admin')"
+        );
+        console.log('🌱 Seeded: Default notification events configurations');
+      }
+    } catch (err: any) {
+      console.error('Failed schema migration for notification events config:', err);
     }
 
     // Migration: Setup Firebase Cloud Messaging Push Notification Monitoring & Billing tables

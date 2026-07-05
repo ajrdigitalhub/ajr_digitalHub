@@ -1,0 +1,21 @@
+const { Pool } = require('pg');
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+
+const pool = new Pool({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: parseInt(process.env.PG_PORT || '5432'),
+  ssl: process.env.PG_SSL === 'true' ? { rejectUnauthorized: false } : false
+});
+
+pool.query("SELECT DISTINCT collection FROM records")
+  .then(res => {
+    console.log('Collections:', res.rows);
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });

@@ -269,73 +269,143 @@ const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
                   <!-- Chart Grid & Graph -->
                   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
-                     
-                     <!-- Left Chart SVG -->
-                     <div class="lg:col-span-3 h-52 relative border-b border-app-border/40 pb-4">
-                        <svg class="w-full h-full overflow-visible" viewBox="0 0 1000 200" preserveAspectRatio="none">
-                           <defs>
-                              <linearGradient id="cost-glow" x1="0" y1="0" x2="0" y2="1">
-                                 <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
-                                 <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
-                              </linearGradient>
-                              <filter id="cost-neon" x="-10%" y="-10%" width="120%" height="120%">
-                                 <feGaussianBlur stdDeviation="4" result="blur" />
-                                 <feMerge>
-                                    <feMergeNode in="blur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                 </feMerge>
-                              </filter>
-                           </defs>
+                                       <!-- Left Chart SVG -->
+                      <div class="lg:col-span-3 h-52 relative border-b border-app-border/40 pb-4">
+                         <svg class="w-full h-full overflow-visible" viewBox="0 0 1000 200" preserveAspectRatio="none">
+                            <defs>
+                               <linearGradient id="functions-glow" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.15" />
+                                  <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.0" />
+                               </linearGradient>
+                               <linearGradient id="hosting-glow" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
+                                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+                               </linearGradient>
+                               <linearGradient id="non-firebase-glow" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15" />
+                                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0" />
+                               </linearGradient>
+                               <filter id="functions-neon" x="-10%" y="-10%" width="120%" height="120%">
+                                  <feGaussianBlur stdDeviation="4" result="blur" />
+                                  <feMerge>
+                                     <feMergeNode in="blur" />
+                                     <feMergeNode in="SourceGraphic" />
+                                  </feMerge>
+                               </filter>
+                               <filter id="hosting-neon" x="-10%" y="-10%" width="120%" height="120%">
+                                  <feGaussianBlur stdDeviation="4" result="blur" />
+                                  <feMerge>
+                                     <feMergeNode in="blur" />
+                                     <feMergeNode in="SourceGraphic" />
+                                  </feMerge>
+                               </filter>
+                               <filter id="non-firebase-neon" x="-10%" y="-10%" width="120%" height="120%">
+                                  <feGaussianBlur stdDeviation="4" result="blur" />
+                                  <feMerge>
+                                     <feMergeNode in="blur" />
+                                     <feMergeNode in="SourceGraphic" />
+                                  </feMerge>
+                               </filter>
+                            </defs>
+ 
+                            <!-- Grid lines -->
+                            <line x1="0" y1="30" x2="1000" y2="30" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                            <line x1="0" y1="95" x2="1000" y2="95" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                            <line x1="0" y1="160" x2="1000" y2="160" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+ 
+                            <!-- Filled Glows & Paths -->
+                            @if (functionsPoints().length > 0) {
+                               <!-- Cloud Functions -->
+                               @if (showFunctionsLine) {
+                                  <path [attr.d]="functionsFillPath()" fill="url(#functions-glow)" />
+                                  <path [attr.d]="functionsPath()" fill="none" stroke="#f43f5e" stroke-width="2.5" filter="url(#functions-neon)" stroke-linecap="round" />
+                                  <circle [attr.cx]="functionsLatestPoint().x" [attr.cy]="functionsLatestPoint().y" r="5" fill="#f43f5e" />
+                               }
+                               
+                               <!-- App Hosting -->
+                               @if (showHostingLine) {
+                                  <path [attr.d]="hostingFillPath()" fill="url(#hosting-glow)" />
+                                  <path [attr.d]="hostingPath()" fill="none" stroke="#3b82f6" stroke-width="2.5" filter="url(#hosting-neon)" stroke-linecap="round" />
+                                  <circle [attr.cx]="hostingLatestPoint().x" [attr.cy]="hostingLatestPoint().y" r="5" fill="#3b82f6" />
+                               }
 
-                           <!-- Grid lines -->
-                           <line x1="0" y1="30" x2="1000" y2="30" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
-                           <line x1="0" y1="95" x2="1000" y2="95" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
-                           <line x1="0" y1="160" x2="1000" y2="160" stroke="rgba(255,255,255,0.03)" stroke-dasharray="3,3" />
+                               <!-- Non-Firebase Services -->
+                               @if (showNonFirebaseLine) {
+                                  <path [attr.d]="nonFirebaseFillPath()" fill="url(#non-firebase-glow)" />
+                                  <path [attr.d]="nonFirebasePath()" fill="none" stroke="#f59e0b" stroke-width="2.5" filter="url(#non-firebase-neon)" stroke-linecap="round" />
+                                  <circle [attr.cx]="nonFirebaseLatestPoint().x" [attr.cy]="nonFirebaseLatestPoint().y" r="5" fill="#f59e0b" />
+                               }
+                            }
+                         </svg>
+                         
+                         <!-- Dynamic Axis Labels -->
+                         <div class="flex justify-between text-[9px] text-app-muted font-bold mt-2 font-mono uppercase tracking-wider">
+                            @for (label of historyAxisLabels(); track label) {
+                               <span>{{ label }}</span>
+                            }
+                         </div>
+                      </div>
+ 
+                      <!-- Right check list & Total Cost -->
+                      <div class="lg:col-span-1 bg-[#1f2937]/40 border border-app-border rounded-xl p-5 space-y-5">
+                         <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-[#f43f5e] flex items-center gap-1.5">
+                               <span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span> Cloud Functions
+                            </span>
+                            <div class="flex items-center gap-2">
+                               <input type="checkbox" [(ngModel)]="showFunctionsLine" class="accent-rose-500 rounded cursor-pointer">
+                               <span class="text-sm font-black font-mono text-app-text">₹{{ getFunctionsCost() }}</span>
+                            </div>
+                         </div>
 
-                           <!-- Filled Glow -->
-                           @if (costPoints().length > 0) {
-                              <path [attr.d]="costFillPath()" fill="url(#cost-glow)" />
-                              <path [attr.d]="costPath()" fill="none" stroke="#3b82f6" stroke-width="2.5" filter="url(#cost-neon)" stroke-linecap="round" />
-                              
-                              <!-- Dot on latest -->
-                              <circle [attr.cx]="costLatestPoint().x" [attr.cy]="costLatestPoint().y" r="5" fill="#3b82f6" />
-                           }
-                        </svg>
-                        
-                        <!-- Dynamic Axis Labels -->
-                        <div class="flex justify-between text-[9px] text-app-muted font-bold mt-2 font-mono uppercase tracking-wider">
-                           @for (label of historyAxisLabels(); track label) {
-                              <span>{{ label }}</span>
-                           }
-                        </div>
-                     </div>
+                         <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-[#3b82f6] flex items-center gap-1.5">
+                               <span class="w-2.5 h-2.5 rounded-full bg-[#3b82f6]"></span> App Hosting
+                            </span>
+                            <div class="flex items-center gap-2">
+                               <input type="checkbox" [(ngModel)]="showHostingLine" class="accent-blue-500 rounded cursor-pointer">
+                               <span class="text-sm font-black font-mono text-app-text">₹{{ getHostingCost() }}</span>
+                            </div>
+                         </div>
 
-                     <!-- Right check list & Total Cost -->
-                     <div class="lg:col-span-1 bg-[#1f2937]/40 border border-app-border rounded-xl p-5 space-y-5">
-                        <div class="flex items-center justify-between">
-                           <span class="text-xs font-bold text-gray-300">Cloud Functions</span>
-                           <div class="flex items-center gap-2">
-                              <input type="checkbox" checked disabled class="accent-blue-500 rounded cursor-pointer">
-                              <span class="text-sm font-black font-mono text-app-text">₹{{ realProjectCost() }}</span>
-                           </div>
-                        </div>
-                        @if (billingData()?.totalExecutions) {
-                           <div class="flex items-center justify-between">
-                              <span class="text-xs font-bold text-gray-400">Total Executions (MTD)</span>
-                              <span class="text-xs font-black font-mono text-cyan-400">{{ billingData().totalExecutions | number }}</span>
-                           </div>
-                        }
-                        
-                        <div class="border-t border-app-border/40 pt-4">
-                           <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">Project cost (MTD)</span>
-                           <span class="text-2xl font-black font-mono text-app-text mt-1 block">₹{{ realProjectCost() }}</span>
-                           @if (billingData()?.billingEnabled) {
-                              <span class="text-[10px] text-emerald-400 font-bold">● Real Firebase Billing</span>
-                           } @else {
-                              <span class="text-[10px] text-app-muted">From usage analytics</span>
-                           }
-                        </div>
-                     </div>
+                         <div class="flex items-center justify-between">
+                             <span class="text-xs font-bold text-[#f59e0b] flex items-center gap-1.5" title="Cloud Logging, Artifact Registry, Secrets, Build overhead">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></span> GCP Non-Firebase
+                                <mat-icon class="!text-[12px] !w-3 !h-3 text-app-muted align-middle">help_outline</mat-icon>
+                             </span>
+                             <div class="flex items-center gap-2">
+                                <input type="checkbox" [(ngModel)]="showNonFirebaseLine" class="accent-amber-500 rounded cursor-pointer">
+                                <span class="text-sm font-black font-mono text-app-text">₹{{ getGcpNonFirebaseCost() }}</span>
+                             </div>
+                          </div>
+
+                          <div class="flex items-center justify-between">
+                             <span class="text-xs font-bold text-[#10b981] flex items-center gap-1.5" title="WhatsApp API, Push Notifications, Custom domain Routing">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span> Local Services
+                                <mat-icon class="!text-[12px] !w-3 !h-3 text-app-muted align-middle">help_outline</mat-icon>
+                             </span>
+                             <div class="flex items-center gap-2">
+                                <span class="text-sm font-black font-mono text-app-text">₹{{ getNonFirebaseCost() }}</span>
+                             </div>
+                          </div>
+                         
+                         @if (billingData()?.totalExecutions) {
+                            <div class="flex items-center justify-between">
+                               <span class="text-xs font-bold text-gray-400">Total Executions (MTD)</span>
+                               <span class="text-xs font-black font-mono text-cyan-400">{{ billingData().totalExecutions | number }}</span>
+                            </div>
+                         }
+                         
+                         <div class="border-t border-app-border/40 pt-4">
+                            <span class="text-[10px] font-bold text-app-muted uppercase tracking-widest block">Project cost (MTD)</span>
+                            <span class="text-2xl font-black font-mono text-app-text mt-1 block">₹{{ realProjectCost() }}</span>
+                            @if (billingData()?.billingEnabled) {
+                               <span class="text-[10px] text-emerald-400 font-bold">● Real Firebase Billing</span>
+                            } @else {
+                               <span class="text-[10px] text-app-muted">From usage analytics</span>
+                            }
+                         </div>
+                      </div>
                   </div>
                </div>
 
@@ -636,13 +706,20 @@ export class ProjectApiMonitorComponent implements OnInit, OnDestroy {
     return `${monthNames[parseInt(m) - 1]} ${y}`;
   });
 
-  // Computed: Real project cost (billing API first, fallback to analytics total_cost)
+  // Computed: Real project cost (sums the active checked series in the legend)
   realProjectCost = computed(() => {
-    const billing = this.billingData();
-    if (billing?.billingEnabled && billing?.totalCost > 0) {
-      return billing.totalCost.toFixed(2);
+    let total = 0;
+    if (this.showFunctionsLine) {
+      total += Number(this.getFunctionsCost());
     }
-    return this.analyticsData()?.total_cost || '0.00';
+    if (this.showHostingLine) {
+      total += Number(this.getHostingCost());
+    }
+    if (this.showNonFirebaseLine) {
+      total += Number(this.getGcpNonFirebaseCost());
+    }
+    total += Number(this.getNonFirebaseCost());
+    return total.toFixed(2);
   });
 
   // Dynamic axis labels from history dates
@@ -661,6 +738,11 @@ export class ProjectApiMonitorComponent implements OnInit, OnDestroy {
     });
   });
 
+  // Toggles for the lines in the UI
+  showFunctionsLine = true;
+  showHostingLine = true;
+  showNonFirebaseLine = true;
+
   // SVG Chart Computed Properties
   costPoints = computed(() => {
     const data = this.analyticsData();
@@ -671,6 +753,42 @@ export class ProjectApiMonitorComponent implements OnInit, OnDestroy {
       const x = (i / (history.length - 1)) * 1000;
       const y = 200 - (Number(val.cost || 0) / highestVal) * 130 - 30;
       return { x, y, val: val.cost, date: val.date };
+    });
+  });
+
+  functionsPoints = computed(() => {
+    const data = this.analyticsData();
+    if (!data || !data.history || data.history.length === 0) return [];
+    const history = data.history as any[];
+    const highestVal = Math.max(...history.map(h => Number(h.cost || 0)), 1.0);
+    return history.map((val, i) => {
+      const x = (i / (history.length - 1)) * 1000;
+      const y = 200 - (Number(val.functionsCost || val.cost || 0) / highestVal) * 130 - 30;
+      return { x, y, val: val.functionsCost || val.cost, date: val.date };
+    });
+  });
+
+  hostingPoints = computed(() => {
+    const data = this.analyticsData();
+    if (!data || !data.history || data.history.length === 0) return [];
+    const history = data.history as any[];
+    const highestVal = Math.max(...history.map(h => Number(h.cost || 0)), 1.0);
+    return history.map((val, i) => {
+      const x = (i / (history.length - 1)) * 1000;
+      const y = 200 - (Number(val.hostingCost || 0) / highestVal) * 130 - 30;
+      return { x, y, val: val.hostingCost || 0, date: val.date };
+    });
+  });
+
+  nonFirebasePoints = computed(() => {
+    const data = this.analyticsData();
+    if (!data || !data.history || data.history.length === 0) return [];
+    const history = data.history as any[];
+    const highestVal = Math.max(...history.map(h => Number(h.cost || 0)), 1.0);
+    return history.map((val, i) => {
+      const x = (i / (history.length - 1)) * 1000;
+      const y = 200 - (Number(val.nonFirebaseCost || 0) / highestVal) * 130 - 30;
+      return { x, y, val: val.nonFirebaseCost || 0, date: val.date };
     });
   });
 
@@ -699,10 +817,73 @@ export class ProjectApiMonitorComponent implements OnInit, OnDestroy {
     return path;
   });
 
+  functionsPath = computed(() => {
+    const pts = this.functionsPoints();
+    if (pts.length === 0) return '';
+    let path = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const xc = (pts[i].x + pts[i + 1].x) / 2;
+      const yc = (pts[i].y + pts[i + 1].y) / 2;
+      path += ` Q ${pts[i].x} ${pts[i].y}, ${xc} ${yc}`;
+    }
+    path += ` L ${pts[pts.length - 1].x} ${pts[pts.length - 1].y}`;
+    return path;
+  });
+
+  hostingPath = computed(() => {
+    const pts = this.hostingPoints();
+    if (pts.length === 0) return '';
+    let path = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const xc = (pts[i].x + pts[i + 1].x) / 2;
+      const yc = (pts[i].y + pts[i + 1].y) / 2;
+      path += ` Q ${pts[i].x} ${pts[i].y}, ${xc} ${yc}`;
+    }
+    path += ` L ${pts[pts.length - 1].x} ${pts[pts.length - 1].y}`;
+    return path;
+  });
+
+  nonFirebasePath = computed(() => {
+    const pts = this.nonFirebasePoints();
+    if (pts.length === 0) return '';
+    let path = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const xc = (pts[i].x + pts[i + 1].x) / 2;
+      const yc = (pts[i].y + pts[i + 1].y) / 2;
+      path += ` Q ${pts[i].x} ${pts[i].y}, ${xc} ${yc}`;
+    }
+    path += ` L ${pts[pts.length - 1].x} ${pts[pts.length - 1].y}`;
+    return path;
+  });
+
   costFillPath = computed(() => {
     const lpath = this.costPath();
     if (!lpath) return '';
     const pts = this.costPoints();
+    const lastX = pts[pts.length - 1]?.x || 1000;
+    return `${lpath} L ${lastX} 200 L 0 200 Z`;
+  });
+
+  functionsFillPath = computed(() => {
+    const lpath = this.functionsPath();
+    if (!lpath) return '';
+    const pts = this.functionsPoints();
+    const lastX = pts[pts.length - 1]?.x || 1000;
+    return `${lpath} L ${lastX} 200 L 0 200 Z`;
+  });
+
+  hostingFillPath = computed(() => {
+    const lpath = this.hostingPath();
+    if (!lpath) return '';
+    const pts = this.hostingPoints();
+    const lastX = pts[pts.length - 1]?.x || 1000;
+    return `${lpath} L ${lastX} 200 L 0 200 Z`;
+  });
+
+  nonFirebaseFillPath = computed(() => {
+    const lpath = this.nonFirebasePath();
+    if (!lpath) return '';
+    const pts = this.nonFirebasePoints();
     const lastX = pts[pts.length - 1]?.x || 1000;
     return `${lpath} L ${lastX} 200 L 0 200 Z`;
   });
@@ -733,10 +914,72 @@ export class ProjectApiMonitorComponent implements OnInit, OnDestroy {
     return pts[pts.length - 1] || { x: 0, y: 0 };
   });
 
+  functionsLatestPoint = computed(() => {
+    const pts = this.functionsPoints();
+    return pts[pts.length - 1] || { x: 0, y: 0 };
+  });
+
+  hostingLatestPoint = computed(() => {
+    const pts = this.hostingPoints();
+    return pts[pts.length - 1] || { x: 0, y: 0 };
+  });
+
+  nonFirebaseLatestPoint = computed(() => {
+    const pts = this.nonFirebasePoints();
+    return pts[pts.length - 1] || { x: 0, y: 0 };
+  });
+
   hitsLatestPoint = computed(() => {
     const pts = this.hitsPoints();
     return pts[pts.length - 1] || { x: 0, y: 0 };
   });
+
+  getFunctionsCost(): string {
+    const billing = this.billingData();
+    if (billing?.functionsCost !== undefined && billing?.functionsCost !== null) {
+      return billing.functionsCost.toFixed(2);
+    }
+    const data = this.analyticsData();
+    if (data?.history) {
+      const sum = data.history.reduce((s: number, h: any) => s + (h.functionsCost || h.cost || 0), 0);
+      return sum.toFixed(2);
+    }
+    return '0.00';
+  }
+
+  getHostingCost(): string {
+    const billing = this.billingData();
+    if (billing?.hostingCost !== undefined && billing?.hostingCost !== null) {
+      return billing.hostingCost.toFixed(2);
+    }
+    const data = this.analyticsData();
+    if (data?.history) {
+      const sum = data.history.reduce((s: number, h: any) => s + (h.hostingCost || 0), 0);
+      return sum.toFixed(2);
+    }
+    return '0.00';
+  }
+
+  getGcpNonFirebaseCost(): string {
+    const billing = this.billingData();
+    if (billing?.gcpNonFirebaseCost !== undefined && billing?.gcpNonFirebaseCost !== null) {
+      return billing.gcpNonFirebaseCost.toFixed(2);
+    }
+    const data = this.analyticsData();
+    if (data?.history) {
+      const sum = data.history.reduce((s: number, h: any) => s + (h.nonFirebaseCost || 0), 0);
+      return sum.toFixed(2);
+    }
+    return '0.00';
+  }
+
+  getNonFirebaseCost(): string {
+    const billing = this.billingData();
+    if (billing?.nonFirebaseCost !== undefined && billing?.nonFirebaseCost !== null) {
+      return billing.nonFirebaseCost.toFixed(2);
+    }
+    return '0.00';
+  }
   
   eventSource: EventSource | null = null;
   firebaseLogsSource: EventSource | null = null;

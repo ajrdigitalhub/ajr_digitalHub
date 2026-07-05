@@ -4,6 +4,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../services/auth.service';
 import { ThemeService } from '../services/theme.service';
+import { NotificationManagerService } from '../services/notification-manager.service';
 
 @Component({
   selector: 'app-top-nav',
@@ -184,30 +185,46 @@ import { ThemeService } from '../services/theme.service';
 
           <!-- Notifications trigger -->
           <div class="relative">
-            <button (click)="showNotif.set(!showNotif())" class="h-9 w-9 rounded-xl border border-app-border hover:bg-app-card flex items-center justify-center text-app-muted hover:text-indigo-400 transition-all cursor-pointer">
+            <button (click)="showNotif.set(!showNotif())" class="h-9 w-9 rounded-xl border border-app-border hover:bg-app-card flex items-center justify-center text-app-muted hover:text-indigo-400 transition-all cursor-pointer relative">
               <mat-icon class="text-sm">notifications</mat-icon>
-              <div class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-app-bg animate-pulse"></div>
+              @if (notifManager.unreadCount() > 0) {
+                <div class="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-indigo-600 text-[8px] text-white flex items-center justify-center font-bold border border-app-bg animate-pulse shadow-sm">
+                  {{ notifManager.unreadCount() }}
+                </div>
+              }
             </button>
 
             <!-- Notifications Dropdown -->
             @if (showNotif()) {
               <div class="absolute right-0 mt-2 w-80 bg-app-card border border-app-border rounded-2xl shadow-xl p-4 z-50 animate-in slide-in-from-top-2 duration-150">
-                <h4 class="text-xs font-bold text-app-text pb-2 border-b border-app-border">NOC Support & Sync Logs</h4>
-                <div class="mt-2 space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                  <div class="flex items-start gap-3 p-1.5 rounded-lg hover:bg-app-bg transition-colors">
-                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5"></div>
-                    <div>
-                      <p class="text-xs font-bold text-app-text">Meta Campaign Synced</p>
-                      <span class="text-[9px] text-app-muted">Just now</span>
+                <div class="flex items-center justify-between pb-2 border-b border-app-border">
+                  <h4 class="text-xs font-bold text-app-text">Notifications</h4>
+                  @if (notifManager.unreadCount() > 0) {
+                    <button (click)="markAllAsRead()" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer">
+                      Mark all as read
+                    </button>
+                  }
+                </div>
+                <div class="mt-2 space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                  @if (notifManager.notifications().length === 0) {
+                    <div class="py-6 text-center text-[10px] text-app-muted font-medium">
+                      No notifications yet.
                     </div>
-                  </div>
-                  <div class="flex items-start gap-3 p-1.5 rounded-lg hover:bg-app-bg transition-colors">
-                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5"></div>
-                    <div>
-                      <p class="text-xs font-bold text-app-text">Lead Qualified: Tesla Inc</p>
-                      <span class="text-[9px] text-app-muted">10 minutes ago</span>
-                    </div>
-                  </div>
+                  } @else {
+                    @for (notif of notifManager.notifications(); track notif.id) {
+                      <div (click)="onNotifClick(notif)" class="flex items-start gap-3 p-2 rounded-xl hover:bg-app-bg transition-colors cursor-pointer relative group">
+                        <div class="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" [class.bg-indigo-500]="notif.read_status === 'unread'" [class.bg-transparent]="notif.read_status === 'read'"></div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs font-bold text-app-text group-hover:text-indigo-400 transition-colors truncate">{{ notif.title }}</p>
+                          <p class="text-[10px] text-app-muted mt-0.5 line-clamp-2 leading-normal">{{ notif.body }}</p>
+                          <span class="text-[8px] text-app-muted/60 mt-1 block font-mono">{{ formatTime(notif.created_at) }}</span>
+                        </div>
+                        <button (click)="deleteNotif($event, notif.id)" class="text-app-muted hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 p-0.5 absolute right-2 top-2" title="Delete">
+                          <mat-icon class="!text-[12px] !w-3 !h-3">delete</mat-icon>
+                        </button>
+                      </div>
+                    }
+                  }
                 </div>
               </div>
             }
@@ -410,11 +427,52 @@ import { ThemeService } from '../services/theme.service';
 export class TopNavComponent {
   authService = inject(AuthService);
   themeService = inject(ThemeService);
+  notifManager = inject(NotificationManagerService);
   private router = inject(Router);
 
   showNotif = signal(false);
   showUser = signal(false);
   isMobileMenuOpen = signal(false);
+
+  formatTime(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const diffMs = Date.now() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return date.toLocaleDateString();
+  }
+
+  markAllAsRead() {
+    this.notifManager.backend.markAllRead().subscribe({
+      next: () => this.notifManager.loadUserNotifications(),
+      error: (err) => console.error('Failed to mark all notifications as read:', err)
+    });
+  }
+
+  onNotifClick(notif: any) {
+    if (notif.read_status === 'unread') {
+      this.notifManager.backend.markRead([notif.id]).subscribe({
+        next: () => this.notifManager.loadUserNotifications(),
+        error: (err) => console.error('Failed to mark notification as read:', err)
+      });
+    }
+    this.showNotif.set(false);
+    if (notif.url) {
+      this.router.navigateByUrl(notif.url);
+    }
+  }
+
+  deleteNotif(event: Event, id: string) {
+    event.stopPropagation();
+    this.notifManager.backend.deleteNotification(id).subscribe({
+      next: () => this.notifManager.loadUserNotifications(),
+      error: (err) => console.error('Failed to delete notification:', err)
+    });
+  }
 
   @HostListener('window:keydown.escape')
   handleEscape() {

@@ -155,6 +155,16 @@ export interface ProjectData extends AdminApp {
     waba_id?: string;
     api_key: string;
     enabled: boolean;
+    permanent_token?: string;
+    business_name?: string;
+    webhook_verify_token?: string;
+    webhook_secret?: string;
+    api_version?: string;
+    currency?: string;
+    country?: string;
+    business_manager_id?: string;
+    display_name?: string;
+    timezone?: string;
   };
   email?: {
     smtp_host: string;
@@ -289,9 +299,9 @@ export class AdminStoreService {
             cached_metrics: app.cached_metrics || null
           }));
           this.projects.set(mapped);
-          
+
           if (mapped.length > 0 && !this.currentProjectId()) {
-             this.currentProjectId.set(mapped[0].id);
+            this.currentProjectId.set(mapped[0].id);
           }
 
           // Trigger parallel details fetching for each app
@@ -327,7 +337,7 @@ export class AdminStoreService {
               }
             });
 
-            this.api.get<any>(`/api/admin/apps/${app.id}/whatsapp/realtime-summary?days=90`).subscribe({
+            this.api.get<any>(`/api/admin/apps/${app.id}/whatsapp/realtime-summary?days=60`).subscribe({
               next: (waSummary) => {
                 this.projects.update(list => list.map(p => {
                   if (p.id === app.id) {

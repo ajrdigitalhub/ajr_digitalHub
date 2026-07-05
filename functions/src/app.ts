@@ -15,12 +15,14 @@ import documentationRoutes from './routes/documentation.routes';
 import customerBillingRoutes from './routes/customer-billing.routes';
 import notificationRoutes from './routes/notification.routes';
 import firebaseNotificationRoutes from './routes/firebaseNotification.routes';
+import whatsappWebhookRoutes from './routes/whatsapp-webhook.routes';
 import settingsRoutes from './modules/settings/settings.routes';
 import { BaseService } from './core/base.service';
 import { usageTracker } from './middlewares/usage';
 import { requireAuth, requireRole } from './middlewares/auth.middleware';
 import { initDynamicDb } from './utils/dynamic-db';
 import { seedDatabase } from './seed';
+import { notificationTrigger } from './middlewares/notification-trigger.middleware';
 
 // Import correct module routes
 import appsRoutes from './modules/apps/apps.routes';
@@ -64,9 +66,14 @@ app.use(cors(corsOptions));
 
 // Explicitly handle preflight for all routes (must use same corsOptions!)
 app.options('*', cors(corsOptions));
-app.use(express.json());
+app.use(express.json({
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(cookieParser());
 app.use(usageTracker);
+app.use(notificationTrigger);
 
 // Auth
 app.use('/api/auth', authRoutes);
@@ -89,6 +96,7 @@ app.use('/api/documentation', documentationRoutes);
 app.use('/api/billing', customerBillingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin/firebase', firebaseNotificationRoutes);
+app.use('/api/whatsapp/webhook', whatsappWebhookRoutes);
 
 app.use('/api/shops', shopsRoutes);
 app.use('/api/admin/upload', uploadRoutes);

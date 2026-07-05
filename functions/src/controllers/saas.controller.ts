@@ -3,6 +3,7 @@ import { query, pool } from '../db';
 import { firestore } from '../config/firebase';
 import { BaseService } from '../core/base.service';
 import { FirebaseService } from '../services/firebase.service';
+import { encryptValue, decryptValue } from '../utils/crypto';
 
 const firebaseService = new FirebaseService();
 
@@ -38,12 +39,20 @@ export const saasController = {
       const email = await query(`SELECT * FROM email_config WHERE app_id = $1`, [id]);
       const firebaseConfig = await firebaseService.getFirebaseConfig(id);
 
+      const whatsappRow = whatsapp.rows[0] ? { ...whatsapp.rows[0] } : {};
+      if (whatsapp.rows[0]) {
+        whatsappRow.api_key = whatsappRow.api_key ? '••••••••' : '';
+        whatsappRow.permanent_token = whatsappRow.permanent_token ? '••••••••' : '';
+        whatsappRow.webhook_verify_token = whatsappRow.webhook_verify_token ? '••••••••' : '';
+        whatsappRow.webhook_secret = whatsappRow.webhook_secret ? '••••••••' : '';
+      }
+
       res.json({
         ...appRes.rows[0],
         config: config.rows[0] || {},
         rate_limit: rateLimit.rows[0] || {},
         billing: billing.rows[0] || {},
-        whatsapp: whatsapp.rows[0] || {},
+        whatsapp: whatsappRow,
         email: email.rows[0] || {},
         firebase_config: firebaseConfig || null
       });
@@ -160,12 +169,98 @@ export const saasController = {
   async updateWhatsappConfig(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { phone_number, api_key, enabled, waba_id } = req.body;
+      const { 
+        phone_number, 
+        api_key, 
+        enabled, 
+        waba_id,
+        permanent_token,
+        business_name,
+        webhook_verify_token,
+        webhook_secret,
+        api_version,
+        currency,
+        country,
+        business_manager_id,
+        display_name,
+        timezone
+      } = req.body;
+
+      const existingRes = await query(`SELECT * FROM whatsapp_config WHERE app_id = $1`, [id]);
+      const existing = existingRes.rows[0] || {};
+
+      let finalApiKey = api_key;
+      if (finalApiKey === '••••••••') {
+        finalApiKey = existing.api_key || '';
+      } else if (finalApiKey) {
+        finalApiKey = encryptValue(finalApiKey);
+      }
+
+      let finalPermanentToken = permanent_token;
+      if (finalPermanentToken === '••••••••') {
+        finalPermanentToken = existing.permanent_token || '';
+      } else if (finalPermanentToken) {
+        finalPermanentToken = encryptValue(finalPermanentToken);
+      }
+
+      let finalWebhookVerifyToken = webhook_verify_token;
+      if (finalWebhookVerifyToken === '••••••••') {
+        finalWebhookVerifyToken = existing.webhook_verify_token || '';
+      } else if (finalWebhookVerifyToken) {
+        finalWebhookVerifyToken = encryptValue(finalWebhookVerifyToken);
+      }
+
+      let finalWebhookSecret = webhook_secret;
+      if (finalWebhookSecret === '••••••••') {
+        finalWebhookSecret = existing.webhook_secret || '';
+      } else if (finalWebhookSecret) {
+        finalWebhookSecret = encryptValue(finalWebhookSecret);
+      }
+
       const result = await query(
-        `UPDATE whatsapp_config SET phone_number = COALESCE($1, phone_number), api_key = COALESCE($2, api_key), enabled = COALESCE($3, enabled), waba_id = COALESCE($4, waba_id) WHERE app_id = $5 RETURNING *`,
-        [phone_number, api_key, enabled, waba_id, id]
+        `UPDATE whatsapp_config SET 
+          phone_number = COALESCE($1, phone_number), 
+          api_key = COALESCE($2, api_key), 
+          enabled = COALESCE($3, enabled), 
+          waba_id = COALESCE($4, waba_id),
+          permanent_token = COALESCE($5, permanent_token),
+          business_name = COALESCE($6, business_name),
+          webhook_verify_token = COALESCE($7, webhook_verify_token),
+          webhook_secret = COALESCE($8, webhook_secret),
+          api_version = COALESCE($9, api_version),
+          currency = COALESCE($10, currency),
+          country = COALESCE($11, country),
+          business_manager_id = COALESCE($12, business_manager_id),
+          display_name = COALESCE($13, display_name),
+          timezone = COALESCE($14, timezone)
+        WHERE app_id = $15 RETURNING *`,
+        [
+          phone_number, 
+          finalApiKey, 
+          enabled, 
+          waba_id,
+          finalPermanentToken,
+          business_name,
+          finalWebhookVerifyToken,
+          finalWebhookSecret,
+          api_version,
+          currency,
+          country,
+          business_manager_id,
+          display_name,
+          timezone,
+          id
+        ]
       );
-      res.json(result.rows[0]);
+
+      const responseRow = result.rows[0] ? { ...result.rows[0] } : {};
+      if (result.rows[0]) {
+        responseRow.api_key = responseRow.api_key ? '••••••••' : '';
+        responseRow.permanent_token = responseRow.permanent_token ? '••••••••' : '';
+        responseRow.webhook_verify_token = responseRow.webhook_verify_token ? '••••••••' : '';
+        responseRow.webhook_secret = responseRow.webhook_secret ? '••••••••' : '';
+      }
+      res.json(responseRow);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -476,45 +571,5 @@ export const saasController = {
   }
 };
 
-// ============================================================
-//  AES-256-CBC Encryption / Decryption Helpers
-// ============================================================
-import crypto from 'crypto';
 
-const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = process.env['ENCRYPTION_KEY'] || 'ajr-encryption-key-32chars-2026';
-const IV_LENGTH = 16;
-
-function encryptValue(text: string): string {
-  if (!text) return '';
-  let key = ENCRYPTION_KEY;
-  if (key.length < 32) key = key.padEnd(32, '0');
-  else if (key.length > 32) key = key.substring(0, 32);
-
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(key), iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
-}
-
-function decryptValue(text: string): string {
-  if (!text) return '';
-  try {
-    let key = ENCRYPTION_KEY;
-    if (key.length < 32) key = key.padEnd(32, '0');
-    else if (key.length > 32) key = key.substring(0, 32);
-
-    const parts = text.split(':');
-    if (parts.length < 2) return text;
-    const iv = Buffer.from(parts.shift() || '', 'hex');
-    const encryptedText = Buffer.from(parts.join(':'), 'hex');
-    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key), iv);
-    let decrypted = decipher.update(encryptedText);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
-  } catch (e) {
-    return text;
-  }
-}
 

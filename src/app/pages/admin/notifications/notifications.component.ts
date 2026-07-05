@@ -21,6 +21,7 @@ import { ApiService } from '../../../services/api.service';
       <!-- Tab Buttons -->
       <div class="flex border-b border-app-border">
         <button (click)="activeTab.set('settings')" [class.border-indigo-500]="activeTab() === 'settings'" [class.text-indigo-400]="activeTab() === 'settings'" class="px-6 py-3 border-b-2 border-transparent font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer text-app-muted hover:text-app-text">Config Settings</button>
+        <button (click)="activeTab.set('configList')" [class.border-indigo-500]="activeTab() === 'configList'" [class.text-indigo-400]="activeTab() === 'configList'" class="px-6 py-3 border-b-2 border-transparent font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer text-app-muted hover:text-app-text">Event Triggers</button>
         <button (click)="activeTab.set('test')" [class.border-indigo-500]="activeTab() === 'test'" [class.text-indigo-400]="activeTab() === 'test'" class="px-6 py-3 border-b-2 border-transparent font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer text-app-muted hover:text-app-text">Send Notification</button>
         <button (click)="activeTab.set('devices')" [class.border-indigo-500]="activeTab() === 'devices'" [class.text-indigo-400]="activeTab() === 'devices'" class="px-6 py-3 border-b-2 border-transparent font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer text-app-muted hover:text-app-text">Registered Devices</button>
         <button (click)="activeTab.set('logs')" [class.border-indigo-500]="activeTab() === 'logs'" [class.text-indigo-400]="activeTab() === 'logs'" class="px-6 py-3 border-b-2 border-transparent font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer text-app-muted hover:text-app-text">Delivery Logs</button>
@@ -372,8 +373,152 @@ import { ApiService } from '../../../services/api.service';
                 </table>
               </div>
             </div>
+        </div>
+      }
+
+      <!-- Tab 5: Event Configurations -->
+      @if (activeTab() === 'configList') {
+        <div class="space-y-6 animate-in fade-in duration-200">
+          
+          <!-- Event Config Form Card -->
+          <div class="glass p-6 rounded-2xl border border-app-border space-y-4">
+            <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+              <mat-icon class="!text-[16px] !w-4 !h-4 font-bold text-indigo-400">settings_suggest</mat-icon>
+              {{ isEditingConfig() ? 'Edit Event Notification Trigger' : 'Add Event Notification Trigger' }}
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Configuration Name</label>
+                <input type="text" [(ngModel)]="configForm.name" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500" placeholder="e.g. Driver Assigned Alert">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Event Code</label>
+                <input type="text" [(ngModel)]="configForm.event_code" [disabled]="isEditingConfig()" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono" placeholder="e.g. TASK_ASSIGNED">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Target Recipient Type</label>
+                <select [(ngModel)]="configForm.target_type" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer">
+                  <option value="role">Role-Based</option>
+                  <option value="user">Specific User ID</option>
+                  <option value="department">Department-Based</option>
+                  <option value="broadcast">Broadcast (All)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">API Trigger Endpoint</label>
+                <input type="text" [(ngModel)]="configForm.api_endpoint" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono" placeholder="e.g. /api/tasks">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">HTTP Method</label>
+                <select [(ngModel)]="configForm.http_method" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none cursor-pointer">
+                  <option value="POST">POST</option>
+                  <option value="GET">GET</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Recipient Target Value Template</label>
+                <input type="text" [(ngModel)]="configForm.target_value" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono" [placeholder]="'e.g. admin or {{response.body.userId}}'">
+              </div>
+              <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Title Template</label>
+                  <input type="text" [(ngModel)]="configForm.title_template" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500" [placeholder]="'e.g. New Task: {{request.body.title}}'">
+                </div>
+                <div>
+                  <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Redirect Navigation Link</label>
+                  <input type="text" [(ngModel)]="configForm.navigation_url" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500 font-mono" placeholder="e.g. /dashboard/tasks">
+                </div>
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-[9px] font-bold text-app-muted uppercase mb-1">Body Template</label>
+                <textarea rows="2" [(ngModel)]="configForm.body_template" class="w-full px-3 py-2.5 bg-app-bg border border-app-border rounded-xl text-xs outline-none focus:border-indigo-500" [placeholder]="'e.g. Hi {{user.fullName}}, you have been assigned to task: {{response.body.taskName}}'"></textarea>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-app-border">
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-1.5 text-xs text-app-text cursor-pointer">
+                  <input type="checkbox" [(ngModel)]="configForm.enabled" class="rounded bg-app-bg border-app-border text-indigo-500 w-4 h-4 cursor-pointer">
+                  <span>Enabled</span>
+                </label>
+                <select [(ngModel)]="configForm.priority" class="bg-app-bg border border-app-border rounded-lg text-xs py-1 px-2 cursor-pointer outline-none">
+                  <option value="normal">Priority: Normal</option>
+                  <option value="high">Priority: High</option>
+                  <option value="low">Priority: Low</option>
+                </select>
+              </div>
+              <div class="flex gap-2">
+                @if (isEditingConfig()) {
+                  <button (click)="cancelEditConfig()" class="px-4 py-2 bg-app-card border border-app-border text-app-text text-xs font-bold rounded-lg hover:bg-app-bg transition cursor-pointer">Cancel</button>
+                }
+                <button (click)="submitConfig()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition cursor-pointer border border-indigo-500/20">
+                  {{ isEditingConfig() ? 'Update Trigger' : 'Create Trigger' }}
+                </button>
+              </div>
+            </div>
           </div>
-        }
+
+          <!-- Configurations List Card -->
+          <div class="glass p-6 rounded-2xl border border-app-border space-y-4">
+            <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest">Configured Event Notification Triggers</h3>
+            
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-app-border text-[9px] uppercase tracking-wider text-app-muted">
+                    <th class="py-3 pr-4 font-bold">Event Details</th>
+                    <th class="py-3 px-4 font-bold">Endpoint Route</th>
+                    <th class="py-3 px-4 font-bold">Target Recipient</th>
+                    <th class="py-3 px-4 font-bold">Status</th>
+                    <th class="py-3 pl-4 font-bold w-24 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-app-border/40">
+                  @for (c of configs(); track c.id) {
+                    <tr class="hover:bg-app-card/30 transition-colors">
+                      <td class="py-3 pr-4">
+                        <span class="block font-bold text-app-text">{{ c.name }}</span>
+                        <span class="block font-mono text-[9px] text-indigo-400 mt-0.5">{{ c.event_code }}</span>
+                      </td>
+                      <td class="py-3 px-4 font-mono text-[10px] text-app-text">
+                        <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase mr-1" [class.bg-emerald-500/10]="c.http_method === 'POST'" [class.text-emerald-400]="c.http_method === 'POST'" [class.bg-sky-500/10]="c.http_method === 'GET'" [class.text-sky-400]="c.http_method === 'GET'">{{ c.http_method }}</span>
+                        {{ c.api_endpoint }}
+                      </td>
+                      <td class="py-3 px-4 text-app-muted">
+                        <span class="font-bold text-app-text uppercase text-[10px]">{{ c.target_type }}</span>: 
+                        <span class="font-mono">{{ c.target_value || 'N/A' }}</span>
+                      </td>
+                      <td class="py-3 px-4">
+                        @if (c.enabled) {
+                          <span class="inline-flex px-2 py-0.5 rounded text-[8px] bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">ACTIVE</span>
+                        } @else {
+                          <span class="inline-flex px-2 py-0.5 rounded text-[8px] bg-app-bg text-app-muted font-bold border border-app-border">DISABLED</span>
+                        }
+                      </td>
+                      <td class="py-3 pl-4 text-right space-x-1.5">
+                        <button (click)="startEditConfig(c)" class="p-1 hover:text-indigo-400 transition-colors inline-flex items-center cursor-pointer" title="Edit">
+                          <mat-icon class="!text-[14px] !w-3.5 !h-3.5">edit</mat-icon>
+                        </button>
+                        <button (click)="deleteConfig(c.id)" class="p-1 hover:text-rose-400 transition-colors inline-flex items-center cursor-pointer" title="Delete">
+                          <mat-icon class="!text-[14px] !w-3.5 !h-3.5">delete_outline</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="5" class="py-8 text-center text-app-muted">No dynamic triggers configured yet. Configure a trigger using the form above.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      }
     </div>
   `
 })
@@ -386,6 +531,25 @@ export class AdminNotificationsComponent implements OnInit {
   isTesting = signal<boolean>(false);
   isDispatching = signal<boolean>(false);
   isSendingTest = signal<boolean>(false);
+
+  // Dynamic config CRUD signals & properties
+  configs = signal<any[]>([]);
+  isEditingConfig = signal<boolean>(false);
+  editingConfigId = '';
+  configForm = {
+    name: '',
+    type: 'push',
+    event_code: '',
+    api_endpoint: '',
+    http_method: 'POST',
+    enabled: true,
+    title_template: '',
+    body_template: '',
+    navigation_url: '',
+    priority: 'normal',
+    target_type: 'role',
+    target_value: ''
+  };
 
   // DB counts
   tokensCount = 0;
@@ -478,6 +642,89 @@ export class AdminNotificationsComponent implements OnInit {
     this.notification.getLogs().subscribe(res => {
       this.systemLogs.set(res || []);
     });
+
+    this.loadConfigs();
+  }
+
+  loadConfigs() {
+    this.notification.getConfigs().subscribe({
+      next: (res) => this.configs.set(res || []),
+      error: (err) => console.error('Failed to load configs', err)
+    });
+  }
+
+  submitConfig() {
+    if (!this.configForm.name || !this.configForm.event_code || !this.configForm.api_endpoint || !this.configForm.title_template || !this.configForm.body_template) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    const action = this.isEditingConfig()
+      ? this.notification.updateConfig(this.editingConfigId, this.configForm)
+      : this.notification.createConfig(this.configForm);
+
+    action.subscribe({
+      next: () => {
+        alert(this.isEditingConfig() ? 'Event notification trigger updated!' : 'Event notification trigger created!');
+        this.resetConfigForm();
+        this.loadConfigs();
+      },
+      error: (err) => alert('Failed: ' + (err.error?.error || err.message))
+    });
+  }
+
+  startEditConfig(config: any) {
+    this.isEditingConfig.set(true);
+    this.editingConfigId = config.id;
+    this.configForm = {
+      name: config.name,
+      type: config.type,
+      event_code: config.event_code,
+      api_endpoint: config.api_endpoint,
+      http_method: config.http_method,
+      enabled: config.enabled,
+      title_template: config.title_template,
+      body_template: config.body_template,
+      navigation_url: config.navigation_url || '',
+      priority: config.priority,
+      target_type: config.target_type,
+      target_value: config.target_value || ''
+    };
+  }
+
+  cancelEditConfig() {
+    this.resetConfigForm();
+  }
+
+  resetConfigForm() {
+    this.isEditingConfig.set(false);
+    this.editingConfigId = '';
+    this.configForm = {
+      name: '',
+      type: 'push',
+      event_code: '',
+      api_endpoint: '',
+      http_method: 'POST',
+      enabled: true,
+      title_template: '',
+      body_template: '',
+      navigation_url: '',
+      priority: 'normal',
+      target_type: 'role',
+      target_value: ''
+    };
+  }
+
+  deleteConfig(id: string) {
+    if (confirm('Are you sure you want to delete this notification trigger configuration?')) {
+      this.notification.deleteConfig(id).subscribe({
+        next: () => {
+          alert('Config deleted.');
+          this.loadConfigs();
+        },
+        error: (err) => alert('Failed to delete config: ' + (err.error?.error || err.message))
+      });
+    }
   }
 
   saveSettings() {

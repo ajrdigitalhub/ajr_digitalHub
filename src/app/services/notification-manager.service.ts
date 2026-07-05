@@ -1,7 +1,8 @@
-import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, signal, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NotificationService } from './notification.service';
 import { ToastService } from './toast.service';
+import { AuthService } from './auth.service';
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { BehaviorSubject } from 'rxjs';
@@ -11,12 +12,16 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class NotificationManagerService {
   private platformId = inject(PLATFORM_ID);
-  private backend = inject(NotificationService);
+  backend = inject(NotificationService);
   private toast = inject(ToastService);
+  private auth = inject(AuthService);
 
   isBrowser = isPlatformBrowser(this.platformId);
   isSupported = false;
   fcmToken = signal<string | null>(null);
+
+  notifications = signal<any[]>([]);
+  unreadCount = signal<number>(0);
   
   private messageSource = new BehaviorSubject<any>(null);
   currentMessage = this.messageSource.asObservable();
@@ -27,7 +32,48 @@ export class NotificationManagerService {
         'serviceWorker' in navigator &&
         'PushManager' in window &&
         'Notification' in window;
+
+      effect(() => {
+        const user = this.auth.currentUser();
+        if (user) {
+          if (this.isSupported) {
+            Notification.requestPermission().then(permission => {
+              if (permission === 'granted') {
+                this.initFCM().then(initialized => {
+                  if (initialized) {
+                    this.requestPermissionAndGetToken();
+                  }
+                });
+              } else {
+                console.warn('[FCM] Browser notification permission is not granted:', permission);
+              }
+            });
+          }
+          this.loadUserNotifications();
+        } else {
+          this.notifications.set([]);
+          this.unreadCount.set(0);
+        }
+      });
     }
+  }
+
+  loadUserNotifications() {
+    if (!this.auth.currentUser()) return;
+
+    this.backend.getMyNotifications().subscribe({
+      next: (res) => {
+        this.notifications.set(res || []);
+      },
+      error: (err) => console.error('[FCM Manager] Failed to load user notifications history:', err)
+    });
+
+    this.backend.getUnreadCount().subscribe({
+      next: (res) => {
+        this.unreadCount.set(res?.count || 0);
+      },
+      error: (err) => console.error('[FCM Manager] Failed to load unread count:', err)
+    });
   }
 
   async initFCM(): Promise<boolean> {
@@ -76,6 +122,8 @@ export class NotificationManagerService {
         const title = payload.notification?.title || payload.data?.['title'] || 'Notification';
         const body = payload.notification?.body || payload.data?.['body'] || '';
         this.toast.info(`${title}: ${body}`, 5000);
+
+        this.loadUserNotifications();
       });
 
       return true;

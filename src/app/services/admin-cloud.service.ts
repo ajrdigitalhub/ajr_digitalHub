@@ -48,6 +48,17 @@ export interface CloudState {
     enabled: boolean;
     token: string;
     phoneId: string;
+    wabaId: string;
+    permanentToken: string;
+    businessName: string;
+    webhookVerifyToken: string;
+    webhookSecret: string;
+    apiVersion: string;
+    currency: string;
+    country: string;
+    businessManagerId: string;
+    displayName: string;
+    timezone: string;
     webhook: string;
     messagesSent: number;
     failures: number;
@@ -105,6 +116,17 @@ export class AdminCloudService {
       enabled: true,
       token: 'EAADXXXXXXXXXXXX',
       phoneId: '105829XXXXXXXXX',
+      wabaId: '120958XXXXXXXXX',
+      permanentToken: 'EAADXXXXXXXXXXXX',
+      businessName: 'AJR Digital Shop',
+      webhookVerifyToken: 'verify_token_preset',
+      webhookSecret: 'secret_preset',
+      apiVersion: 'v20.0',
+      currency: 'INR',
+      country: 'IN',
+      businessManagerId: '9582XXXXXXXXX',
+      displayName: 'AJR Digital Hub Alert Service',
+      timezone: 'UTC',
       webhook: 'https://api.ajr.dev/webhooks/whatsapp',
       messagesSent: 45200,
       failures: 24,

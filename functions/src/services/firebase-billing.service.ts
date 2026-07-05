@@ -192,6 +192,124 @@ export class FirebaseBillingService {
     const res = await query(q, params);
     return res.rows;
   }
+
+  async getDetailedBilling(appId: string, month?: string) {
+    const { FirebaseService } = require('./firebase.service');
+    const firebaseService = new FirebaseService();
+    
+    let startDate: Date;
+    let endDate: Date;
+    
+    if (month && /^\d{4}-\d{2}$/.test(month)) {
+      const [year, monthNum] = month.split('-').map(Number);
+      startDate = new Date(Date.UTC(year, monthNum - 1, 1));
+      endDate = new Date(Date.UTC(year, monthNum, 0, 23, 59, 59, 999));
+    } else {
+      const now = new Date();
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = now;
+    }
+
+    let functionsCost = 0;
+    let hostingCost = 0;
+    let gcpNonFirebaseCost = 0;
+    let totalExecutions = 0;
+    let hostingUsageBytes = 0;
+    let fbBilling: any = null;
+    
+    try {
+      fbBilling = await firebaseService.getBillingCost(appId, month);
+      if (fbBilling) {
+        totalExecutions = fbBilling.functionsInvocations || 0;
+        functionsCost = totalExecutions > 0 ? Math.round((2.00 + totalExecutions * 0.001049) * 100) / 100 : 0;
+        
+        hostingUsageBytes = fbBilling.outboundBandwidth || 0;
+        const sentGB = hostingUsageBytes / (1024 * 1024 * 1024);
+        hostingCost = hostingUsageBytes > 0 ? Math.max(8.00, Math.round(sentGB * 12.45 * 100) / 100) : 0;
+
+        gcpNonFirebaseCost = fbBilling.gcpNonFirebaseCost || 0;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch firebase cost details for billing:', e);
+    }
+
+    let whatsappCost = 0;
+    try {
+      const configRes = await query(`SELECT phone_number FROM whatsapp_config WHERE app_id = $1 LIMIT 1`, [appId]);
+      const phone = configRes.rows[0]?.phone_number || '';
+      if (phone) {
+        const { getCountryCode } = require('../controllers/whatsapp-billing.controller');
+        const { METADATA_PRICING_TABLE } = require('../controllers/whatsapp-billing.controller');
+        const country = getCountryCode(phone);
+        const rates = METADATA_PRICING_TABLE[country] || METADATA_PRICING_TABLE['IN'];
+        
+        const res = await query(
+          `SELECT event_type as template, status, COUNT(*) as count
+           FROM notification_logs
+           WHERE channel = 'whatsapp' 
+             AND (app_id = $1 OR customer_id = (SELECT id FROM customer_profiles WHERE app_id = $1))
+             AND created_at >= $2 AND created_at <= $3
+           GROUP BY event_type, status`,
+          [appId, startDate, endDate]
+        );
+        
+        for (const row of res.rows) {
+          const name = row.template || '';
+          const status = row.status;
+          const count = parseInt(row.count || '0', 10);
+          if (status === 'failed') continue;
+
+          const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
+          if (cat === 'marketing') whatsappCost += count * rates.marketing.price;
+          else if (cat === 'utility') whatsappCost += count * rates.utility.price;
+          else if (cat === 'authentication') whatsappCost += count * rates.authentication.price;
+          else whatsappCost += count * rates.service.price;
+        }
+        whatsappCost = Math.round(whatsappCost * 1.1 * 100) / 100;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch whatsapp cost for billing:', e);
+    }
+
+    let pushNotificationsCost = 0;
+    try {
+      const calc = await this.calculateBilling(appId, startDate, endDate);
+      pushNotificationsCost = calc.rawCost || 0;
+    } catch (e) {
+      console.warn('Failed to fetch push notifications cost for billing:', e);
+    }
+
+    let pgUsageCost = 0;
+    try {
+      const hitsRes = await query(`
+        SELECT COALESCE(SUM(hits), 0) as hits
+        FROM usage_logs
+        WHERE app_id = $1 AND created_at >= $2 AND created_at <= $3
+      `, [appId, startDate, endDate]);
+      const hits = parseInt(hitsRes.rows[0]?.hits || '0', 10);
+      pgUsageCost = Math.round(Math.max(0, hits - 10) * 0.05 * 100) / 100;
+    } catch (e) {
+      console.warn('Failed to fetch standard API usage cost for billing:', e);
+    }
+
+    const nonFirebaseCost = Math.round((whatsappCost + pushNotificationsCost + pgUsageCost) * 100) / 100;
+
+    return {
+      billingEnabled: fbBilling?.billingEnabled ?? false,
+      billingAccountName: fbBilling?.billingAccountName ?? null,
+      totalCost: Math.round((functionsCost + hostingCost + gcpNonFirebaseCost + nonFirebaseCost) * 100) / 100,
+      currency: 'INR',
+      functionsCost,
+      hostingCost,
+      gcpNonFirebaseCost,
+      nonFirebaseCost,
+      totalExecutions,
+      hostingUsageBytes,
+      whatsappCost,
+      pushNotificationsCost,
+      pgUsageCost
+    };
+  }
 }
 
 export const firebaseBillingService = new FirebaseBillingService();

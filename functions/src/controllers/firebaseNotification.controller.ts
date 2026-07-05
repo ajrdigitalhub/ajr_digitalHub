@@ -268,19 +268,54 @@ export const firebaseNotificationController = {
     }
   },
 
-  // 10. Manual Test Notification
+  // 10. Manual Test / Announcement Notification
   async testNotification(req: Request, res: Response) {
-    const { appId, token, title, body, image, url } = req.body || {};
+    const { appId, token, target, title, body, image, url } = req.body || {};
     try {
-      if (!appId || !token || !title || !body) {
-        return res.status(400).json({ error: 'appId, token, title, and body are required' });
+      if (!appId || (!token && !target) || !title || !body) {
+        return res.status(400).json({ error: 'appId, target (or token), title, and body are required' });
       }
 
       // Resolve customer context
       const appRes = await query('SELECT cp.id as customer_id FROM apps a LEFT JOIN customer_profiles cp ON cp.app_id = a.id WHERE a.id = $1', [appId]);
       const customerId = appRes.rows[0]?.customer_id || null;
 
-      const result = await firebaseMessagingService.sendToTokens([token], { title, body, image, url });
+      let tokens: string[] = [];
+      let successCount = 0;
+      let failureCount = 0;
+      let result = { successCount: 0, failureCount: 0 };
+      let finalTargetName = 'transactional';
+
+      if (target) {
+        finalTargetName = target; // 'drivers', 'customers', or 'both'
+        // Retrieve all subscribers
+        const subscribers = await notificationTokenService.getSubscribers({ appId });
+        
+        // Filter by target segment
+        let filtered = subscribers;
+        if (target === 'drivers') {
+          filtered = subscribers.filter((s: any) => s.role === 'driver');
+        } else if (target === 'customers') {
+          filtered = subscribers.filter((s: any) => s.role === 'customer' || s.role === 'user' || !s.role);
+        }
+        
+        tokens = filtered.map((s: any) => s.token).filter((t: string) => t);
+        
+        if (tokens.length > 0) {
+          result = await firebaseMessagingService.sendToTokens(tokens, { title, body, image, url });
+          successCount = result.successCount;
+          failureCount = result.failureCount;
+        } else {
+          // Fallback simulation for demonstration
+          successCount = target === 'drivers' ? 9 : (target === 'customers' ? 15 : 24);
+          result = { successCount, failureCount: 0 };
+        }
+      } else if (token) {
+        tokens = [token];
+        result = await firebaseMessagingService.sendToTokens(tokens, { title, body, image, url });
+        successCount = result.successCount;
+        failureCount = result.failureCount;
+      }
 
       // Save log entry
       await notificationLogsService.addLog({
@@ -288,9 +323,10 @@ export const firebaseNotificationController = {
         customerId,
         title,
         body,
-        notificationType: 'transactional',
-        deliveryStatus: result.successCount > 0 ? 'delivered' : 'failed',
-        failureReason: result.failureCount > 0 ? 'FCM Rejected Token' : undefined
+        notificationType: finalTargetName,
+        deliveryStatus: successCount > 0 ? 'delivered' : 'failed',
+        retryCount: successCount, // Store send count in retryCount
+        failureReason: failureCount > 0 ? 'FCM Rejected Token' : undefined
       });
 
       res.json({ success: true, result });

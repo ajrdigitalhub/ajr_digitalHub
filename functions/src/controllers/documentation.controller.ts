@@ -336,9 +336,9 @@ export const documentationController = {
     try {
       const { id } = req.params;
       const result = await query(
-        `SELECT v.id, v.title, v.created_at, u.fullName as author_name 
+        `SELECT v.id, v.title, v.created_at, u.data->>'fullName' as author_name 
          FROM documentation_versions v
-         LEFT JOIN users u ON v.created_by = u.id
+         LEFT JOIN records u ON v.created_by = u.id AND u.collection = 'users'
          WHERE v.article_id = $1
          ORDER BY v.created_at DESC`,
         [id]

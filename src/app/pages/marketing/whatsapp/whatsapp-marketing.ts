@@ -271,15 +271,9 @@ export class WhatsappMarketing implements OnInit {
         this.templates.set(res.templates);
         this.isSyncing.set(false);
       },
-      error: () => {
-        // Fallback sync simulation
-        setTimeout(() => {
-          this.templates.update(list => [
-            ...list,
-            { name: `marketing_dynamic_${Date.now().toString().slice(-4)}`, category: 'MARKETING', status: 'APPROVED', language: 'en_US', delivered: 0, read: 0, failed: 0 }
-          ]);
-          this.isSyncing.set(false);
-        }, 1000);
+      error: (err) => {
+        console.error('Failed to sync templates:', err);
+        this.isSyncing.set(false);
       }
     });
   }
@@ -302,20 +296,8 @@ export class WhatsappMarketing implements OnInit {
         this.showCampaignModal.set(false);
         this.campaignForm.reset();
       },
-      error: () => {
-        // Fallback launch
-        const localCamp = {
-          id: `camp_${Date.now()}`,
-          name: payload.name,
-          status: payload.scheduleTime ? 'SCHEDULED' : 'COMPLETED',
-          total_sent: contacts.length,
-          delivered: contacts.length,
-          read: Math.floor(contacts.length * 0.8),
-          failed: 0,
-          cost: contacts.length * 0.40,
-          created_at: new Date().toISOString()
-        };
-        this.campaigns.update(list => [localCamp, ...list]);
+      error: (err) => {
+        console.error('Failed to launch campaign:', err);
         this.showCampaignModal.set(false);
         this.campaignForm.reset();
       }

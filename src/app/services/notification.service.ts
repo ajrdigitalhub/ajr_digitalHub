@@ -52,4 +52,42 @@ export class NotificationService {
   sendTest(): Observable<any> {
     return this.api.post<any>('/notifications/admin/test', {});
   }
+
+  // User History Endpoints
+  getMyNotifications(): Observable<any[]> {
+    return this.api.get<any[]>('/notifications/my-notifications');
+  }
+
+  getUnreadCount(): Observable<{ count: number }> {
+    return this.api.get<{ count: number }>('/notifications/unread-count');
+  }
+
+  markRead(ids: string[]): Observable<any> {
+    return this.api.post<any>('/notifications/mark-read', { ids });
+  }
+
+  markAllRead(): Observable<any> {
+    return this.api.post<any>('/notifications/mark-all-read', {});
+  }
+
+  deleteNotification(id: string): Observable<any> {
+    return this.api.delete<any>(`/notifications/delete/${id}`);
+  }
+
+  // Admin Configs CRUD
+  getConfigs(): Observable<any[]> {
+    return this.api.get<any[]>('/notifications/admin/config');
+  }
+
+  createConfig(config: any): Observable<any> {
+    return this.api.post<any>('/notifications/admin/config', config);
+  }
+
+  updateConfig(id: string, config: any): Observable<any> {
+    return this.api.put<any>(`/notifications/admin/config/${id}`, config);
+  }
+
+  deleteConfig(id: string): Observable<any> {
+    return this.api.delete<any>(`/notifications/admin/config/${id}`);
+  }
 }

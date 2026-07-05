@@ -3,7 +3,7 @@ import { invoiceService } from './invoiceService';
 import { whatsappService } from './whatsappService';
 import { notificationService } from './notificationService';
 import { FirebaseService } from './firebase.service';
-import { getPresetStatsForTemplate, METADATA_PRICING_TABLE, getCountryCode } from '../controllers/whatsapp-billing.controller';
+import { METADATA_PRICING_TABLE, getCountryCode } from '../controllers/whatsapp-billing.controller';
 import crypto from 'crypto';
 
 const API_RATE = 0.01;
@@ -42,39 +42,36 @@ function decryptValue(text: string): string {
 //  WhatsApp Conversation Billing Calculation
 // ============================================================
 async function getWhatsAppBillingSummary(appId: string, phone: string, country: string): Promise<any> {
-  const templatesList = [
-    'kall_me_deliveryalert',
-    'kall_me_attach',
-    'delivery_onboard_alert',
-    'kall_me_cancel_alert',
-    'order_status_update',
-    'order_confirmation_client',
-    'ajr_new_task',
-    'ajr_task_reminder',
-    'task_status_update',
-    'order_tracking',
-    'order_confirmation_admin',
-    'welcome_message',
-    'get_offers'
-  ];
+  const rates = METADATA_PRICING_TABLE[country] || METADATA_PRICING_TABLE['IN'];
+  const currency = rates.utility.currency;
 
   let marketingCount = 0;
   let utilityCount = 0;
   let authCount = 0;
   let serviceCount = 0;
 
-  for (const name of templatesList) {
-    const stats = getPresetStatsForTemplate(name, 30, appId);
-    const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
-    
-    if (cat === 'marketing') marketingCount += stats.delivered;
-    else if (cat === 'utility') utilityCount += stats.delivered;
-    else if (cat === 'authentication') authCount += stats.delivered;
-    else serviceCount += stats.delivered;
-  }
+  const res = await query(
+    `SELECT event_type as template, status, COUNT(*) as count
+     FROM notification_logs
+     WHERE channel = 'whatsapp' 
+       AND (app_id = $1 OR customer_id = (SELECT id FROM customer_profiles WHERE app_id = $1))
+       AND created_at >= NOW() - INTERVAL '1 month'
+     GROUP BY event_type, status`,
+    [appId]
+  );
 
-  const rates = METADATA_PRICING_TABLE[country] || METADATA_PRICING_TABLE['IN'];
-  const currency = rates.utility.currency;
+  for (const row of res.rows) {
+    const name = row.template || '';
+    const status = row.status;
+    const count = parseInt(row.count || '0', 10);
+    if (status === 'failed') continue;
+
+    const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
+    if (cat === 'marketing') marketingCount += count;
+    else if (cat === 'utility') utilityCount += count;
+    else if (cat === 'authentication') authCount += count;
+    else serviceCount += count;
+  }
 
   const marketingCost = marketingCount * rates.marketing.price;
   const utilityCost = utilityCount * rates.utility.price;

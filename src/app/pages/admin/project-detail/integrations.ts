@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -45,7 +45,7 @@ import { ApiService } from '../../../services/api.service';
            <div class="bg-app-bg border border-app-border rounded-xl flex flex-col shadow-sm">
               <div class="p-5 border-b border-app-border flex items-center justify-between">
                  <h3 class="text-lg font-bold text-app-text flex items-center gap-2">
-                    <mat-icon class="text-emerald-500">chat</mat-icon> WhatsApp Gateway
+                    <mat-icon class="text-emerald-500">chat</mat-icon> WhatsApp Gateway Config
                  </h3>
                  <label for="chk-wa-enabled" class="relative inline-flex items-center cursor-pointer">
                     <input id="chk-wa-enabled" type="checkbox" [(ngModel)]="cloudService.state().whatsapp.enabled" (change)="onGatewayToggle('WhatsApp', cloudService.state().whatsapp.enabled)" class="sr-only peer">
@@ -53,15 +53,61 @@ import { ApiService } from '../../../services/api.service';
                  </label>
               </div>
               <div class="p-5 space-y-4 flex-grow transition-opacity" [class.opacity-40]="!cloudService.state().whatsapp.enabled">
-                 <div>
-                    <label for="p-wa-token" class="block text-xs text-app-muted mb-1">Access Token</label>
-                    <input id="p-wa-token" type="password" [(ngModel)]="cloudService.state().whatsapp.token" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="col-span-1 sm:col-span-2">
+                       <label for="p-wa-token" class="block text-[10px] uppercase font-bold text-app-muted mb-1">System User Access Token</label>
+                       <input id="p-wa-token" type="password" [(ngModel)]="cloudService.state().whatsapp.token" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="••••••••">
+                    </div>
+                    <div class="col-span-1 sm:col-span-2">
+                       <label for="p-wa-perm-token" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Permanent Access Token</label>
+                       <input id="p-wa-perm-token" type="password" [(ngModel)]="cloudService.state().whatsapp.permanentToken" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="••••••••">
+                    </div>
+                    <div>
+                       <label for="p-wa-phone" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Phone Number ID</label>
+                       <input id="p-wa-phone" type="text" [(ngModel)]="cloudService.state().whatsapp.phoneId" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
+                    </div>
+                    <div>
+                       <label for="p-wa-waba" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Business Account ID (WABA ID)</label>
+                       <input id="p-wa-waba" type="text" [(ngModel)]="cloudService.state().whatsapp.wabaId" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
+                    </div>
+                    <div>
+                       <label for="p-wa-biz-name" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Business Name</label>
+                       <input id="p-wa-biz-name" type="text" [(ngModel)]="cloudService.state().whatsapp.businessName" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
+                    </div>
+                    <div>
+                       <label for="p-wa-disp-name" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Display Name</label>
+                       <input id="p-wa-disp-name" type="text" [(ngModel)]="cloudService.state().whatsapp.displayName" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
+                    </div>
+                    <div>
+                       <label for="p-wa-verify" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Webhook Verify Token</label>
+                       <input id="p-wa-verify" type="password" [(ngModel)]="cloudService.state().whatsapp.webhookVerifyToken" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="••••••••">
+                    </div>
+                    <div>
+                       <label for="p-wa-secret" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Webhook Secret</label>
+                       <input id="p-wa-secret" type="password" [(ngModel)]="cloudService.state().whatsapp.webhookSecret" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="••••••••">
+                    </div>
+                    <div>
+                       <label for="p-wa-version" class="block text-[10px] uppercase font-bold text-app-muted mb-1">API Version</label>
+                       <input id="p-wa-version" type="text" [(ngModel)]="cloudService.state().whatsapp.apiVersion" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="v20.0">
+                    </div>
+                    <div>
+                       <label for="p-wa-bm-id" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Business Manager ID</label>
+                       <input id="p-wa-bm-id" type="text" [(ngModel)]="cloudService.state().whatsapp.businessManagerId" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
+                    </div>
+                    <div>
+                       <label for="p-wa-currency" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Currency</label>
+                       <input id="p-wa-currency" type="text" [(ngModel)]="cloudService.state().whatsapp.currency" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="INR">
+                    </div>
+                    <div>
+                       <label for="p-wa-country" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Country Code</label>
+                       <input id="p-wa-country" type="text" [(ngModel)]="cloudService.state().whatsapp.country" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="IN">
+                    </div>
+                    <div class="col-span-1 sm:col-span-2">
+                       <label for="p-wa-timezone" class="block text-[10px] uppercase font-bold text-app-muted mb-1">Timezone</label>
+                       <input id="p-wa-timezone" type="text" [(ngModel)]="cloudService.state().whatsapp.timezone" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50" placeholder="UTC">
+                    </div>
                  </div>
-                 <div>
-                    <label for="p-wa-phone" class="block text-xs text-app-muted mb-1">Phone Number ID</label>
-                    <input id="p-wa-phone" type="text" [(ngModel)]="cloudService.state().whatsapp.phoneId" [disabled]="!cloudService.state().whatsapp.enabled" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded text-app-text font-mono text-sm outline-none focus:border-emerald-500/50">
-                 </div>
-                 <div class="pt-2">
+                 <div class="pt-4">
                     <button (click)="saveWhatsappConfig()" [disabled]="!cloudService.state().whatsapp.enabled || isSavingWa()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-app-text rounded-lg text-xs font-bold transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer border border-emerald-500">
                        @if (isSavingWa()) {
                           <mat-icon class="!w-3 !h-3 !text-[12px] animate-spin">sync</mat-icon>
@@ -162,6 +208,34 @@ export class ProjectIntegrationsComponent {
   isSavingEmail = signal(false);
   smtpPassword = '';
 
+  constructor() {
+    effect(() => {
+      const wa = this.project()?.whatsapp;
+      if (wa) {
+        this.cloudService.state.update(s => ({
+          ...s,
+          whatsapp: {
+            ...s.whatsapp,
+            enabled: wa.enabled || false,
+            token: wa.api_key || '',
+            phoneId: wa.phone_number || '',
+            wabaId: wa.waba_id || '',
+            permanentToken: wa.permanent_token || '',
+            businessName: wa.business_name || '',
+            webhookVerifyToken: wa.webhook_verify_token || '',
+            webhookSecret: wa.webhook_secret || '',
+            apiVersion: wa.api_version || 'v20.0',
+            currency: wa.currency || 'INR',
+            country: wa.country || 'IN',
+            businessManagerId: wa.business_manager_id || '',
+            displayName: wa.display_name || '',
+            timezone: wa.timezone || 'UTC'
+          }
+        }));
+      }
+    });
+  }
+
   savePlugin(plugin: any) {
     this.store.showToast(`Plugin '${plugin.name}' status updated to ${plugin.enabled ? 'Enabled' : 'Disabled'}!`, 'info');
   }
@@ -169,11 +243,9 @@ export class ProjectIntegrationsComponent {
   onGatewayToggle(gatewayType: string, isEnabled: boolean) {
     this.store.showToast(`Communications portal gateway for ${gatewayType} ${isEnabled ? 'opened' : 'closed'}!`, isEnabled ? 'success' : 'info');
     
-    // Auto sync toggle state in DB
     const serviceType = gatewayType === 'WhatsApp' ? 'whatsapp' : 'email';
     this.api.post<any>(`/admin/apps/${this.project().id}/services/toggle`, { service: serviceType, enabled: isEnabled }).subscribe({
       next: () => {
-        // Update local project model
         const currentProject = this.project();
         if (currentProject) {
           if (serviceType === 'whatsapp' && currentProject.whatsapp) {
@@ -192,7 +264,18 @@ export class ProjectIntegrationsComponent {
     const payload = {
       phone_number: wa.phoneId,
       api_key: wa.token,
-      enabled: wa.enabled
+      enabled: wa.enabled,
+      waba_id: wa.wabaId,
+      permanent_token: wa.permanentToken,
+      business_name: wa.businessName,
+      webhook_verify_token: wa.webhookVerifyToken,
+      webhook_secret: wa.webhookSecret,
+      api_version: wa.apiVersion,
+      currency: wa.currency,
+      country: wa.country,
+      business_manager_id: wa.businessManagerId,
+      display_name: wa.displayName,
+      timezone: wa.timezone
     };
     
     this.api.post<any>(`/admin/apps/${this.project().id}/whatsapp-config`, payload).subscribe({
@@ -200,13 +283,23 @@ export class ProjectIntegrationsComponent {
         this.isSavingWa.set(false);
         this.store.showToast('WhatsApp gateway settings updated in database!', 'success');
         
-        // Update local project model
         const currentProject = this.project();
         if (currentProject) {
           currentProject.whatsapp = {
             phone_number: payload.phone_number,
             api_key: payload.api_key,
-            enabled: payload.enabled
+            enabled: payload.enabled,
+            waba_id: payload.waba_id,
+            permanent_token: payload.permanent_token,
+            business_name: payload.business_name,
+            webhook_verify_token: payload.webhook_verify_token,
+            webhook_secret: payload.webhook_secret,
+            api_version: payload.api_version,
+            currency: payload.currency,
+            country: payload.country,
+            business_manager_id: payload.business_manager_id,
+            display_name: payload.display_name,
+            timezone: payload.timezone
           };
         }
       },
@@ -233,7 +326,6 @@ export class ProjectIntegrationsComponent {
         this.isSavingEmail.set(false);
         this.store.showToast('SMTP Relay relay parameters saved to database!', 'success');
         
-        // Update local project model
         const currentProject = this.project();
         if (currentProject) {
           currentProject.email = {

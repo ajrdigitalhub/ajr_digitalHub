@@ -282,7 +282,7 @@ import { AuthService } from '../services/auth.service';
                   />
                   <span>Remember Me</span>
                 </label>
-                <a (click)="onForgotPassword()" class="text-xs font-semibold text-primary hover:text-accent cursor-pointer hover:underline">Forgot Password?</a>
+              
               </div>
 
               <!-- Role Selector (Signup Mode) -->
@@ -360,29 +360,7 @@ import { AuthService } from '../services/auth.service';
             </button>
 
             <!-- Sandbox Quick Login -->
-            <div class="mt-6 border-t border-app-border pt-5 text-center">
-              <span class="text-[9px] font-mono font-bold tracking-wider text-app-muted uppercase">Quick Access Sandbox Profiles</span>
-              <div class="mt-3 flex gap-2 justify-center">
-                <button 
-                  id="btn-demo-owner"
-                  type="button" 
-                  (click)="fillDemo('owner@saas.com', 'user')"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-app-bg/50 hover:bg-app-bg text-app-text border border-app-border rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
-                >
-                  <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-indigo-400">manage_accounts</mat-icon>
-                  Tenant Demo
-                </button>
-                <button 
-                  id="btn-demo-admin"
-                  type="button" 
-                  (click)="fillDemo('admin@saas.com', 'admin')"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-app-bg/50 hover:bg-app-bg text-app-text border border-app-border rounded-lg text-[10px] font-bold cursor-pointer transition-colors"
-                >
-                  <mat-icon class="!text-[12px] !w-[12px] !h-[12px] text-[#00E5A8]">security</mat-icon>
-                  Admin Demo
-                </button>
-              </div>
-            </div>
+            
 
           </div>
 
@@ -402,7 +380,7 @@ export class Login implements OnInit {
   isLoading = signal<boolean>(false);
   isPasswordVisible = signal<boolean>(false);
   rememberMe = signal<boolean>(false);
-  
+
   toastMessage = signal<string>('');
   toastType = signal<'success' | 'error'>('success');
 
@@ -461,7 +439,7 @@ export class Login implements OnInit {
 
   async onSubmit() {
     if (this.authForm.invalid) { return; }
-    
+
     this.isLoading.set(true);
     const email = this.authForm.value.email!;
     const password = this.authForm.value.password!;
@@ -469,7 +447,7 @@ export class Login implements OnInit {
     try {
       if (this.isLoginMode()) {
         const res = await this.authService.login(email, password);
-        
+
         // Handle Remember Me storage
         if (typeof window !== 'undefined') {
           if (this.rememberMe()) {
@@ -508,7 +486,7 @@ export class Login implements OnInit {
     const role = this.selectedRole();
     try {
       await this.authService.signInWithGoogle(role);
-      
+
       const email = this.authService.currentUser()?.email;
       if (email && typeof window !== 'undefined') {
         if (this.rememberMe()) {

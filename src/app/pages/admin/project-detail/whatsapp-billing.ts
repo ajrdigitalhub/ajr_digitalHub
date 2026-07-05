@@ -278,8 +278,34 @@ export class WhatsAppBillingComponent implements OnInit, OnDestroy {
     }).join(' ');
   }
 
-  maxVal(arr: number[]): number {
-    return Math.max(...arr, 1);
+  getReadRateOffset(): number {
+    const s = this.summary();
+    if (!s || s.readRate === null || s.readRate === undefined || typeof s.readRate === 'object') {
+      return 100;
+    }
+    const val = typeof s.readRate === 'object' && 'value' in s.readRate ? (s.readRate as any).value : s.readRate;
+    return 100 - Number(val || 0);
+  }
+
+  formatMetric(metric: any, isCurrency = false, isPercent = false): string {
+    if (metric === null || metric === undefined) return 'Not Available';
+    if (typeof metric === 'object' && metric.available === false) {
+      return 'Not Available';
+    }
+    
+    // Extract the raw value if it is wrapped in an object, otherwise use the number directly
+    const val = (typeof metric === 'object' && 'value' in metric) ? metric.value : metric;
+    
+    // Check if the value itself is null/undefined
+    if (val === null || val === undefined) return 'Not Available';
+
+    if (isCurrency) {
+      return `${this.getCurrencySymbol()}${Number(val).toFixed(2)}`;
+    }
+    if (isPercent) {
+      return `${val}%`;
+    }
+    return Number(val).toLocaleString();
   }
 
   // ── Toast ──

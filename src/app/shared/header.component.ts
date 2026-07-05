@@ -16,11 +16,8 @@ import { ThemeService, AppTheme } from '../services/theme.service';
         
         <!-- Logo Branding -->
         <a routerLink="/" class="flex items-center gap-2.5 group cursor-pointer focus:outline-none">
-          <img src="/logo.png" alt="AJR Digital Hub Logo" class="h-8 w-8 sm:h-10 sm:w-10 object-contain group-hover:scale-105 transition-all drop-shadow-md" />
-          <div class="flex flex-col">
-            <span class="text-xs sm:text-sm font-black text-app-text uppercase tracking-wider font-display">AJR Digital Hub</span>
-            <span class="text-[7px] sm:text-[9px] font-mono text-secondary font-bold uppercase tracking-widest leading-none">Enterprise Cluster</span>
-          </div>
+          <img src="/ajr-hub.png" alt="AJR Digital Hub Logo" class="h-8 w-8 sm:h-10 sm:w-10 object-contain group-hover:scale-105 transition-all drop-shadow-md" />
+        
         </a>
 
         <!-- Main Desktop Navigation -->
@@ -294,7 +291,7 @@ export class HeaderComponent {
     this.authService.logout();
     this.router.navigate(['/home']);
   }
-  
+
   toggleTheme() {
     const current = this.themeService.currentTheme();
     let next: AppTheme = 'dark';

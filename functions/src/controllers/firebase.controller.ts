@@ -3,6 +3,7 @@ import { FirebaseService } from '../services/firebase.service';
 import { query, isPostgresEnabled } from '../config/db';
 import { BaseService } from '../core/base.service';
 import { streamEmitter } from './analytics.controller';
+import { firebaseBillingService } from '../services/firebase-billing.service';
 
 const firebaseService = new FirebaseService();
 
@@ -55,7 +56,7 @@ export const firebaseController = {
     try {
       const { id } = req.params;
       const month = req.query['month'] as string;
-      const billing = await firebaseService.getBillingCost(id, month);
+      const billing = await firebaseBillingService.getDetailedBilling(id, month);
       return res.json(billing);
     } catch (err: any) {
       return res.status(err.message.includes('not configured') ? 404 : 500).json({ error: err.message });

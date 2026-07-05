@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
-import { FirebaseService } from '../services/firebase.service';
+import { query } from '../db';
+import { decryptValue } from '../utils/crypto';
+import { whatsappCloudService } from '../services/whatsappCloud.service';
 import { firestore } from '../config/firebase';
-import axios from 'axios';
-import { query, isPostgresEnabled } from '../config/db';
-
-const firebaseService = new FirebaseService();
 
 // ────────────────────────────────────────────────────────────────────────────
 //  Pricing matrix (Meta WhatsApp Business Messaging)
@@ -46,441 +44,124 @@ function calculateConversationPrice(category: string, phone: string): { price: n
   return rates[cat] || { price: 0.11255, currency: 'INR' };
 }
 
-function getTemplatePrice(name: string, category: string, phone: string = ''): number {
-  if (TEMPLATE_PRICING[name] !== undefined) {
-    return TEMPLATE_PRICING[name];
+function parseMetaDateString(val: any): string {
+  if (!val) return new Date().toISOString().split('T')[0];
+  if (typeof val === 'number') {
+    const isSeconds = val < 99999999999;
+    const d = new Date(isSeconds ? val * 1000 : val);
+    return d.toISOString().split('T')[0];
   }
-  return calculateConversationPrice(category, phone).price;
-}
-
-const TEMPLATE_PRICING: Record<string, number> = {
-  // kall_me_deliveryalert: 0.07,
-  // kall_me_attach: 0.11255, // 141 * 0.11255 = 15.87
-  // order_status_update: 0.11255,
-  // order_confirmation_client: 0.11533, // 15 * 0.11533 = 1.73
-  // order_confirmation_admin: 0.1625,
-  // welcome_message: 0.1625,
-};
-
-
-// Preset statistics from Meta Business Suite screenshots (June 2026)
-// Blends dynamically based on days filter
-export function getPresetStatsForTemplate(name: string, days: number, appId?: string): {
-  sent: number;
-  delivered: number;
-  read: number;
-  failed: number;
-  status?: string;
-} {
-  const presets: Record<string, { sent: number; delivered: number; read: number; failed: number; status?: string }> = {
-    kall_me_deliveryalert: { sent: 91, delivered: 91, read: 91, failed: 0, status: 'Active - Quality pending' },
-    kall_me_attach: { sent: 141, delivered: 141, read: 140, failed: 0, status: 'Active - Quality pending' },
-    delivery_onboard_alert: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Rejected' },
-    kall_me_cancel_alert: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' },
-    order_status_update: { sent: 1, delivered: 1, read: 1, failed: 0, status: 'Active - Quality pending' },
-    order_confirmation_client: { sent: 15, delivered: 15, read: 15, failed: 0, status: 'Active - Quality pending' },
-    ajr_new_task: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' },
-    ajr_task_reminder: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' },
-    task_status_update: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' },
-    order_tracking: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' },
-    order_confirmation_admin: { sent: 10, delivered: 10, read: 10, failed: 0, status: 'Active - Quality pending' },
-    welcome_message: { sent: 3, delivered: 3, read: 3, failed: 0, status: 'Active - Quality pending' },
-    get_offers: { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' }
-  };
-
-  const base = presets[name];
-  if (!base) return { sent: 0, delivered: 0, read: 0, failed: 0, status: 'Active - Quality pending' };
-
-  let multiplier = 1.0;
-  if (appId) {
-    if (appId === '33333333-3333-4333-a333-333333333333') {
-      multiplier = 1.0;
-    } else {
-      let hash = 0;
-      for (let i = 0; i < appId.length; i++) {
-        hash = appId.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      const factor = Math.abs(hash % 100) / 100;
-      // Multiplier from 0.15 to 2.0 based on appId hash
-      multiplier = Math.round((0.15 + factor * 1.85) * 100) / 100;
+  if (typeof val === 'string') {
+    const num = Number(val);
+    if (!isNaN(num) && val.trim() !== '') {
+      const isSeconds = num < 99999999999;
+      const d = new Date(isSeconds ? num * 1000 : num);
+      return d.toISOString().split('T')[0];
     }
+    return val.split('T')[0];
+  }
+  return new Date().toISOString().split('T')[0];
+}
+
+async function aggregateFromFirebase(appId: string, days: number): Promise<Record<string, { sent: number; delivered: number; read: number; failed: number; cost: number }>> {
+  const statsMap: Record<string, { sent: number; delivered: number; read: number; failed: number; cost: number }> = {};
+  if (!firestore) return statsMap;
+
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const snapshot = await firestore.collection('whatsapp_message_logs')
+      .where('appId', '==', appId)
+      .where('timestamp', '>=', startDate)
+      .get();
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      const templateName = data.templateName || 'unknown';
+      const status = data.status || 'sent';
+      const docCost = Number(data.cost || 0);
+
+      if (!statsMap[templateName]) {
+        statsMap[templateName] = { sent: 0, delivered: 0, read: 0, failed: 0, cost: 0 };
+      }
+
+      statsMap[templateName].cost += docCost;
+
+      if (status === 'read') {
+        statsMap[templateName].sent++;
+        statsMap[templateName].delivered++;
+        statsMap[templateName].read++;
+      } else if (status === 'delivered') {
+        statsMap[templateName].sent++;
+        statsMap[templateName].delivered++;
+      } else if (status === 'sent') {
+        statsMap[templateName].sent++;
+      } else if (status === 'failed') {
+        statsMap[templateName].sent++;
+        statsMap[templateName].failed++;
+      }
+    }
+  } catch (err: any) {
+    console.error('[WhatsApp Controller Fallback] Firestore aggregation failed:', err.message);
   }
 
-  // Scale statistics based on date range (90 days maximum) and app-specific multiplier
-  const ratio = (Math.min(days, 90) / 90) * multiplier;
-
-  // Custom case: Last 7 days for kall_me_deliveryalert is exactly 5 messages
-  if (name === 'kall_me_deliveryalert' && days <= 7) {
-    const customDelivered = Math.max(1, Math.round(5 * multiplier));
-    return { sent: customDelivered, delivered: customDelivered, read: customDelivered, failed: 0, status: base.status };
-  }
-  if (name === 'kall_me_deliveryalert' && days <= 30) {
-    const customDelivered = Math.max(1, Math.round(30 * multiplier));
-    return { sent: customDelivered, delivered: customDelivered, read: customDelivered, failed: 0, status: base.status };
-  }
-
-  const sent = Math.round(base.sent * ratio);
-  const delivered = Math.round(base.delivered * ratio);
-  const read = Math.round(base.read * ratio);
-
-  return {
-    sent,
-    delivered,
-    read,
-    failed: base.failed,
-    status: base.status
-  };
+  return statsMap;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-//  Helper: fetch WhatsApp config (WABA_ID + token) for an app
+//  Helper: fetch decrypted WhatsApp config (WABA_ID + token) for an app
 // ────────────────────────────────────────────────────────────────────────────
-async function getWhatsAppConfig(appId: string): Promise<{
+async function getWhatsAppConfigDecrypted(appId: string): Promise<{
   wabaId: string;
   token: string;
   phoneId: string;
 } | null> {
-  // Primary: per-app config from DB
   try {
-    if (isPostgresEnabled) {
-      const res = await query(
-        `SELECT api_key as token, waba_id, phone_number as phone_id FROM whatsapp_config WHERE app_id = $1 AND enabled = true`,
-        [appId]
-      );
-      if (res.rows.length > 0) {
-        const row = res.rows[0];
-        if (row.token && row.waba_id) {
-          return {
-            wabaId: row.waba_id || '',
-            token: row.token || '',
-            phoneId: row.phone_id || '',
-          };
-        }
+    const res = await query(
+      `SELECT api_key as token, waba_id, phone_number as phone_id, enabled FROM whatsapp_config WHERE app_id = $1`,
+      [appId]
+    );
+    if (res.rows.length > 0) {
+      const row = res.rows[0];
+      if (!row.enabled) {
+        return null;
+      }
+      const decryptedToken = decryptValue(row.token || '');
+      if (decryptedToken && row.waba_id) {
+        return {
+          wabaId: row.waba_id || '',
+          token: decryptedToken || '',
+          phoneId: row.phone_id || '',
+        };
       }
     }
   } catch (err: any) {
-    console.warn(`[WhatsApp] Failed to query per-app DB config for ${appId}:`, err.message);
+    console.error(`[WhatsApp] Failed to query DB config for ${appId}:`, err.message);
   }
-
-  // Fallback: env-level credentials (single-tenant admin panel)
-  const globalToken = process.env['WHATSAPP_TOKEN'];
-  const globalWabaId = process.env['WHATSAPP_WABA_ID'];
-  const globalPhoneId = process.env['WHATSAPP_PHONE_ID'];
-
-  if (globalToken && globalWabaId) {
-    return { wabaId: globalWabaId, token: globalToken, phoneId: globalPhoneId || '' };
-  }
-
   return null;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: fetch Meta message templates for a WABA
-// ────────────────────────────────────────────────────────────────────────────
-async function fetchMetaTemplates(wabaId: string, token: string): Promise<any[]> {
-  try {
-    const res = await axios.get(
-      `https://graph.facebook.com/v18.0/${wabaId}/message_templates`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { fields: 'name,status,category,language,quality_score,rejected_reason,components', limit: 100 },
-        timeout: 10000,
-      }
-    );
-    return res.data?.data || [];
-  } catch (err: any) {
-    console.warn(`[WhatsApp] Could not fetch Meta templates for WABA ${wabaId}:`, err.response?.data?.error?.message || err.message);
-    return [];
-  }
-}
+/**
+ * Handle Meta API or credentials loading errors
+ */
+function handleControllerError(err: any, res: Response) {
+  console.error('[WhatsApp Billing API Error]:', err.message);
 
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: fetch Meta template analytics for a WABA (dynamic days)
-// ────────────────────────────────────────────────────────────────────────────
-async function fetchMetaTemplateAnalytics(wabaId: string, token: string, days: number = 30): Promise<any[]> {
-  try {
-    const end = Math.floor(Date.now() / 1000);
-    const start = end - days * 24 * 3600; // last N days
-    const res = await axios.get(
-      `https://graph.facebook.com/v18.0/${wabaId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          fields: `template_analytics.start(${start}).end(${end}).granularity(DAY)`
-        },
-        timeout: 10000,
-      }
-    );
-    return res.data?.template_analytics?.data || [];
-  } catch (err: any) {
-    console.warn(`[WhatsApp] Could not fetch Meta template analytics for WABA ${wabaId}:`, err.response?.data?.error?.message || err.message);
-    return [];
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: fetch Firestore WhatsApp logs for last N minutes (in-memory only)
-// ────────────────────────────────────────────────────────────────────────────
-async function fetchFirestoreLogs(appId: string, sinceMinutes = 60): Promise<any[]> {
-  if (!firestore) return generateFallbackLogs(appId, sinceMinutes);
-
-  try {
-    const cutoff = new Date(Date.now() - sinceMinutes * 60 * 1000);
-    const snap = await firestore
-      .collection('whatsapp_logs')
-      .doc(appId)
-      .collection('logs')
-      .where('timestamp', '>=', cutoff.toISOString())
-      .orderBy('timestamp', 'desc')
-      .limit(500)
-      .get();
-
-    if (!snap.empty) {
-      return snap.docs.map((d: any) => d.data());
-    }
-
-    // Also try flat collection pattern: whatsapp_logs/{appId}_* docs
-    const flatSnap = await firestore
-      .collection('whatsapp_logs')
-      .where('appId', '==', appId)
-      .where('timestamp', '>=', cutoff.toISOString())
-      .orderBy('timestamp', 'desc')
-      .limit(500)
-      .get();
-
-    if (!flatSnap.empty) {
-      return flatSnap.docs.map((d: any) => d.data());
-    }
-  } catch (err: any) {
-    console.warn(`[WhatsApp] Firestore logs query failed for ${appId}:`, err.message);
+  let errorType = 'UNKNOWN';
+  if (err.message.includes('AUTHENTICATION_ERROR')) {
+    errorType = 'AUTHENTICATION_ERROR';
+  } else if (err.message.includes('PERMISSION_ERROR')) {
+    errorType = 'PERMISSION_ERROR';
+  } else if (err.message.includes('META_API_ERROR')) {
+    errorType = 'META_API_ERROR';
   }
 
-  return generateFallbackLogs(appId, sinceMinutes);
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: generate realistic fallback logs matching screenshots
-// ────────────────────────────────────────────────────────────────────────────
-function generateFallbackLogs(appId: string, sinceMinutes: number): any[] {
-  const templatesList = [
-    'kall_me_deliveryalert',
-    'kall_me_attach',
-    'delivery_onboard_alert',
-    'kall_me_cancel_alert',
-    'order_status_update',
-    'order_confirmation_client',
-    'ajr_new_task',
-    'ajr_task_reminder',
-    'task_status_update',
-    'order_tracking',
-    'order_confirmation_admin',
-    'welcome_message',
-    'get_offers'
-  ];
-  const logs: any[] = [];
-  const now = Date.now();
-
-  const days = Math.round(sinceMinutes / (24 * 60)) || 30;
-
-  for (const name of templatesList) {
-    const preset = getPresetStatsForTemplate(name, days, appId);
-    const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
-
-    // Generate actual individual logs to match the preset totals
-    for (let i = 0; i < preset.delivered; i++) {
-      const isRead = i < preset.read;
-      const ageMs = Math.random() * sinceMinutes * 60 * 1000;
-      logs.push({
-        appId,
-        template: name,
-        category: cat,
-        status: isRead ? 'read' : 'delivered',
-        timestamp: new Date(now - ageMs).toISOString(),
-        phone: `+91${Math.floor(Math.random() * 9000000000) + 1000000000}`,
-      });
-    }
-
-    for (let i = 0; i < preset.failed; i++) {
-      const ageMs = Math.random() * sinceMinutes * 60 * 1000;
-      logs.push({
-        appId,
-        template: name,
-        category: cat,
-        status: 'failed',
-        timestamp: new Date(now - ageMs).toISOString(),
-        phone: `+91${Math.floor(Math.random() * 9000000000) + 1000000000}`,
-      });
-    }
-  }
-
-  return logs;
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: aggregate logs in-memory
-// ────────────────────────────────────────────────────────────────────────────
-interface TemplateStat {
-  templateName: string;
-  category: string;
-  sent: number;
-  delivered: number;
-  read: number;
-  failed: number;
-  cost: number;
-}
-
-function aggregateLogs(logs: any[]): {
-  totalSent: number;
-  totalDelivered: number;
-  totalRead: number;
-  totalFailed: number;
-  estimatedCost: number;
-  byTemplate: Record<string, TemplateStat>;
-} {
-  const byTemplate: Record<string, TemplateStat> = {};
-  let totalSent = 0, totalDelivered = 0, totalRead = 0, totalFailed = 0;
-
-  for (const log of logs) {
-    const name = log.template || 'unknown';
-    const cat = (log.category || 'utility').toLowerCase();
-
-    if (!byTemplate[name]) {
-      byTemplate[name] = {
-        templateName: name,
-        category: cat,
-        sent: 0,
-        delivered: 0,
-        read: 0,
-        failed: 0,
-        cost: 0,
-      };
-    }
-
-    const stat = byTemplate[name];
-    const status = (log.status || '').toLowerCase();
-
-    stat.sent++;
-    totalSent++;
-
-    if (status === 'delivered') { stat.delivered++; totalDelivered++; }
-    else if (status === 'read') { stat.delivered++; totalDelivered++; stat.read++; totalRead++; }
-    else if (status === 'failed') { stat.failed++; totalFailed++; }
-  }
-
-  // Calculate costs per template (cost = delivered * price)
-  const estimatedCost = (() => {
-    let total = 0;
-    for (const stat of Object.values(byTemplate)) {
-      const sampleLog = logs.find(l => l.template === stat.templateName);
-      const phone = sampleLog?.phone || '';
-      const price = calculateConversationPrice(stat.category, phone).price;
-      stat.cost = Math.round(stat.delivered * price * 100) / 100;
-      total += stat.cost;
-    }
-    return Math.round(total * 100) / 100;
-  })();
-
-  return { totalSent, totalDelivered, totalRead, totalFailed, estimatedCost, byTemplate };
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: build time-series graph data (5-min buckets for last hour)
-// ────────────────────────────────────────────────────────────────────────────
-function buildGraphData(logs: any[]): {
-  labels: string[];
-  sent: number[];
-  delivered: number[];
-  read: number[];
-  cost: number[];
-} {
-  const bucketCount = 12; // 12 × 5min = 1hr
-  const bucketMs = 5 * 60 * 1000;
-  const now = Date.now();
-
-  const sent = new Array(bucketCount).fill(0);
-  const delivered = new Array(bucketCount).fill(0);
-  const read = new Array(bucketCount).fill(0);
-  const cost = new Array(bucketCount).fill(0);
-
-  for (const log of logs) {
-    const ts = new Date(log.timestamp).getTime();
-    const ageMs = now - ts;
-    const bucketIdx = bucketCount - 1 - Math.floor(ageMs / bucketMs);
-    if (bucketIdx < 0 || bucketIdx >= bucketCount) continue;
-
-    const cat = (log.category || 'utility').toLowerCase();
-    const price = calculateConversationPrice(cat, log.phone || '').price;
-    const status = (log.status || '').toLowerCase();
-
-    sent[bucketIdx]++;
-    if (status === 'delivered') { delivered[bucketIdx]++; }
-    else if (status === 'read') { delivered[bucketIdx]++; read[bucketIdx]++; }
-    cost[bucketIdx] = Math.round(delivered[bucketIdx] * price * 100) / 100;
-  }
-
-  const labels = Array.from({ length: bucketCount }, (_, i) => {
-    const t = new Date(now - (bucketCount - 1 - i) * bucketMs);
-    return `${t.getHours().toString().padStart(2, '0')}:${t.getMinutes().toString().padStart(2, '0')}`;
+  return res.status(400).json({
+    error: err.message,
+    errorType,
+    message: err.message
   });
-
-  return {
-    labels,
-    sent,
-    delivered,
-    read,
-    cost: cost.map(c => Math.round(c * 100) / 100),
-  };
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-//  Helper: build daily time-series graph data for larger date ranges
-// ────────────────────────────────────────────────────────────────────────────
-function buildGraphDataForDays(logs: any[], days: number): {
-  labels: string[];
-  sent: number[];
-  delivered: number[];
-  read: number[];
-  cost: number[];
-} {
-  const bucketCount = days;
-  const now = Date.now();
-  const bucketMs = 24 * 3600 * 1000; // 1 day in ms
-
-  const sent = new Array(bucketCount).fill(0);
-  const delivered = new Array(bucketCount).fill(0);
-  const read = new Array(bucketCount).fill(0);
-  const cost = new Array(bucketCount).fill(0);
-
-  for (const log of logs) {
-    const ts = new Date(log.timestamp).getTime();
-    const ageMs = now - ts;
-    const bucketIdx = bucketCount - 1 - Math.floor(ageMs / bucketMs);
-    if (bucketIdx < 0 || bucketIdx >= bucketCount) continue;
-
-    const cat = (log.category || 'utility').toLowerCase();
-    const price = calculateConversationPrice(cat, log.phone || '').price;
-    const status = (log.status || '').toLowerCase();
-
-    sent[bucketIdx]++;
-    if (status === 'delivered') { delivered[bucketIdx]++; }
-    else if (status === 'read') { delivered[bucketIdx]++; read[bucketIdx]++; }
-    cost[bucketIdx] = Math.round(delivered[bucketIdx] * price * 100) / 100;
-  }
-
-  const labels = Array.from({ length: bucketCount }, (_, i) => {
-    const t = new Date(now - (bucketCount - 1 - i) * bucketMs);
-    const day = t.getDate();
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${day} ${monthNames[t.getMonth()]}`; // e.g. "12 Jun"
-  });
-
-  return {
-    labels,
-    sent,
-    delivered,
-    read,
-    cost: cost.map(c => Math.round(c * 100) / 100),
-  };
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -495,69 +176,288 @@ export const whatsappBillingController = {
     const { id } = req.params;
     try {
       const days = Number(req.query['days']) || 30;
-      const config = await getWhatsAppConfig(id);
-      const phone = config?.phoneId || '';
-      const sampleRates = calculateConversationPrice('utility', phone);
-      const currency = sampleRates.currency;
+      const bypassCache = req.query['refresh'] === 'true';
 
-      const templatesList = [
-        'kall_me_deliveryalert',
-        'kall_me_attach',
-        'delivery_onboard_alert',
-        'kall_me_cancel_alert',
-        'order_status_update',
-        'order_confirmation_client',
-        'ajr_new_task',
-        'ajr_task_reminder',
-        'task_status_update',
-        'order_tracking',
-        'order_confirmation_admin',
-        'welcome_message',
-        'get_offers'
-      ];
-
-      let totalSent = 0;
-      let totalDelivered = 0;
-      let totalRead = 0;
-      let totalFailed = 0;
-      let estimatedCost = 0;
-
-      for (const name of templatesList) {
-        const stats = getPresetStatsForTemplate(name, days, id);
-        const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
-        const price = getTemplatePrice(name, cat, phone);
-
-        totalSent += stats.sent;
-        totalDelivered += stats.delivered;
-        totalRead += stats.read;
-        totalFailed += stats.failed;
-        estimatedCost += stats.delivered * price;
+      const config = await getWhatsAppConfigDecrypted(id);
+      if (!config) {
+        throw new Error('PERMISSION_ERROR: WhatsApp integration is disabled or credentials are not configured.');
       }
 
-      estimatedCost = Math.round(estimatedCost * 100) / 100;
-      const totalMessages = totalDelivered;
-      const readRate = totalMessages > 0 ? Math.round((totalRead / totalMessages) * 100) : 0;
-      const deliveryRate = totalMessages > 0 ? Math.round((totalDelivered / totalMessages) * 100) : 0;
+      // Check permissions gracefully instead of throwing hard error
+      let checkPerms = { granted: [] as string[], missing: [] as string[] };
+      try {
+        checkPerms = await whatsappCloudService.checkPermissions(config.token);
+      } catch (permErr: any) {
+        console.warn('[WhatsApp Controller] Failed to check permissions:', permErr.message);
+      }
 
-      return res.json({
-        messagesSent: totalSent,
-        messagesDelivered: totalDelivered,
-        messagesRead: totalRead,
-        messagesFailed: totalFailed,
-        totalMessages,
-        deliveryRate: 100, // Matching Meta 100% success rate
-        readRate,
-        estimatedCost,
+      // Fetch basic metadata from Meta with individual try-catches
+      let wabaDetails: any = {};
+      let phoneDetails: any = {};
+
+      try {
+        wabaDetails = await whatsappCloudService.getWabaDetails(config.wabaId, config.token, bypassCache);
+      } catch (err: any) {
+        console.warn('[WhatsApp Controller] getWabaDetails failed:', err.message);
+      }
+
+      try {
+        phoneDetails = await whatsappCloudService.getPhoneNumberDetails(config.phoneId, config.token, bypassCache);
+      } catch (err: any) {
+        console.warn('[WhatsApp Controller] getPhoneNumberDetails failed:', err.message);
+      }
+
+      const currency = wabaDetails?.currency || 'INR';
+
+      // Timestamps for pricing and template analytics
+      const endEpoch = Math.floor(Date.now() / 1000);
+      const startEpoch = endEpoch - days * 24 * 3600;
+
+      // Query template and pricing analytics with error isolation
+      let marketingCost = 0, marketingVol = 0;
+      let utilityCost = 0, utilityVol = 0;
+      let authCost = 0, authVol = 0;
+      let serviceCost = 0, serviceVol = 0;
+      let regularVol = 0, freeVol = 0;
+      let totalCost: number | null = 0;
+
+      let pricingMetricsAvailable = true;
+      let pricingMetricsReason = '';
+      let pricingAnalytics: any[] = [];
+
+      try {
+        pricingAnalytics = await whatsappCloudService.getPricingAnalytics(
+          config.wabaId,
+          config.token,
+          startEpoch,
+          endEpoch,
+          'DAILY',
+          bypassCache
+        );
+
+        for (const item of pricingAnalytics) {
+          if (!item.values) continue;
+          for (const val of item.values) {
+            const dim = val.dimension;
+            const cat = val.value;
+
+            if (dim === 'PRICING_CATEGORY') {
+              const costMetric = val.metric_types?.find((m: any) => m.type === 'COST');
+              const volMetric = val.metric_types?.find((m: any) => m.type === 'VOLUME');
+              const costVal = Number(costMetric?.value || 0);
+              const volVal = Number(volMetric?.value || 0);
+
+              if (cat === 'MARKETING') { marketingCost += costVal; marketingVol += volVal; }
+              else if (cat === 'UTILITY') { utilityCost += costVal; utilityVol += volVal; }
+              else if (cat === 'AUTHENTICATION') { authCost += costVal; authVol += volVal; }
+              else if (cat === 'SERVICE') { serviceCost += costVal; serviceVol += volVal; }
+            } else if (dim === 'PRICING_TYPE') {
+              const volMetric = val.metric_types?.find((m: any) => m.type === 'VOLUME');
+              const volVal = Number(volMetric?.value || 0);
+              if (cat === 'REGULAR') {
+                regularVol += volVal;
+              } else {
+                freeVol += volVal;
+              }
+            }
+          }
+        }
+        totalCost = marketingCost + utilityCost + authCost + serviceCost;
+      } catch (err: any) {
+        pricingMetricsAvailable = false;
+        pricingMetricsReason = err.message || 'Pricing metrics not returned by Meta API';
+        totalCost = null;
+      }
+
+      // Aggregate template performance metrics
+      let totalSent: number | null = 0;
+      let totalDelivered: number | null = 0;
+      let totalRead: number | null = 0;
+      let totalFailed: number | null = 0;
+
+      let templateMetricsAvailable = true;
+      let templateMetricsReason = '';
+      let templateAnalytics: any[] = [];
+      let metaTemplates: any[] = [];
+
+      try {
+        templateAnalytics = await whatsappCloudService.getTemplateAnalytics(
+          config.wabaId,
+          config.token,
+          startEpoch,
+          endEpoch,
+          'DAILY',
+          bypassCache
+        );
+
+        for (const item of templateAnalytics) {
+          // console.log("PRICCC**", item);
+          if (!item.data_points) continue;
+          for (const dp of item.data_points) {
+            totalSent! += Number(dp.sent || 0);
+            totalDelivered! += Number(dp.delivered || 0);
+            totalRead! += Number(dp.read || 0);
+            totalFailed! += Number(dp.failed || 0);
+          }
+        }
+      } catch (err: any) {
+        templateMetricsAvailable = false;
+        templateMetricsReason = err.message || 'Template analytics metrics not returned by Meta API';
+        totalSent = null;
+        totalDelivered = null;
+        totalRead = null;
+        totalFailed = null;
+      }
+
+      if ((!templateMetricsAvailable || totalSent === 0) && firestore) {
+        console.log(`[WhatsApp Billing Summary] Meta Graph API returned no template metrics. Aggregating from Firebase...`);
+        try {
+          const fbStats = await aggregateFromFirebase(id, days);
+          let fbSent = 0, fbDelivered = 0, fbRead = 0, fbFailed = 0;
+          for (const key of Object.keys(fbStats)) {
+            fbSent += fbStats[key].sent;
+            fbDelivered += fbStats[key].delivered;
+            fbRead += fbStats[key].read;
+            fbFailed += fbStats[key].failed;
+          }
+          if (fbSent > 0 || fbDelivered > 0 || fbRead > 0 || fbFailed > 0) {
+            totalSent = fbSent;
+            totalDelivered = fbDelivered;
+            totalRead = fbRead;
+            totalFailed = fbFailed;
+            templateMetricsAvailable = true;
+          }
+        } catch (fbErr: any) {
+          console.error('[WhatsApp Billing Summary Fallback] Firebase aggregation failed:', fbErr.message);
+        }
+      }
+
+      // Estimate costs locally using pricing logic if Meta did not return non-zero pricing
+      let estimatedCost = 0;
+      let calculatedFallback = false;
+      const phoneNum = phoneDetails?.display_phone_number || '';
+      const country = getCountryCode(phoneNum);
+      const rates = METADATA_PRICING_TABLE[country] || METADATA_PRICING_TABLE['IN'];
+
+      if (pricingMetricsAvailable && totalCost !== null && totalCost > 0) {
+        estimatedCost = totalCost;
+      } else {
+        // Try calculating using pricing analytics volume first
+        let hasPricingVol = false;
+        if (pricingMetricsAvailable && pricingAnalytics.length > 0) {
+          let calcCost = 0;
+          for (const item of pricingAnalytics) {
+            if (!item.values) continue;
+            for (const val of item.values) {
+              if (val.dimension === 'PRICING_CATEGORY') {
+                const cat = val.value?.toLowerCase();
+                const volMetric = val.metric_types?.find((m: any) => m.type === 'VOLUME');
+                const volVal = Number(volMetric?.value || 0);
+                if (volVal > 0) {
+                  hasPricingVol = true;
+                  const rate = rates[cat]?.price || rates['utility']?.price || 0.11255;
+                  calcCost += volVal * rate;
+                }
+              }
+            }
+          }
+          if (hasPricingVol) {
+            estimatedCost = calcCost;
+            calculatedFallback = true;
+          }
+        }
+
+        // If no volume from pricing analytics (or pricing analytics failed), try template analytics
+        if (!calculatedFallback && templateMetricsAvailable && templateAnalytics.length > 0) {
+          let calcCost = 0;
+          try {
+            metaTemplates = await whatsappCloudService.getMessageTemplates(config.wabaId, config.token, bypassCache);
+          } catch (err) {
+            console.warn('Failed to fetch message templates for summary fallback:', err);
+          }
+          const templateCategoryMap: Record<string, string> = {};
+          for (const t of metaTemplates) {
+            if (t.id) templateCategoryMap[t.id] = t.category;
+            if (t.name) templateCategoryMap[t.name] = t.category;
+          }
+
+          for (const item of templateAnalytics) {
+            const itemTemplateId = item.template_id || (item.template_ids && item.template_ids[0]);
+            const cat = (templateCategoryMap[itemTemplateId] || templateCategoryMap[item.name] || 'utility').toLowerCase();
+            const rate = rates[cat]?.price || rates['utility']?.price || 0.11255;
+            if (item.data_points) {
+              for (const dp of item.data_points) {
+                const delivered = Number(dp.delivered || 0);
+                calcCost += delivered * rate;
+              }
+            }
+          }
+          estimatedCost = calcCost;
+          calculatedFallback = true;
+        }
+
+        // Fallback 3: Calculate using local PostgreSQL notification_logs
+        if (!calculatedFallback) {
+          try {
+            const dbLogs = await query(
+              `SELECT event_type as template, status, COUNT(*) as count
+               FROM notification_logs
+               WHERE channel = 'whatsapp'
+                 AND app_id = $1
+                 AND created_at >= NOW() - CAST($2 || ' days' AS INTERVAL)
+               GROUP BY event_type, status`,
+              [id, days]
+            );
+
+            let calcCost = 0;
+            for (const row of dbLogs.rows) {
+              const name = row.template || '';
+              const status = row.status;
+              const count = parseInt(row.count || '0', 10);
+              if (status === 'failed') continue;
+
+              const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
+              const rate = rates[cat]?.price || rates['utility']?.price || 0.11255;
+              calcCost += count * rate;
+            }
+            if (calcCost > 0) {
+              estimatedCost = calcCost;
+              calculatedFallback = true;
+            }
+          } catch (dbErr) {
+            console.error('Failed to calculate fallback cost from notification_logs:', dbErr);
+          }
+        }
+      }
+
+      const readRate = templateMetricsAvailable && totalDelivered !== null && totalDelivered > 0
+        ? Math.round((totalRead! / totalDelivered!) * 100)
+        : null;
+      const deliveryRate = templateMetricsAvailable && totalSent !== null && totalSent > 0
+        ? Math.round((totalDelivered! / totalSent!) * 100)
+        : null;
+
+      const responseSummary = {
+        messagesSent: templateMetricsAvailable ? totalSent : { available: false, reason: templateMetricsReason },
+        messagesDelivered: templateMetricsAvailable ? totalDelivered : { available: false, reason: templateMetricsReason },
+        messagesRead: templateMetricsAvailable ? totalRead : { available: false, reason: templateMetricsReason },
+        messagesFailed: templateMetricsAvailable ? totalFailed : { available: false, reason: templateMetricsReason },
+        totalMessages: templateMetricsAvailable ? totalDelivered : { available: false, reason: templateMetricsReason },
+        deliveryRate: templateMetricsAvailable ? deliveryRate : { available: false, reason: templateMetricsReason },
+        readRate: templateMetricsAvailable ? readRate : { available: false, reason: templateMetricsReason },
+        estimatedCost: Math.round(estimatedCost * 100) / 100,
         currency,
         monthlyEstimate: Math.round(estimatedCost * (30 / days) * 100) / 100,
-        aiCostPrediction: Math.round(estimatedCost * (30 / days) * 1.1 * 100) / 100,
+        aiCostPrediction: Math.round(estimatedCost * (30 / days) * 1.05 * 100) / 100,
         period: `${days}d`,
         lastUpdated: new Date().toISOString(),
-        dataSource: 'meta_api',
-      });
+        dataSource: 'meta_api'
+      };
+
+      console.log('[WhatsApp Billing Summary Final Response]:', JSON.stringify(responseSummary));
+      return res.json(responseSummary);
     } catch (err: any) {
-      console.error('[WhatsApp] realtime-summary error:', err.message);
-      return res.status(500).json({ error: err.message });
+      return handleControllerError(err, res);
     }
   },
 
@@ -567,62 +467,139 @@ export const whatsappBillingController = {
   async getTemplatesLive(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const config = await getWhatsAppConfig(id);
       const days = Number(req.query['days']) || 30;
+      const bypassCache = req.query['refresh'] === 'true';
 
-      let metaTemplates: any[] = [];
-      if (config?.wabaId && config?.token) {
-        metaTemplates = await fetchMetaTemplates(config.wabaId, config.token);
+      const config = await getWhatsAppConfigDecrypted(id);
+      if (!config) {
+        throw new Error('PERMISSION_ERROR: WhatsApp integration is disabled or credentials are not configured.');
       }
 
-      if (metaTemplates.length === 0) {
-        metaTemplates = [
-          { name: 'kall_me_deliveryalert', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'kall_me_attach', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'delivery_onboard_alert', category: 'UTILITY', status: 'REJECTED', language: 'en', quality_score: { score: 'RED' } },
-          { name: 'kall_me_cancel_alert', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'order_status_update', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'order_confirmation_client', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'ajr_new_task', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'ajr_task_reminder', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'task_status_update', category: 'MARKETING', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'order_tracking', category: 'UTILITY', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'order_confirmation_admin', category: 'MARKETING', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'welcome_message', category: 'MARKETING', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-          { name: 'get_offers', category: 'MARKETING', status: 'APPROVED', language: 'en', quality_score: { score: 'GREEN' } },
-        ];
+      // Check permissions gracefully instead of throwing hard error
+      let checkPerms = { granted: [] as string[], missing: [] as string[] };
+      try {
+        checkPerms = await whatsappCloudService.checkPermissions(config.token);
+      } catch (permErr: any) {
+        console.warn('[WhatsApp Controller] Failed to check permissions:', permErr.message);
       }
 
+      const phone = config.phoneId;
+      const metaTemplates = await whatsappCloudService.getMessageTemplates(config.wabaId, config.token, bypassCache);
+
+      const endEpoch = Math.floor(Date.now() / 1000);
+      const startEpoch = endEpoch - days * 24 * 3600;
+
+      let templateMetricsAvailable = true;
+      let templateAnalytics: any[] = [];
+      try {
+        templateAnalytics = await whatsappCloudService.getTemplateAnalytics(config.wabaId, config.token, startEpoch, endEpoch, 'DAILY', bypassCache);
+      } catch (err: any) {
+        templateMetricsAvailable = false;
+        console.warn('[WhatsApp Billing] Template performance metrics not available:', err.message);
+      }
+      // ... [rest of getTemplatesLive] ...
+      let statsMap: Record<string, { sent: number; delivered: number; read: number; failed: number; cost: number }> = {};
+      if (templateMetricsAvailable) {
+        console.log('[DEBUG WhatsApp Billing] Total metaTemplates fetched:', metaTemplates.length);
+        console.log('[DEBUG WhatsApp Billing] metaTemplates list:', JSON.stringify(metaTemplates.map((m: any) => ({ id: m.id, name: m.name }))));
+        console.log('[DEBUG WhatsApp Billing] templateAnalytics list:', JSON.stringify(templateAnalytics.map((a: any) => ({ template_id: a.template_id, template_ids: a.template_ids, name: a.name }))));
+
+        for (const t of templateAnalytics) {
+          const templateIdFromAnalytics = t.template_id || 
+            (t.template_ids && t.template_ids[0]) || 
+            (t.data_points && t.data_points[0] && t.data_points[0].template_id);
+
+          const matched = metaTemplates.find((mt: any) => 
+            (mt.id && String(mt.id) === String(templateIdFromAnalytics)) || 
+            (mt.name && t.name && mt.name === t.name)
+          );
+          const name = matched?.name || t.name;
+          if (!name) continue;
+          let sent = 0, delivered = 0, read = 0, failed = 0, cost = 0;
+          if (t.data_points) {
+            for (const dp of t.data_points) {
+              sent += Number(dp.sent || 0);
+              delivered += Number(dp.delivered || 0);
+              read += Number(dp.read || 0);
+              failed += Number(dp.failed || 0);
+
+              if (dp.cost) {
+                const spentObj = dp.cost.find((c: any) => c.type === 'amount_spent');
+                if (spentObj && spentObj.value !== undefined) {
+                  cost += Number(spentObj.value);
+                }
+              }
+            }
+          }
+          if (sent > 0 || delivered > 0 || read > 0 || failed > 0) {
+            statsMap[name] = { sent, delivered, read, failed, cost };
+          }
+        }
+      }
+
+      const hasMetaStats = Object.keys(statsMap).length > 0;
+      if (!hasMetaStats) {
+        console.log(`[WhatsApp Billing] Meta Graph API returned no template-level analytics for app ${id}. Querying Firebase fallback...`);
+        statsMap = await aggregateFromFirebase(id, days);
+      }
+
+      // console.log("Templatess((((((())))))))))", metaTemplates);
       const merged = metaTemplates.map((t: any) => {
         const name = t.name;
-        const stats = getPresetStatsForTemplate(name, days, id);
+        const stats = statsMap[name];
         const cat = (t.category || 'utility').toLowerCase();
-        const price = getTemplatePrice(name, cat, config?.phoneId || '');
-        const total = stats.sent;
-        const readRate = total > 0 ? Math.round((stats.read / total) * 100) : 0;
+        const price = calculateConversationPrice(cat, phone).price;
+
+        let readRate = null;
+        let deliveryRate = null;
+        let finalCost = 0;
+        if (stats) {
+          readRate = stats.delivered > 0 ? Math.round((stats.read / stats.delivered) * 100) : 0;
+          deliveryRate = stats.sent > 0 ? Math.round((stats.delivered / stats.sent) * 100) : 0;
+
+          if (stats.cost > 0) {
+            finalCost = stats.cost;
+          } else {
+            finalCost = stats.delivered * price;
+          }
+        }
+
+        const isRejected = t.status === 'REJECTED';
+        if (!stats) {
+          console.log(`[WhatsApp Billing] Template "${name}" (Status: ${t.status}) has no analytics data. Reason: ${isRejected ? 'Template is REJECTED (analytics excluded).' :
+            (!templateMetricsAvailable && !hasMetaStats) ? 'Template analytics not available from Meta API or Firebase.' :
+              'No matching data points returned from Meta API or Firebase for the selected date range.'
+            }`);
+        }
+
+        const showStats = !isRejected && (stats !== undefined || templateMetricsAvailable);
 
         return {
           templateName: name,
           category: cat,
-          status: name === 'delivery_onboard_alert' ? 'REJECTED' : 'APPROVED',
+          status: t.status || 'APPROVED',
           language: t.language || 'en',
-          qualityScore: name === 'delivery_onboard_alert' ? 'RED' : 'GREEN',
-          sent: stats.sent,
-          delivered: stats.delivered,
-          read: stats.read,
-          failed: stats.failed,
-          readRate: name === 'kall_me_attach' ? 99 : (total > 0 ? 100 : 0),
-          deliveryRate: total > 0 ? 100 : 0,
-          cost: Math.round(stats.delivered * price * 100) / 100,
+          qualityScore: t.quality_score?.score || 'GREEN',
+          sent: showStats ? (stats ? stats.sent : 0) : null,
+          delivered: showStats ? (stats ? stats.delivered : 0) : null,
+          read: showStats ? (stats ? stats.read : 0) : null,
+          failed: showStats ? (stats ? stats.failed : 0) : null,
+          readRate: showStats ? (stats ? readRate : 0) : null,
+          deliveryRate: showStats ? (stats ? deliveryRate : 0) : null,
+          cost: showStats ? (stats ? (Math.round(finalCost * 100) / 100) : 0) : null,
         };
       });
 
-      merged.sort((a: any, b: any) => b.delivered - a.delivered);
+      merged.sort((a: any, b: any) => {
+        if (a.delivered === null) return 1;
+        if (b.delivered === null) return -1;
+        return b.delivered - a.delivered;
+      });
 
+      console.log('[WhatsApp Templates Live Final Response]:', JSON.stringify(merged).substring(0, 1000));
       return res.json(merged);
     } catch (err: any) {
-      console.error('[WhatsApp] templates-live error:', err.message);
-      return res.status(500).json({ error: err.message });
+      return handleControllerError(err, res);
     }
   },
 
@@ -632,120 +609,210 @@ export const whatsappBillingController = {
   async getTemplateDetail(req: Request, res: Response) {
     const { id, templateName } = req.params;
     try {
-      const config = await getWhatsAppConfig(id);
       const days = Number(req.query['days']) || 30;
-      const stats = getPresetStatsForTemplate(templateName, days, id);
-      const cat = (templateName === 'task_status_update' || templateName === 'order_confirmation_admin' || templateName === 'welcome_message' || templateName === 'get_offers') ? 'marketing' : 'utility';
-      const price = getTemplatePrice(templateName, cat, config?.phoneId || '');
+      const bypassCache = req.query['refresh'] === 'true';
 
-      let bodyText = '';
-      let headerText = '';
-      let footerText = '';
+      const config = await getWhatsAppConfigDecrypted(id);
+      if (!config) {
+        throw new Error('PERMISSION_ERROR: WhatsApp integration is disabled or credentials are not configured.');
+      }
 
-      if (templateName === 'kall_me_deliveryalert') {
-        bodyText = 'Hello userName,\n\nYou have received a new delivery assignment.\n\nOrder Details:\nOrder Date: orderDate\nRestaurant: restaurantName\nItems Ordered: items\nDescription: description\n\nItems Total: itemsTotal\nTotal Amount: totalAmount\nDelivery Charge: ₹deliverycharge\nCustomer Number: customerNumber\n\nPlease confirm the pickup from the restaurant and start the delivery.';
-        headerText = 'Pickup Alert!!';
-        footerText = 'Thank you for your service.\n\n- Kall Me Team';
-      } else if (templateName === 'kall_me_attach') {
-        bodyText = 'Hello userName,\n\nThank you for your order with Kall Me. Please find your invoice document attached below.';
-        headerText = 'Invoice Attachment';
-        footerText = '- Kall Me Team';
-      } else if (templateName === 'delivery_onboard_alert') {
-        bodyText = 'Hello userName 👋\n\nWelcome to "Kall Me!" Your driver account onboarding is completed.';
-        headerText = 'Onboarding Status';
-        footerText = '- Kall Me Team';
-      } else if (templateName === 'kall_me_cancel_alert') {
-        bodyText = 'Hello userName,\n\nThe following order has been cancelled by the restaurant: orderId. Sorry for the inconvenience.';
-        headerText = 'Order Cancelled';
-        footerText = '- Kall Me Team';
-      } else if (templateName === 'order_status_update') {
-        bodyText = 'Hello userName 🚚\n\nUpdate from Restaurant! We wanted to let you know your order has been dispatched.';
-        headerText = 'Order Status Update';
-        footerText = '- Kall Me Team';
-      } else if (templateName === 'order_confirmation_client') {
-        bodyText = 'Hello userName 👍\n\nYour Order is Confirmed at Restaurant. We are preparing your items.';
-        headerText = 'Order Confirmed';
-        footerText = '- Kall Me Team';
-      } else if (templateName === 'ajr_new_task') {
-        bodyText = '*Task Assignment Notice*\n\nHello userName,\nYou have a new task assigned: taskName. Please check your portal.';
-        headerText = 'New Task Assigned';
-        footerText = '- AJR Digital Hub';
-      } else if (templateName === 'ajr_task_reminder') {
-        bodyText = '⚠️ *Task Reminder - Due Today*\n\nHello userName,\nThis is a friendly reminder that your task is due today.';
-        headerText = 'Task Reminder';
-        footerText = '- AJR Digital Hub';
-      } else if (templateName === 'task_status_update') {
-        bodyText = '🔧 *Task Status Update* 🔔\n\nHello userName,\nYour task taskName status has been changed to: status.';
-        headerText = 'Task Status Update';
-        footerText = '- AJR Digital Hub';
-      } else if (templateName === 'order_tracking') {
-        bodyText = 'Hello userName,\n\n📦 Exciting update! Your order *orderId* is out for delivery. You can track it live.';
-        headerText = 'Tracking Update';
-        footerText = '- AJR Digital Hub';
-      } else if (templateName === 'order_confirmation_admin') {
-        bodyText = '🔔 New Order Alert - AJR Mart\n\nA new order has been received from customer. Total: amount.';
-        headerText = 'New Order Alert';
-        footerText = '- AJR Admin';
-      } else if (templateName === 'welcome_message') {
-        bodyText = 'Hi userName,\n\nWe\'re excited to have you here! 🎉 Explore our enterprise features and get started.';
-        headerText = 'Welcome! 🎉';
-        footerText = '- Marketing Team';
-      } else {
-        bodyText = `Hello userName,\n\nThis is a template message preview for ${templateName}.`;
-        headerText = 'Template Alert';
-        footerText = '- AJR Hub';
+      // Check permissions gracefully instead of throwing hard error
+      let checkPerms = { granted: [] as string[], missing: [] as string[] };
+      try {
+        checkPerms = await whatsappCloudService.checkPermissions(config.token);
+      } catch (permErr: any) {
+        console.warn('[WhatsApp Controller] Failed to check permissions:', permErr.message);
+      }
+
+      const phone = config.phoneId;
+      const metaTemplates = await whatsappCloudService.getMessageTemplates(config.wabaId, config.token, bypassCache);
+      const templateInfo = metaTemplates.find((t: any) => t.name === templateName);
+
+      if (!templateInfo) {
+        return res.status(404).json({ error: `Template ${templateName} not found on Meta account.` });
+      }
+
+      const endEpoch = Math.floor(Date.now() / 1000);
+      const startEpoch = endEpoch - days * 24 * 3600;
+
+      let templateMetricsAvailable = true;
+      let metaAnalytics: any[] = [];
+      try {
+        metaAnalytics = await whatsappCloudService.getTemplateAnalytics(
+          config.wabaId,
+          config.token,
+          startEpoch,
+          endEpoch,
+          'DAILY',
+          bypassCache
+        );
+      } catch (err: any) {
+        templateMetricsAvailable = false;
+        console.warn('[WhatsApp Billing] Template performance metrics not available:', err.message);
+      }
+
+      const targetAnalytics = templateMetricsAvailable
+        ? metaAnalytics.find((t: any) => {
+            const tId = t.template_id || 
+              (t.template_ids && t.template_ids[0]) || 
+              (t.data_points && t.data_points[0] && t.data_points[0].template_id);
+            return (tId && String(tId) === String(templateInfo.id)) || (t.name && t.name === templateName);
+          })
+        : null;
+
+      let sent = 0, delivered = 0, read = 0, failed = 0, costVal = 0;
+      const dateMap: Record<string, { sent: number; delivered: number; read: number; cost: number }> = {};
+
+      if (templateMetricsAvailable && targetAnalytics && targetAnalytics.data_points) {
+        for (const dp of targetAnalytics.data_points) {
+          sent += Number(dp.sent || 0);
+          delivered += Number(dp.delivered || 0);
+          read += Number(dp.read || 0);
+          failed += Number(dp.failed || 0);
+
+          let dpCost = 0;
+          if (dp.cost) {
+            const spentObj = dp.cost.find((c: any) => c.type === 'amount_spent');
+            if (spentObj && spentObj.value !== undefined) {
+              dpCost = Number(spentObj.value);
+            }
+          }
+          costVal += dpCost;
+
+          const key = parseMetaDateString(dp.start || dp.end);
+          if (!dateMap[key]) {
+            dateMap[key] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+          }
+          dateMap[key].sent += Number(dp.sent || 0);
+          dateMap[key].delivered += Number(dp.delivered || 0);
+          dateMap[key].read += Number(dp.read || 0);
+          dateMap[key].cost += dpCost;
+        }
+      }
+
+      const hasDetailData = templateMetricsAvailable && targetAnalytics && sent > 0;
+      if (!hasDetailData && firestore) {
+        console.log(`[WhatsApp Billing Detail] Meta returned no analytics for ${templateName}. Fetching from Firebase fallback...`);
+        try {
+          const startDate = new Date();
+          startDate.setDate(startDate.getDate() - days);
+
+          const snapshot = await firestore.collection('whatsapp_message_logs')
+            .where('appId', '==', id)
+            .where('templateName', '==', templateName)
+            .where('timestamp', '>=', startDate)
+            .get();
+
+          sent = 0;
+          delivered = 0;
+          read = 0;
+          failed = 0;
+          costVal = 0;
+          templateMetricsAvailable = true;
+
+          for (const doc of snapshot.docs) {
+            const data = doc.data();
+            const status = data.status || 'sent';
+            const docDate = data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
+            const key = docDate.toISOString().split('T')[0];
+            const docCost = Number(data.cost || 0);
+
+            if (!dateMap[key]) {
+              dateMap[key] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+            }
+
+            costVal += docCost;
+            dateMap[key].cost += docCost;
+
+            if (status === 'read') {
+              sent++; delivered++; read++;
+              dateMap[key].sent++; dateMap[key].delivered++; dateMap[key].read++;
+            } else if (status === 'delivered') {
+              sent++; delivered++;
+              dateMap[key].sent++; dateMap[key].delivered++;
+            } else if (status === 'sent') {
+              sent++;
+              dateMap[key].sent++;
+            } else if (status === 'failed') {
+              failed++;
+            }
+          }
+        } catch (fbErr: any) {
+          console.error('[WhatsApp Billing Detail Fallback] Firebase aggregation failed:', fbErr.message);
+        }
+      }
+
+      const cat = (templateInfo.category || 'utility').toLowerCase();
+      const price = calculateConversationPrice(cat, phone).price;
+
+      // Extract components text
+      let bodyText = '', headerText = '', footerText = '';
+      if (templateInfo.components) {
+        const bodyComp = templateInfo.components.find((c: any) => c.type === 'BODY');
+        if (bodyComp) bodyText = bodyComp.text || '';
+        const headerComp = templateInfo.components.find((c: any) => c.type === 'HEADER');
+        if (headerComp) headerText = headerComp.text || '';
+        const footerComp = templateInfo.components.find((c: any) => c.type === 'FOOTER');
+        if (footerComp) footerText = footerComp.text || '';
       }
 
       const graphLabels: string[] = [];
-      const graphSent: number[] = [];
-      const graphDelivered: number[] = [];
-      const graphRead: number[] = [];
-      const graphCost: number[] = [];
+      const graphSent: (number | null)[] = [];
+      const graphDelivered: (number | null)[] = [];
+      const graphRead: (number | null)[] = [];
+      const graphCost: (number | null)[] = [];
 
       const now = Date.now();
       const stepMs = 24 * 3600 * 1000;
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date(now - i * stepMs);
-        const day = d.getDate();
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        graphLabels.push(`${day} ${monthNames[d.getMonth()]}`);
+        const dStr = d.toISOString().split('T')[0];
+        graphLabels.push(`${d.getDate()} ${monthNames[d.getMonth()]}`);
 
-        let dailySent = 0;
-        if (i === 2 && templateName === 'kall_me_deliveryalert' && days <= 7) {
-          dailySent = 3;
-        } else if (i === 0 && templateName === 'kall_me_deliveryalert' && days <= 7) {
-          dailySent = 2;
-        } else if (stats.delivered > 0) {
-          dailySent = Math.random() < 0.25 ? Math.ceil(stats.delivered / (days * 0.25)) : 0;
+        const dayData = dateMap[dStr];
+        if (templateMetricsAvailable) {
+          const sVal = dayData ? dayData.sent : 0;
+          const dVal = dayData ? dayData.delivered : 0;
+          const rVal = dayData ? dayData.read : 0;
+          let cVal = dayData ? dayData.cost : 0;
+          if (cVal === 0 && dVal > 0) {
+            cVal = dVal * price;
+          }
+          graphSent.push(sVal);
+          graphDelivered.push(dVal);
+          graphRead.push(rVal);
+          graphCost.push(Math.round(cVal * 100) / 100);
+        } else {
+          graphSent.push(null);
+          graphDelivered.push(null);
+          graphRead.push(null);
+          graphCost.push(null);
         }
-
-        graphSent.push(dailySent);
-        graphDelivered.push(dailySent);
-        graphRead.push(dailySent);
-        graphCost.push(Math.round(dailySent * price * 100) / 100);
       }
 
-      const total = stats.sent;
+      const finalCostVal = costVal > 0 ? costVal : delivered * price;
 
-      return res.json({
+      const responseDetail = {
         templateName,
         category: cat,
-        status: templateName === 'delivery_onboard_alert' ? 'REJECTED' : 'APPROVED',
-        language: 'en',
-        qualityScore: templateName === 'delivery_onboard_alert' ? 'RED' : 'GREEN',
+        status: templateInfo.status || 'APPROVED',
+        language: templateInfo.language || 'en',
+        qualityScore: templateInfo.quality_score?.score || 'GREEN',
         bodyText,
         headerText,
         footerText,
         metrics: {
-          sent: stats.sent,
-          delivered: stats.delivered,
-          read: stats.read,
-          failed: stats.failed,
-          total,
-          readRate: templateName === 'kall_me_attach' ? 99 : (total > 0 ? 100 : 0),
-          deliveryRate: total > 0 ? 100 : 0,
-          cost: Math.round(stats.delivered * price * 100) / 100,
+          sent: templateMetricsAvailable ? sent : null,
+          delivered: templateMetricsAvailable ? delivered : null,
+          read: templateMetricsAvailable ? read : null,
+          failed: templateMetricsAvailable ? failed : null,
+          total: templateMetricsAvailable ? sent : null,
+          readRate: templateMetricsAvailable && delivered > 0 ? Math.round((read / delivered) * 100) : null,
+          deliveryRate: templateMetricsAvailable && sent > 0 ? Math.round((delivered / sent) * 100) : null,
+          cost: templateMetricsAvailable ? (Math.round(finalCostVal * 100) / 100) : null,
           costPerMessage: price,
         },
         graph: {
@@ -759,10 +826,12 @@ export const whatsappBillingController = {
         },
         period: `${days}d`,
         lastUpdated: new Date().toISOString(),
-      });
+      };
+
+      console.log('[WhatsApp Template Detail Final Response]:', JSON.stringify(responseDetail).substring(0, 1000));
+      return res.json(responseDetail);
     } catch (err: any) {
-      console.error('[WhatsApp] template-detail error:', err.message);
-      return res.status(500).json({ error: err.message });
+      return handleControllerError(err, res);
     }
   },
 
@@ -772,85 +841,235 @@ export const whatsappBillingController = {
   async getRealtimeGraph(req: Request, res: Response) {
     const { id } = req.params;
     try {
-      const config = await getWhatsAppConfig(id);
       const days = Number(req.query['days']) || 30;
+      const bypassCache = req.query['refresh'] === 'true';
 
-      if (config?.wabaId && config?.token) {
-        const metaAnalytics = await fetchMetaTemplateAnalytics(config.wabaId, config.token, days);
-        const dateMap: Record<string, { sent: number; delivered: number; read: number; cost: number }> = {};
+      const config = await getWhatsAppConfigDecrypted(id);
+      if (!config) {
+        throw new Error('PERMISSION_ERROR: WhatsApp integration is disabled or credentials are not configured.');
+      }
 
-        for (const t of metaAnalytics) {
-          const cat = (t.category || 'utility').toLowerCase();
-          const price = getTemplatePrice(t.name || '', cat);
+      // Check permissions gracefully instead of throwing hard error
+      let checkPerms = { granted: [] as string[], missing: [] as string[] };
+      try {
+        checkPerms = await whatsappCloudService.checkPermissions(config.token);
+      } catch (permErr: any) {
+        console.warn('[WhatsApp Controller] Failed to check permissions:', permErr.message);
+      }
 
-          if (t.data_points) {
-            for (const dp of t.data_points) {
-              const dateStr = dp.start || dp.end || new Date().toISOString().split('T')[0];
-              if (!dateMap[dateStr]) {
-                dateMap[dateStr] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+      // Fetch basic metadata to resolve country rates
+      let phoneDetails: any = {};
+      try {
+        phoneDetails = await whatsappCloudService.getPhoneNumberDetails(config.phoneId, config.token, bypassCache);
+      } catch (err: any) {
+        console.warn('[WhatsApp Controller] getPhoneNumberDetails failed:', err.message);
+      }
+
+      const endEpoch = Math.floor(Date.now() / 1000);
+      const startEpoch = endEpoch - days * 24 * 3600;
+
+      let templateMetricsAvailable = true;
+      let templateAnalytics: any[] = [];
+      try {
+        templateAnalytics = await whatsappCloudService.getTemplateAnalytics(
+          config.wabaId,
+          config.token,
+          startEpoch,
+          endEpoch,
+          'DAILY',
+          bypassCache
+        );
+      } catch (err: any) {
+        templateMetricsAvailable = false;
+        console.warn('[WhatsApp Billing] Template performance metrics not available:', err.message);
+      }
+
+      let pricingMetricsAvailable = true;
+      let pricingAnalytics: any[] = [];
+      try {
+        pricingAnalytics = await whatsappCloudService.getPricingAnalytics(
+          config.wabaId,
+          config.token,
+          startEpoch,
+          endEpoch,
+          'DAILY',
+          bypassCache
+        );
+      } catch (err: any) {
+        pricingMetricsAvailable = false;
+        console.warn('[WhatsApp Billing] Pricing analytics not available:', err.message);
+      }
+
+      const dateMap: Record<string, { sent: number; delivered: number; read: number; cost: number }> = {};
+
+      if (templateMetricsAvailable) {
+        for (const item of templateAnalytics) {
+          if (!item.data_points) continue;
+          for (const dp of item.data_points) {
+            const dateStr = parseMetaDateString(dp.start || dp.end);
+            if (!dateStr) continue;
+            if (!dateMap[dateStr]) {
+              dateMap[dateStr] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+            }
+            dateMap[dateStr].sent += Number(dp.sent || 0);
+            dateMap[dateStr].delivered += Number(dp.delivered || 0);
+            dateMap[dateStr].read += Number(dp.read || 0);
+          }
+        }
+      }
+
+      const phoneNum = phoneDetails?.display_phone_number || '';
+      const country = getCountryCode(phoneNum);
+      const rates = METADATA_PRICING_TABLE[country] || METADATA_PRICING_TABLE['IN'];
+
+      if (pricingMetricsAvailable) {
+        for (const item of pricingAnalytics) {
+          let d: Date | null = null;
+          if (item.start !== undefined && item.start !== null) {
+            const num = Number(item.start);
+            if (!isNaN(num)) {
+              const isSeconds = num < 99999999999;
+              d = new Date(isSeconds ? num * 1000 : num);
+            } else {
+              d = new Date(item.start);
+            }
+          }
+
+          if (!d || isNaN(d.getTime())) {
+            if (item?.start !== undefined) {
+              console.warn('[WhatsApp Billing] Skipping invalid pricing analytics start date:', item?.start);
+            }
+            continue;
+          }
+
+          const dateStr = d.toISOString().split('T')[0];
+          if (!dateMap[dateStr]) {
+            dateMap[dateStr] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+          }
+          if (item.values) {
+            for (const val of item.values) {
+              if (val.dimension === 'PRICING_CATEGORY') {
+                const cat = val.value?.toLowerCase();
+                const costMetric = val.metric_types?.find((m: any) => m.type === 'COST');
+                const volMetric = val.metric_types?.find((m: any) => m.type === 'VOLUME');
+                const costVal = Number(costMetric?.value || 0);
+                const volVal = Number(volMetric?.value || 0);
+
+                if (costVal > 0) {
+                  dateMap[dateStr].cost += costVal;
+                } else if (volVal > 0) {
+                  const rate = rates[cat]?.price || rates['utility']?.price || 0.11255;
+                  dateMap[dateStr].cost += volVal * rate;
+                }
               }
-              const sent = Number(dp.sent || 0);
-              const delivered = Number(dp.delivered || 0);
-              const read = Number(dp.read || 0);
-
-              dateMap[dateStr].sent += sent;
-              dateMap[dateStr].delivered += delivered;
-              dateMap[dateStr].read += read;
-              dateMap[dateStr].cost += (sent + delivered + read) * price;
             }
           }
         }
-
-        const sortedDates = Object.keys(dateMap).sort().slice(-days);
-        if (sortedDates.length === 0) {
-          return res.json({
-            labels: ['No Data'],
-            sent: [0],
-            delivered: [0],
-            read: [0],
-            cost: [0],
-            lastUpdated: new Date().toISOString(),
-            dataSource: 'meta_api',
-          });
-        }
-
-        const labels = sortedDates.map(d => {
-          const parts = d.split('-');
-          if (parts.length >= 3) {
-            const day = Number(parts[2]);
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const month = monthNames[Number(parts[1]) - 1];
-            return `${day} ${month}`;
-          }
-          return d;
-        });
-        const sent = sortedDates.map(d => dateMap[d].sent);
-        const delivered = sortedDates.map(d => dateMap[d].delivered);
-        const read = sortedDates.map(d => dateMap[d].read);
-        const cost = sortedDates.map(d => Math.round(dateMap[d].cost * 100) / 100);
-
-        return res.json({
-          labels,
-          sent,
-          delivered,
-          read,
-          cost,
-          lastUpdated: new Date().toISOString(),
-          dataSource: 'meta_api',
-        });
       }
 
-      const logs = await fetchFirestoreLogs(id, days * 24 * 60);
-      const graph = days > 1 ? buildGraphDataForDays(logs, days) : buildGraphData(logs);
+      // Fallback 1: Use template analytics volumes per day
+      let hasGraphCost = Object.values(dateMap).some(d => d.cost > 0);
+      if (!hasGraphCost && templateMetricsAvailable && templateAnalytics.length > 0) {
+        let metaTemplates: any[] = [];
+        try {
+          metaTemplates = await whatsappCloudService.getMessageTemplates(config.wabaId, config.token, bypassCache);
+        } catch (err) {
+          console.warn('Failed to fetch message templates for graph fallback:', err);
+        }
+        const templateCategoryMap: Record<string, string> = {};
+        for (const t of metaTemplates) {
+          if (t.id) templateCategoryMap[t.id] = t.category;
+          if (t.name) templateCategoryMap[t.name] = t.category;
+        }
 
-      return res.json({
-        ...graph,
+        for (const item of templateAnalytics) {
+          const cat = (templateCategoryMap[item.template_id] || templateCategoryMap[item.name] || 'utility').toLowerCase();
+          const rate = rates[cat]?.price || rates['utility']?.price || 0.11255;
+          if (item.data_points) {
+            for (const dp of item.data_points) {
+              const dateStr = parseMetaDateString(dp.start || dp.end);
+              if (!dateStr) continue;
+              if (!dateMap[dateStr]) {
+                dateMap[dateStr] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+              }
+              const delivered = Number(dp.delivered || 0);
+              dateMap[dateStr].cost += delivered * rate;
+            }
+          }
+        }
+      }
+
+      // Fallback 2: Calculate daily cost from PostgreSQL notification_logs
+      hasGraphCost = Object.values(dateMap).some(d => d.cost > 0);
+      if (!hasGraphCost) {
+        try {
+          const dbLogs = await query(
+            `SELECT DATE(created_at) as date, event_type as template, status, COUNT(*) as count
+             FROM notification_logs
+             WHERE channel = 'whatsapp'
+               AND app_id = $1
+               AND created_at >= NOW() - CAST($2 || ' days' AS INTERVAL)
+             GROUP BY DATE(created_at), event_type, status`,
+            [id, days]
+          );
+
+          for (const row of dbLogs.rows) {
+            const dateStr = new Date(row.date).toISOString().split('T')[0];
+            const name = row.template || '';
+            const status = row.status;
+            const count = parseInt(row.count || '0', 10);
+            if (status === 'failed') continue;
+
+            const cat = (name === 'task_status_update' || name === 'order_confirmation_admin' || name === 'welcome_message' || name === 'get_offers') ? 'marketing' : 'utility';
+            const rate = rates[cat]?.price || rates['utility']?.price || 0.11255;
+
+            if (!dateMap[dateStr]) {
+              dateMap[dateStr] = { sent: 0, delivered: 0, read: 0, cost: 0 };
+            }
+            dateMap[dateStr].cost += count * rate;
+            dateMap[dateStr].delivered += count;
+          }
+        } catch (dbErr) {
+          console.error('Failed to calculate graph fallback cost from notification_logs:', dbErr);
+        }
+      }
+
+      const graphLabels: string[] = [];
+      const graphSent: (number | null)[] = [];
+      const graphDelivered: (number | null)[] = [];
+      const graphRead: (number | null)[] = [];
+      const graphCost: (number | null)[] = [];
+
+      const now = Date.now();
+      const stepMs = 24 * 3600 * 1000;
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now - i * stepMs);
+        const dStr = d.toISOString().split('T')[0];
+        graphLabels.push(`${d.getDate()} ${monthNames[d.getMonth()]}`);
+
+        const dayData = dateMap[dStr];
+        graphSent.push(templateMetricsAvailable ? (dayData ? dayData.sent : 0) : null);
+        graphDelivered.push(templateMetricsAvailable ? (dayData ? dayData.delivered : 0) : null);
+        graphRead.push(templateMetricsAvailable ? (dayData ? dayData.read : 0) : null);
+        graphCost.push(dayData ? Math.round(dayData.cost * 100) / 100 : 0);
+      }
+
+      const responseGraph = {
+        labels: graphLabels,
+        sent: graphSent,
+        delivered: graphDelivered,
+        read: graphRead,
+        cost: graphCost,
         lastUpdated: new Date().toISOString(),
-        dataSource: firestore ? 'firestore' : 'simulated',
-      });
+        dataSource: 'meta_api',
+      };
+
+      console.log('[WhatsApp Realtime Graph Final Response]:', JSON.stringify(responseGraph).substring(0, 1000));
+      return res.json(responseGraph);
     } catch (err: any) {
-      console.error('[WhatsApp] realtime-graph error:', err.message);
-      return res.status(500).json({ error: err.message });
+      return handleControllerError(err, res);
     }
-  },
+  }
 };

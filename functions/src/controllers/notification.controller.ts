@@ -119,6 +119,21 @@ export const notificationController = {
         [userId, appId, customerId, token, browser, device, os, language, timezone]
       );
 
+      // Synchronize to firebase_notification_tokens
+      await query(
+        `INSERT INTO firebase_notification_tokens (user_id, application_id, customer_id, token, browser, device, os, platform, language, timezone, notification_enabled, token_status, last_active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, 'active', CURRENT_TIMESTAMP)
+         ON CONFLICT (token) DO UPDATE SET 
+           user_id = EXCLUDED.user_id,
+           browser = COALESCE(EXCLUDED.browser, firebase_notification_tokens.browser),
+           device = COALESCE(EXCLUDED.device, firebase_notification_tokens.device),
+           os = COALESCE(EXCLUDED.os, firebase_notification_tokens.os),
+           platform = COALESCE(EXCLUDED.platform, firebase_notification_tokens.platform),
+           token_status = 'active',
+           last_active = CURRENT_TIMESTAMP`,
+        [userId, appId, customerId, token, browser, device, os, os || 'Web', language, timezone]
+      );
+
       res.json({ success: true, message: 'FCM Token saved' });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -208,10 +223,10 @@ export const notificationController = {
   async getHistory(req: Request, res: Response) {
     try {
       const result = await query(`
-        SELECT h.*, u.fullName as sender_name, u2.fullName as receiver_name
+        SELECT h.*, u.data->>'fullName' as sender_name, u2.data->>'fullName' as receiver_name
         FROM notification_history h
-        LEFT JOIN users u ON h.sent_by = u.id
-        LEFT JOIN users u2 ON h.sent_to = u2.id
+        LEFT JOIN records u ON h.sent_by = u.id AND u.collection = 'users'
+        LEFT JOIN records u2 ON h.sent_to = u2.id AND u2.collection = 'users'
         ORDER BY h.created_at DESC
         LIMIT 100
       `);
@@ -246,6 +261,179 @@ export const notificationController = {
       });
 
       res.json({ success: true, result });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getMyNotifications(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+      const result = await query(
+        `SELECT id, title, body, image, url, status, created_at, read_status, read_time, click_time, event_code, payload
+         FROM notification_history
+         WHERE sent_to = $1
+         ORDER BY created_at DESC
+         LIMIT 100`,
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getUnreadCount(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+      const result = await query(
+        `SELECT COUNT(*)::integer as count FROM notification_history WHERE sent_to = $1 AND read_status = 'unread'`,
+        [userId]
+      );
+      res.json({ count: result.rows[0]?.count || 0 });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async markRead(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+      const { ids } = req.body;
+      if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: 'Invalid or missing IDs array' });
+
+      if (ids.length > 0) {
+        await query(
+          `UPDATE notification_history 
+           SET read_status = 'read', read_time = CURRENT_TIMESTAMP 
+           WHERE sent_to = $1 AND id = ANY($2)`,
+          [userId, ids]
+        );
+      }
+      res.json({ success: true, message: 'Notifications marked as read' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async markAllRead(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+      await query(
+        `UPDATE notification_history 
+         SET read_status = 'read', read_time = CURRENT_TIMESTAMP 
+         WHERE sent_to = $1 AND read_status = 'unread'`,
+        [userId]
+      );
+      res.json({ success: true, message: 'All notifications marked as read' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async deleteNotification(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+      const { id } = req.params;
+      await query(
+        `DELETE FROM notification_history WHERE sent_to = $1 AND id = $2`,
+        [userId, id]
+      );
+      res.json({ success: true, message: 'Notification deleted' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getConfigs(req: Request, res: Response) {
+    try {
+      const result = await query('SELECT * FROM notification_events_config ORDER BY created_at DESC');
+      res.json(result.rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async createConfig(req: Request, res: Response) {
+    try {
+      const { name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value, schedule } = req.body;
+      const result = await query(
+        `INSERT INTO notification_events_config 
+          (name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value, schedule)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         RETURNING *`,
+        [
+          name, 
+          type || 'push', 
+          event_code, 
+          api_endpoint, 
+          http_method || 'POST', 
+          enabled ?? true, 
+          title_template, 
+          body_template, 
+          navigation_url || null, 
+          priority || 'normal', 
+          JSON.stringify(user_role_mapping || []), 
+          target_type || 'role', 
+          target_value || null, 
+          schedule || null
+        ]
+      );
+      res.json(result.rows[0]);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async updateConfig(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { name, type, event_code, api_endpoint, http_method, enabled, title_template, body_template, navigation_url, priority, user_role_mapping, target_type, target_value, schedule } = req.body;
+      const result = await query(
+        `UPDATE notification_events_config 
+         SET name = $1, type = $2, event_code = $3, api_endpoint = $4, http_method = $5, enabled = $6, title_template = $7, body_template = $8, navigation_url = $9, priority = $10, user_role_mapping = $11, target_type = $12, target_value = $13, schedule = $14, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $15
+         RETURNING *`,
+        [
+          name, 
+          type, 
+          event_code, 
+          api_endpoint, 
+          http_method, 
+          enabled, 
+          title_template, 
+          body_template, 
+          navigation_url, 
+          priority, 
+          JSON.stringify(user_role_mapping || []), 
+          target_type, 
+          target_value, 
+          schedule,
+          id
+        ]
+      );
+      if (result.rows.length === 0) return res.status(404).json({ error: 'Config not found' });
+      res.json(result.rows[0]);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async deleteConfig(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      await query('DELETE FROM notification_events_config WHERE id = $1', [id]);
+      res.json({ success: true, message: 'Configuration event deleted' });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

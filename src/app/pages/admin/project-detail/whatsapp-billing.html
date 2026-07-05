@@ -76,10 +76,10 @@
       </div>
       <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Messages Sent</div>
       @if (isLoading() && !summary()) {
-        <div class="h-6 md:h-8 w-16 md:w-20 rounded bg-app-card animate-pulse mb-2"></div>
+        <div class="h-6 md:h-8 w-16 md:w-20 wa-skeleton mb-2"></div>
       } @else {
         <div class="text-xl sm:text-2xl md:text-3xl font-black text-app-text font-mono tabular-nums truncate">
-          {{ (summary()?.messagesSent || 0) | number }}
+          {{ formatMetric(summary()?.messagesSent) }}
         </div>
       }
       <div class="text-[9px] md:text-[10px] text-app-muted mt-1.5">Last {{ selectedDays() }} days</div>
@@ -96,14 +96,14 @@
       </div>
       <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Delivered</div>
       @if (isLoading() && !summary()) {
-        <div class="h-6 md:h-8 w-16 md:w-20 rounded bg-app-card animate-pulse mb-2"></div>
+        <div class="h-6 md:h-8 w-16 md:w-20 wa-skeleton mb-2"></div>
       } @else {
         <div class="text-xl sm:text-2xl md:text-3xl font-black text-app-text font-mono tabular-nums truncate">
-          {{ (summary()?.messagesDelivered || 0) | number }}
+          {{ formatMetric(summary()?.messagesDelivered) }}
         </div>
       }
       <div class="text-[9px] md:text-[10px] font-bold mt-1.5 truncate text-indigo-400">
-        {{ summary()?.deliveryRate || 0 }}% rate
+        {{ formatMetric(summary()?.deliveryRate, false, true) }} rate
       </div>
       <div class="mt-2.5 h-1 rounded-full overflow-hidden bg-app-bg/50">
         <div class="progress-bar-delivered h-full rounded-full transition-all duration-700"
@@ -118,7 +118,7 @@
       </div>
       <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Read Rate</div>
       @if (isLoading() && !summary()) {
-        <div class="h-6 md:h-8 w-16 md:w-20 rounded bg-app-card animate-pulse mb-2"></div>
+        <div class="h-6 md:h-8 w-16 md:w-20 wa-skeleton mb-2"></div>
       } @else {
         <!-- Circular progress -->
         <div class="flex items-center gap-2 md:gap-3">
@@ -126,15 +126,15 @@
             <svg class="w-9 h-9 md:w-12 md:h-12 -rotate-90" viewBox="0 0 36 36">
               <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(251,191,36,0.15)" stroke-width="2.5"/>
               <circle cx="18" cy="18" r="15.9" fill="none" stroke="#fbbf24" stroke-width="2.5"
-                      stroke-dasharray="100" [attr.stroke-dashoffset]="100 - (summary()?.readRate || 0)"
+                      stroke-dasharray="100" [attr.stroke-dashoffset]="getReadRateOffset()"
                       stroke-linecap="round" style="transition: stroke-dashoffset 0.7s ease;"/>
             </svg>
             <span class="absolute inset-0 flex items-center justify-center text-[8px] md:text-[10px] font-black text-amber-400">
-              {{ summary()?.readRate || 0 }}%
+              {{ formatMetric(summary()?.readRate, false, true) }}
             </span>
           </div>
           <div class="text-xl sm:text-2xl md:text-3xl font-black text-app-text font-mono tabular-nums truncate">
-            {{ (summary()?.messagesRead || 0) | number }}
+            {{ formatMetric(summary()?.messagesRead) }}
           </div>
         </div>
       }
@@ -148,14 +148,14 @@
       </div>
       <div class="text-[9px] md:text-[10px] font-bold text-app-muted uppercase tracking-widest mb-1.5">Est. Cost ({{ selectedDays() }}d)</div>
       @if (isLoading() && !summary()) {
-        <div class="h-6 md:h-8 w-20 md:w-24 rounded bg-app-card animate-pulse mb-2"></div>
+        <div class="h-6 md:h-8 w-20 md:w-24 wa-skeleton mb-2"></div>
       } @else {
         <div class="text-xl sm:text-2xl md:text-3xl font-black font-mono tabular-nums truncate text-amber-500">
-          {{ getCurrencySymbol() }}{{ (summary()?.estimatedCost || 0) | number:'1.2-2' }}
+          {{ formatMetric(summary()?.estimatedCost, true) }}
         </div>
       }
       <div class="text-[9px] md:text-[10px] text-app-muted mt-1.5 truncate">
-        ~{{ getCurrencySymbol() }}{{ (summary()?.monthlyEstimate || 0) | number:'1.0-0' }} proj.
+        ~{{ formatMetric(summary()?.monthlyEstimate, true) }} proj.
       </div>
       <div class="mt-2.5 h-1 rounded-full overflow-hidden bg-app-bg/50">
         <div class="progress-bar-cost h-full rounded-full transition-all duration-700"
@@ -173,7 +173,7 @@
       </div>
       <div>
         <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">AI Cost Prediction (8hr peak)</div>
-        <div class="text-xl font-black text-app-text">{{ getCurrencySymbol() }}{{ (summary()?.aiCostPrediction || 0) | number:'1.2-2' }}</div>
+        <div class="text-xl font-black text-app-text">{{ formatMetric(summary()?.aiCostPrediction, true) }}</div>
         <div class="text-[10px] text-app-muted mt-1">Based on current period rate × 8hr peak factor</div>
       </div>
     </div>
@@ -204,7 +204,7 @@
       </div>
       <div>
         <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">Monthly Estimate</div>
-        <div class="text-xl font-black text-app-text">{{ getCurrencySymbol() }}{{ (summary()?.monthlyEstimate || 0) | number:'1.0-0' }}</div>
+        <div class="text-xl font-black text-app-text">{{ formatMetric(summary()?.monthlyEstimate, true) }}</div>
         <div class="text-[10px] text-app-muted mt-1">Projected from {{ selectedDays() }}-day rate</div>
       </div>
     </div>
@@ -266,7 +266,7 @@
         <!-- Skeleton graph -->
         <div class="h-48 flex flex-col gap-2 justify-end">
           @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
-            <div class="flex-1 rounded bg-app-card/40 animate-pulse"></div>
+            <div class="flex-1 wa-skeleton"></div>
           }
         </div>
       }
@@ -347,7 +347,7 @@
               <tr class="wa-table-row-skeleton border-b">
                 @for (col of [1,2,3,4,5,6,7,8]; track col) {
                   <td class="px-4 py-3">
-                    <div class="wa-table-cell-skeleton h-4 rounded animate-pulse" [style.width.px]="col === 1 ? 120 : col < 4 ? 60 : 40"></div>
+                    <div class="wa-skeleton h-4" [style.width.px]="col === 1 ? 120 : col < 4 ? 60 : 40"></div>
                   </td>
                 }
               </tr>
@@ -405,14 +405,14 @@
                 </td>
 
                 <!-- Sent -->
-                <td class="px-4 py-3.5 text-right font-mono text-sm text-app-text">{{ t.sent | number }}</td>
+                <td class="px-4 py-3.5 text-right font-mono text-sm text-app-text">{{ formatMetric(t.sent) }}</td>
 
                 <!-- Delivered -->
                 <td class="px-4 py-3.5 text-right">
                   <div class="flex items-center justify-end gap-2">
-                    <span class="font-mono text-sm text-app-text">{{ t.delivered | number }}</span>
+                    <span class="font-mono text-sm text-app-text">{{ formatMetric(t.delivered) }}</span>
                     <div class="w-12 h-1.5 rounded-full overflow-hidden bg-app-bg">
-                      <div class="h-full rounded-full" style="background:#818cf8;" [style.width.%]="t.deliveryRate"></div>
+                      <div class="h-full rounded-full" style="background:#818cf8;" [style.width.%]="t.deliveryRate || 0"></div>
                     </div>
                   </div>
                 </td>
@@ -421,15 +421,15 @@
                 <td class="px-4 py-3.5 text-right">
                   <span class="text-sm font-bold font-mono"
                         [ngClass]="{
-                          'text-emerald-400': t.readRate >= 70,
-                          'text-amber-400': t.readRate >= 40 && t.readRate < 70,
-                          'text-rose-400': t.readRate < 40
-                        }">{{ t.readRate }}%</span>
+                          'text-emerald-400': t.readRate !== null && t.readRate >= 70,
+                          'text-amber-400': t.readRate !== null && t.readRate >= 40 && t.readRate < 70,
+                          'text-rose-400': t.readRate === null || t.readRate < 40
+                        }">{{ formatMetric(t.readRate, false, true) }}</span>
                 </td>
 
                 <!-- Cost -->
                 <td class="px-4 py-3.5 text-right font-mono text-sm text-amber-400 font-semibold">
-                  {{ getCurrencySymbol() }}{{ t.cost | number:'1.2-2' }}
+                  {{ formatMetric(t.cost, true) }}
                 </td>
 
                 <!-- Detail button -->
@@ -447,10 +447,10 @@
           <tfoot>
             <tr class="wa-table-foot">
               <td class="px-5 py-3 text-[10px] font-bold text-app-muted uppercase tracking-wider" colspan="3">TOTAL</td>
-              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ totalSent() | number }}</td>
-              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ totalDelivered() | number }}</td>
-              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ avgReadRate() }}%</td>
-              <td class="px-4 py-3 text-right font-mono text-sm font-black text-amber-400">{{ getCurrencySymbol() }}{{ totalCost() | number:'1.2-2' }}</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ formatMetric(totalSent()) }}</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ formatMetric(totalDelivered()) }}</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-app-text">{{ formatMetric(avgReadRate(), false, true) }}</td>
+              <td class="px-4 py-3 text-right font-mono text-sm font-black text-amber-400">{{ formatMetric(totalCost(), true) }}</td>
               <td></td>
             </tr>
           </tfoot>
@@ -548,10 +548,10 @@
   <!-- ── LOADING STATE ──────────────────────────────────────────────────── -->
   @if (isDetailLoading()) {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <div class="wa-table-cell-skeleton h-80 rounded-2xl animate-pulse"></div>
+      <div class="wa-skeleton h-80 rounded-2xl"></div>
       <div class="lg:col-span-2 space-y-4">
         @for (i of [1,2,3]; track i) {
-          <div class="wa-table-cell-skeleton h-24 rounded-xl animate-pulse"></div>
+          <div class="wa-skeleton h-24 rounded-xl"></div>
         }
       </div>
     </div>
