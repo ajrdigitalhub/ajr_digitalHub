@@ -90,7 +90,7 @@ export class NotificationManagerService {
       }
 
       const apps = getApps();
-      const firebaseApp = apps.length === 0 ? initializeApp(settings.firebase_config) : apps[0];
+      const firebaseApp = apps.find(a => a.name === 'fcm-app') || initializeApp(settings.firebase_config, 'fcm-app');
       const messaging = getMessaging(firebaseApp);
 
       const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
@@ -145,7 +145,7 @@ export class NotificationManagerService {
         }
 
         const apps = getApps();
-        const firebaseApp = apps.length === 0 ? initializeApp(settings.firebase_config) : apps[0];
+        const firebaseApp = apps.find(a => a.name === 'fcm-app') || initializeApp(settings.firebase_config, 'fcm-app');
         const messaging = getMessaging(firebaseApp);
         const registration = await navigator.serviceWorker.ready;
 

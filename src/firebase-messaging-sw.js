@@ -1,6 +1,63 @@
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// STATIC ASSETS CACHING (from sw.js)
+// ─────────────────────────────────────────────────────────────────────────────
+const CACHE_NAME = 'ajr-digital-hub-cache-v1';
+const ASSETS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/favicon.ico',
+  '/logo.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  // Check if request is for document/pages or API calls
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Intercept standard static files
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request);
+    })
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FIREBASE CLOUD MESSAGING CONFIGURATION & LOGIC
+// ─────────────────────────────────────────────────────────────────────────────
 let messagingInitialized = false;
 
 function initFCM(config) {
@@ -31,10 +88,36 @@ function initFCM(config) {
   }
 }
 
+// Auto-initialize from cached config on startup
+if (typeof caches !== 'undefined') {
+  caches.open('fcm-config').then((cache) => {
+    return cache.match('/fcm-config.json');
+  }).then((response) => {
+    if (response) {
+      return response.json();
+    }
+  }).then((config) => {
+    if (config) {
+      console.log('[FCM SW] Auto-initializing FCM with cached config');
+      initFCM(config);
+    }
+  }).catch((err) => {
+    console.error('[FCM SW] Failed to restore config from cache on startup:', err);
+  });
+}
+
 // Receive config messages from client web app
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'INITIALIZE_FCM') {
-    initFCM(event.data.config);
+    const config = event.data.config;
+    if (typeof caches !== 'undefined') {
+      // Persist to cache so we can access it on background wake-up
+      caches.open('fcm-config').then((cache) => {
+        cache.put('/fcm-config.json', new Response(JSON.stringify(config)));
+      }).catch(err => console.error('[FCM SW] Failed to cache config:', err));
+    }
+
+    initFCM(config);
   }
 });
 
@@ -57,3 +140,84 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// Robust push event listener
+self.addEventListener('push', (event) => {
+  // Capture initialization state before we run any async operations
+  const wasInitialized = messagingInitialized;
+  console.log('[FCM SW] Push event received. wasInitialized:', wasInitialized);
+
+  if (wasInitialized) {
+    console.log('[FCM SW] FCM already initialized. Letting FCM SDK handle this push event.');
+    return;
+  }
+
+  event.waitUntil(
+    (async () => {
+      let title = 'AJR Digital HUB';
+      let body = '';
+      let options = {
+        icon: '/assets/icons/icon-72x72.png',
+        badge: '/assets/icons/icon-72x72.png',
+        data: { url: '/' }
+      };
+
+      try {
+        // Try to load cached config and initialize FCM to be ready for future events/clicks
+        if (typeof caches !== 'undefined') {
+          try {
+            const cache = await caches.open('fcm-config');
+            const response = await cache.match('/fcm-config.json');
+            if (response) {
+              const config = await response.json();
+              initFCM(config);
+            }
+          } catch (err) {
+            console.error('[FCM SW] Failed to initialize FCM in push handler:', err);
+          }
+        }
+
+        // Manually parse event data and display the notification
+        let payload = {};
+        if (event.data) {
+          try {
+            payload = event.data.json();
+          } catch (e) {
+            console.warn('[FCM SW] Push payload is not JSON:', e);
+            try {
+              payload = { body: event.data.text() };
+            } catch (textErr) {
+              payload = {};
+            }
+          }
+        }
+
+        console.log('[FCM SW] Decrypted push payload:', JSON.stringify(payload));
+
+        if (payload && typeof payload === 'object') {
+          const notification = payload.notification || {};
+          const data = payload.data || {};
+
+          title = notification.title || data.title || payload.title || 'AJR Digital HUB';
+          body = notification.body || data.body || payload.body || '';
+          
+          options.body = body;
+          options.icon = notification.icon || data.icon || payload.icon || '/assets/icons/icon-72x72.png';
+          options.image = notification.image || data.image || notification.imageUrl || data.imageUrl || payload.image || payload.imageUrl;
+          options.data.url = data.url || notification.clickAction || payload.url || '/';
+        }
+      } catch (err) {
+        console.error('[FCM SW] Error parsing push data: ', err);
+      }
+
+      // We MUST display a notification to satisfy the browser's anti-silent push policy
+      try {
+        console.log('[FCM SW] Displaying manual notification:', title, options);
+        await self.registration.showNotification(title, options);
+      } catch (showErr) {
+        console.error('[FCM SW] Failed to show notification:', showErr);
+      }
+    })()
+  );
+});
+

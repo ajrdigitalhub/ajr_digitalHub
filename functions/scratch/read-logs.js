@@ -12,8 +12,8 @@ const pool = new Pool({
 
 async function run() {
   try {
-    const settings = await pool.query("SELECT * FROM notification_settings LIMIT 5");
-    console.log('Notification settings rows:', settings.rows);
+    const logs = await pool.query("SELECT * FROM notification_logs ORDER BY created_at DESC LIMIT 10");
+    console.log('notification_logs rows:', logs.rows);
     process.exit(0);
   } catch (err) {
     console.error(err);

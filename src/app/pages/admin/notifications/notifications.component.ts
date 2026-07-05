@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../services/notification.service';
 import { ApiService } from '../../../services/api.service';
+import { NotificationManagerService } from '../../../services/notification-manager.service';
 
 @Component({
   selector: 'app-admin-notifications',
@@ -145,6 +146,11 @@ import { ApiService } from '../../../services/api.service';
                   <mat-icon class="!text-[16px] !w-4 !h-4">cloud_done</mat-icon>
                   <span>TEST CONNECTION</span>
                 }
+              </button>
+
+              <button (click)="testFCMRegistration()" class="px-5 py-3 bg-indigo-600/10 border border-indigo-500/30 hover:bg-indigo-600/20 text-indigo-400 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5">
+                <mat-icon class="!text-[16px] !w-4 !h-4 text-indigo-400">notifications_active</mat-icon>
+                <span>REQUEST BROWSER PROMPT</span>
               </button>
             </div>
           </div>
@@ -525,6 +531,7 @@ import { ApiService } from '../../../services/api.service';
 export class AdminNotificationsComponent implements OnInit {
   private notification = inject(NotificationService);
   private api = inject(ApiService);
+  fcmManager = inject(NotificationManagerService);
 
   activeTab = signal<string>('settings');
   isSaving = signal<boolean>(false);
@@ -817,6 +824,29 @@ export class AdminNotificationsComponent implements OnInit {
       error: (err) => {
         alert('Failed to dispatch push notification: ' + (err.error?.error || err.message));
         this.isDispatching.set(false);
+      }
+    });
+  }
+
+  testFCMRegistration() {
+    if (!this.fcmManager.isSupported) {
+      alert('Push notifications are not supported on this browser/device.');
+      return;
+    }
+    
+    this.fcmManager.requestPermissionAndGetToken().then(token => {
+      if (token) {
+        alert('Browser notification permission is GRANTED! FCM Token successfully retrieved and saved:\n\n' + token);
+        this.loadAdminData(); // reload devices table
+      } else {
+        const permission = Notification.permission;
+        if (permission === 'denied') {
+          alert('Browser notification permission is BLOCKED / DENIED. Please click the lock icon in your browser address bar next to the site URL and reset/allow notification permissions.');
+        } else if (permission === 'default') {
+          alert('Browser notification permission prompt was displayed/dismissed. Please click Allow.');
+        } else {
+          alert('Permission is granted, but failed to generate FCM token. Please ensure FCM Web Push Config and VAPID Keys are filled in and valid.');
+        }
       }
     });
   }

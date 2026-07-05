@@ -215,11 +215,8 @@ export class FcmPopupComponent implements OnInit {
       }
     }
 
-    this.fcmManager.initFCM().then((initialized) => {
-      if (initialized) {
-        this.isVisible.set(true);
-      }
-    });
+    // Show the custom popup immediately to let the user trigger the permission prompt via button click (user gesture)
+    this.isVisible.set(true);
   }
 
   onAllow() {

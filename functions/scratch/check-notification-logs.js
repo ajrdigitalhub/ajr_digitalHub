@@ -12,8 +12,12 @@ const pool = new Pool({
 
 async function run() {
   try {
-    const settings = await pool.query("SELECT * FROM notification_settings LIMIT 5");
-    console.log('Notification settings rows:', settings.rows);
+    const tableInfo = await pool.query(`
+      SELECT column_name, data_type, is_nullable
+      FROM information_schema.columns 
+      WHERE table_name = 'notification_logs'
+    `);
+    console.log('notification_logs columns:', tableInfo.rows);
     process.exit(0);
   } catch (err) {
     console.error(err);

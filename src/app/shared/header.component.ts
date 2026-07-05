@@ -16,7 +16,7 @@ import { ThemeService, AppTheme } from '../services/theme.service';
         
         <!-- Logo Branding -->
         <a routerLink="/" class="flex items-center gap-2.5 group cursor-pointer focus:outline-none">
-          <img src="/ajr-hub.png" alt="AJR Digital Hub Logo" class="h-8 w-8 sm:h-10 sm:w-10 object-contain group-hover:scale-105 transition-all drop-shadow-md" />
+          <img src="/ajr-hub.png" alt="AJR Digital Hub Logo" style="width: 100px; height: 100px;" class="h-12 w-12 sm:h-12 sm:w-12 object-contain group-hover:scale-105 transition-all drop-shadow-md" />
         
         </a>
 

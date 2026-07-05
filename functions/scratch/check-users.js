@@ -12,8 +12,15 @@ const pool = new Pool({
 
 async function run() {
   try {
-    const settings = await pool.query("SELECT * FROM notification_settings LIMIT 5");
-    console.log('Notification settings rows:', settings.rows);
+    const tableInfo = await pool.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'users'
+    `);
+    console.log('Users columns:', tableInfo.rows);
+
+    const users = await pool.query("SELECT id, email, role FROM users LIMIT 10");
+    console.log('Users rows:', users.rows);
     process.exit(0);
   } catch (err) {
     console.error(err);

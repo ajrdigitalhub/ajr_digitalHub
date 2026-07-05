@@ -5,7 +5,16 @@ export const adminDataController = {
   async getTableData(req: Request, res: Response): Promise<any> {
     try {
       const table = req.params['table'] as string;
-      const allowedTables = ['users', 'products', 'orders', 'tickets', 'kanban_tasks', 'subscriptions'];
+      const allowedTables = [
+        'users',
+        'products',
+        'orders',
+        'tickets',
+        'kanban_tasks',
+        'subscriptions',
+        'notification_tokens',
+        'firebase_notification_tokens'
+      ];
       if (!allowedTables.includes(table)) return res.status(400).json({ error: 'Invalid table' });
 
       const result = await query(`SELECT * FROM ${table} ORDER BY id DESC LIMIT 100`);

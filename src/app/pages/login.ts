@@ -286,33 +286,7 @@ import { AuthService } from '../services/auth.service';
               </div>
 
               <!-- Role Selector (Signup Mode) -->
-              @if (!isLoginMode()) {
-                <div>
-                  <label class="block text-[10px] font-mono font-bold uppercase tracking-wider text-app-muted mb-1.5">Account Role</label>
-                  <div class="grid grid-cols-2 gap-3">
-                    <button 
-                      type="button"
-                      (click)="selectedRole.set('user')"
-                      [class]="selectedRole() === 'user'
-                        ? 'flex items-center justify-center gap-2 py-2 px-3 border-2 border-[#5B4BFF] bg-[#5B4BFF]/10 text-app-text rounded-xl text-xs font-bold cursor-pointer'
-                        : 'flex items-center justify-center gap-2 py-2 px-3 border border-app-border text-app-muted rounded-xl text-xs cursor-pointer hover:bg-white/5'"
-                    >
-                      <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">person</mat-icon>
-                      SaaS Tenant
-                    </button>
-                    <button 
-                      type="button"
-                      (click)="selectedRole.set('admin')"
-                      [class]="selectedRole() === 'admin'
-                        ? 'flex items-center justify-center gap-2 py-2 px-3 border-2 border-[#5B4BFF] bg-[#5B4BFF]/10 text-app-text rounded-xl text-xs font-bold cursor-pointer'
-                        : 'flex items-center justify-center gap-2 py-2 px-3 border border-app-border text-app-muted rounded-xl text-xs cursor-pointer hover:bg-white/5'"
-                    >
-                      <mat-icon class="!text-[16px] !w-[16px] !h-[16px]">security</mat-icon>
-                      Super Admin
-                    </button>
-                  </div>
-                </div>
-              }
+             
 
               <!-- Submit Button -->
               <button 

@@ -86003,8 +86003,26 @@ var adminDataController = {
   async getTableData(req, res) {
     try {
       const table = req.params["table"];
-      const allowedTables = ["users", "products", "orders", "tickets", "kanban_tasks", "subscriptions"];
+      const allowedTables = [
+        "users",
+        "products",
+        "orders",
+        "tickets",
+        "kanban_tasks",
+        "subscriptions",
+        "notification_tokens",
+        "firebase_notification_tokens"
+      ];
       if (!allowedTables.includes(table)) return res.status(400).json({ error: "Invalid table" });
+      if (table === "users") {
+        const result2 = await query2(
+          `SELECT id, data->>'email' as email, data->>'fullName' as "fullName", data->>'role' as role, data->>'status' as status, created_at 
+           FROM records 
+           WHERE collection = 'users' 
+           ORDER BY created_at DESC LIMIT 100`
+        );
+        return res.json(result2.rows);
+      }
       const result = await query2(`SELECT * FROM ${table} ORDER BY id DESC LIMIT 100`);
       return res.json(result.rows);
     } catch (err) {
@@ -92093,8 +92111,31 @@ var notificationController = {
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       const { token, browser, device, os: os11, language, timezone } = req.body;
       if (!token) return res.status(400).json({ error: "Token is required" });
-      const userRes = await query2("SELECT customer_id FROM users WHERE id = $1", [userId]);
-      const customerId = userRes.rows[0]?.customer_id || null;
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      let validUserId = null;
+      let customerId = null;
+      if (isUuid) {
+        const userRes = await query2("SELECT id, customer_id FROM users WHERE id = $1", [userId]);
+        if (userRes.rows.length > 0) {
+          validUserId = userId;
+          customerId = userRes.rows[0].customer_id || null;
+        } else {
+          try {
+            await query2(
+              `INSERT INTO users (id, email, role, created_at)
+               VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+               ON CONFLICT (id) DO NOTHING`,
+              [userId, req.user?.email || "dev-user@ajrdigitalhub.com", req.user?.role || "user"]
+            );
+            validUserId = userId;
+          } catch (err) {
+            console.error("[FCM Controller] Failed to insert placeholder user, falling back to null user_id:", err.message);
+            validUserId = null;
+          }
+        }
+      } else {
+        console.warn("[FCM Controller] Incoming userId is not a valid UUID format, setting user_id reference to null:", userId);
+      }
       let appId = null;
       if (customerId) {
         const appRes = await query2("SELECT app_id FROM customer_profiles WHERE id = $1", [customerId]);
@@ -92109,7 +92150,7 @@ var notificationController = {
            device = COALESCE(EXCLUDED.device, notification_tokens.device),
            os = COALESCE(EXCLUDED.os, notification_tokens.os),
            last_seen = CURRENT_TIMESTAMP`,
-        [userId, appId, customerId, token, browser, device, os11, language, timezone]
+        [validUserId, appId, customerId, token, browser, device, os11, language, timezone]
       );
       await query2(
         `INSERT INTO firebase_notification_tokens (user_id, application_id, customer_id, token, browser, device, os, platform, language, timezone, notification_enabled, token_status, last_active)
@@ -92122,7 +92163,7 @@ var notificationController = {
            platform = COALESCE(EXCLUDED.platform, firebase_notification_tokens.platform),
            token_status = 'active',
            last_active = CURRENT_TIMESTAMP`,
-        [userId, appId, customerId, token, browser, device, os11, os11 || "Web", language, timezone]
+        [validUserId, appId, customerId, token, browser, device, os11, os11 || "Web", language, timezone]
       );
       res.json({ success: true, message: "FCM Token saved" });
     } catch (err) {
@@ -92155,16 +92196,28 @@ var notificationController = {
       }
       const result = await firebaseMessagingService.sendToTokens(tokens, { title, body, image, url, customData });
       const senderId = req.user?.id || null;
+      const isSenderUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(senderId);
+      let validSenderId = null;
+      if (isSenderUuid) {
+        const senderCheck = await query2("SELECT id FROM users WHERE id = $1", [senderId]);
+        if (senderCheck.rows.length > 0) validSenderId = senderId;
+      }
+      const isTargetUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      let validTargetId = null;
+      if (isTargetUuid) {
+        const targetCheck = await query2("SELECT id FROM users WHERE id = $1", [userId]);
+        if (targetCheck.rows.length > 0) validTargetId = userId;
+      }
       await query2(
         `INSERT INTO notification_history (title, body, image, url, sent_by, sent_to, status, response)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [title, body, image, url, senderId, userId, "sent", JSON.stringify(result)]
+        [title, body, image, url, validSenderId, validTargetId, "sent", JSON.stringify(result)]
       );
       res.json({ success: true, result });
     } catch (err) {
       await query2(
-        "INSERT INTO notification_logs (level, message, stack) VALUES ($1, $2, $3)",
-        ["error", err.message, err.stack || ""]
+        "INSERT INTO notification_logs (level, message, stack, event_type, recipient) VALUES ($1, $2, $3, $4, $5)",
+        ["error", err.message, err.stack || "", "fcm_error", req.body?.userId || "unknown"]
       );
       res.status(500).json({ error: err.message });
     }
@@ -92180,16 +92233,22 @@ var notificationController = {
       }
       const result = await firebaseMessagingService.sendToTokens(tokens, { title, body, image, url, customData });
       const senderId = req.user?.id || null;
+      const isSenderUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(senderId);
+      let validSenderId = null;
+      if (isSenderUuid) {
+        const senderCheck = await query2("SELECT id FROM users WHERE id = $1", [senderId]);
+        if (senderCheck.rows.length > 0) validSenderId = senderId;
+      }
       await query2(
         `INSERT INTO notification_history (title, body, image, url, sent_by, status, response)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [title, body, image, url, senderId, "sent", JSON.stringify(result)]
+        [title, body, image, url, validSenderId, "sent", JSON.stringify(result)]
       );
       res.json({ success: true, result });
     } catch (err) {
       await query2(
-        "INSERT INTO notification_logs (level, message, stack) VALUES ($1, $2, $3)",
-        ["error", err.message, err.stack || ""]
+        "INSERT INTO notification_logs (level, message, stack, event_type, recipient) VALUES ($1, $2, $3, $4, $5)",
+        ["error", err.message, err.stack || "", "fcm_error", "broadcast"]
       );
       res.status(500).json({ error: err.message });
     }

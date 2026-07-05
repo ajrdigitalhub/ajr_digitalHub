@@ -97,9 +97,35 @@ export const notificationController = {
       const { token, browser, device, os, language, timezone } = req.body;
       if (!token) return res.status(400).json({ error: 'Token is required' });
 
-      // Resolve organization context
-      const userRes = await query('SELECT customer_id FROM users WHERE id = $1', [userId]);
-      const customerId = userRes.rows[0]?.customer_id || null;
+      // Resolve organization context with robust check for UUID validation and missing user rows
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      let validUserId = null;
+      let customerId = null;
+
+      if (isUuid) {
+        const userRes = await query('SELECT id, customer_id FROM users WHERE id = $1', [userId]);
+        if (userRes.rows.length > 0) {
+          validUserId = userId;
+          customerId = userRes.rows[0].customer_id || null;
+        } else {
+          // If the user is a valid UUID but does not exist in the users table, 
+          // let's insert a placeholder user row so that the foreign key constraint is satisfied!
+          try {
+            await query(
+              `INSERT INTO users (id, email, role, created_at)
+               VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+               ON CONFLICT (id) DO NOTHING`,
+              [userId, (req as any).user?.email || 'dev-user@ajrdigitalhub.com', (req as any).user?.role || 'user']
+            );
+            validUserId = userId;
+          } catch (err: any) {
+            console.error('[FCM Controller] Failed to insert placeholder user, falling back to null user_id:', err.message);
+            validUserId = null;
+          }
+        }
+      } else {
+        console.warn('[FCM Controller] Incoming userId is not a valid UUID format, setting user_id reference to null:', userId);
+      }
 
       let appId = null;
       if (customerId) {
@@ -116,7 +142,7 @@ export const notificationController = {
            device = COALESCE(EXCLUDED.device, notification_tokens.device),
            os = COALESCE(EXCLUDED.os, notification_tokens.os),
            last_seen = CURRENT_TIMESTAMP`,
-        [userId, appId, customerId, token, browser, device, os, language, timezone]
+        [validUserId, appId, customerId, token, browser, device, os, language, timezone]
       );
 
       // Synchronize to firebase_notification_tokens
@@ -131,7 +157,7 @@ export const notificationController = {
            platform = COALESCE(EXCLUDED.platform, firebase_notification_tokens.platform),
            token_status = 'active',
            last_active = CURRENT_TIMESTAMP`,
-        [userId, appId, customerId, token, browser, device, os, os || 'Web', language, timezone]
+        [validUserId, appId, customerId, token, browser, device, os, os || 'Web', language, timezone]
       );
 
       res.json({ success: true, message: 'FCM Token saved' });
@@ -172,18 +198,34 @@ export const notificationController = {
       const result = await firebaseMessagingService.sendToTokens(tokens, { title, body, image, url, customData });
       
       const senderId = (req as any).user?.id || null;
+      
+      // Validate senderId and userId to prevent foreign key constraints
+      const isSenderUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(senderId);
+      let validSenderId = null;
+      if (isSenderUuid) {
+        const senderCheck = await query('SELECT id FROM users WHERE id = $1', [senderId]);
+        if (senderCheck.rows.length > 0) validSenderId = senderId;
+      }
+
+      const isTargetUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      let validTargetId = null;
+      if (isTargetUuid) {
+        const targetCheck = await query('SELECT id FROM users WHERE id = $1', [userId]);
+        if (targetCheck.rows.length > 0) validTargetId = userId;
+      }
+
       await query(
         `INSERT INTO notification_history (title, body, image, url, sent_by, sent_to, status, response)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [title, body, image, url, senderId, userId, 'sent', JSON.stringify(result)]
+        [title, body, image, url, validSenderId, validTargetId, 'sent', JSON.stringify(result)]
       );
 
       res.json({ success: true, result });
     } catch (err: any) {
       // Log to notification logs table
       await query(
-        'INSERT INTO notification_logs (level, message, stack) VALUES ($1, $2, $3)',
-        ['error', err.message, err.stack || '']
+        'INSERT INTO notification_logs (level, message, stack, event_type, recipient) VALUES ($1, $2, $3, $4, $5)',
+        ['error', err.message, err.stack || '', 'fcm_error', req.body?.userId || 'unknown']
       );
       res.status(500).json({ error: err.message });
     }
@@ -204,17 +246,26 @@ export const notificationController = {
       const result = await firebaseMessagingService.sendToTokens(tokens, { title, body, image, url, customData });
       
       const senderId = (req as any).user?.id || null;
+
+      // Validate senderId to prevent foreign key constraints
+      const isSenderUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(senderId);
+      let validSenderId = null;
+      if (isSenderUuid) {
+        const senderCheck = await query('SELECT id FROM users WHERE id = $1', [senderId]);
+        if (senderCheck.rows.length > 0) validSenderId = senderId;
+      }
+
       await query(
         `INSERT INTO notification_history (title, body, image, url, sent_by, status, response)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [title, body, image, url, senderId, 'sent', JSON.stringify(result)]
+        [title, body, image, url, validSenderId, 'sent', JSON.stringify(result)]
       );
 
       res.json({ success: true, result });
     } catch (err: any) {
       await query(
-        'INSERT INTO notification_logs (level, message, stack) VALUES ($1, $2, $3)',
-        ['error', err.message, err.stack || '']
+        'INSERT INTO notification_logs (level, message, stack, event_type, recipient) VALUES ($1, $2, $3, $4, $5)',
+        ['error', err.message, err.stack || '', 'fcm_error', 'broadcast']
       );
       res.status(500).json({ error: err.message });
     }
