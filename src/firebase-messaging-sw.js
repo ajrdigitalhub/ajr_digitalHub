@@ -143,14 +143,7 @@ self.addEventListener('notificationclick', (event) => {
 
 // Robust push event listener
 self.addEventListener('push', (event) => {
-  // Capture initialization state before we run any async operations
-  const wasInitialized = messagingInitialized;
-  console.log('[FCM SW] Push event received. wasInitialized:', wasInitialized);
-
-  if (wasInitialized) {
-    console.log('[FCM SW] FCM already initialized. Letting FCM SDK handle this push event.');
-    return;
-  }
+  console.log('[FCM SW] Push event received.');
 
   event.waitUntil(
     (async () => {
@@ -164,7 +157,7 @@ self.addEventListener('push', (event) => {
 
       try {
         // Try to load cached config and initialize FCM to be ready for future events/clicks
-        if (typeof caches !== 'undefined') {
+        if (!messagingInitialized && typeof caches !== 'undefined') {
           try {
             const cache = await caches.open('fcm-config');
             const response = await cache.match('/fcm-config.json');
@@ -177,7 +170,7 @@ self.addEventListener('push', (event) => {
           }
         }
 
-        // Manually parse event data and display the notification
+        // Manually parse event data first to get the title and body
         let payload = {};
         if (event.data) {
           try {
@@ -206,6 +199,32 @@ self.addEventListener('push', (event) => {
           options.image = notification.image || data.image || notification.imageUrl || data.imageUrl || payload.image || payload.imageUrl;
           options.data.url = data.url || notification.clickAction || payload.url || '/';
         }
+
+        // Wait for a short delay (600ms) to allow the Firebase SDK to receive the push
+        // and display the notification automatically if it's active.
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        // Check if a notification with the same title and body is already active/displayed.
+        let alreadyDisplayed = false;
+        try {
+          const activeNotifications = await self.registration.getNotifications();
+          console.log('[FCM SW] Active notifications check:', activeNotifications.length);
+
+          for (const n of activeNotifications) {
+            if (n.title === title && n.body === body) {
+              alreadyDisplayed = true;
+              break;
+            }
+          }
+        } catch (checkErr) {
+          console.error('[FCM SW] Failed to query active notifications:', checkErr);
+        }
+
+        if (alreadyDisplayed) {
+          console.log('[FCM SW] Notification already displayed by FCM SDK. Exiting to prevent duplicates.');
+          return;
+        }
+
       } catch (err) {
         console.error('[FCM SW] Error parsing push data: ', err);
       }
