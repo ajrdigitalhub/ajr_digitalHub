@@ -649,8 +649,9 @@ app.get('/api/forms/:id/analytics', authenticateToken, (req, res) => {
 //     }
 // });
 // Run Backend Express App
-const PORT = process.env.PORT || 8080;
+// Dynamically read the PORT environment variable injected by Cloud Run
+const port = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server actively running at http://0.0.0.0:${port}`);
 });
