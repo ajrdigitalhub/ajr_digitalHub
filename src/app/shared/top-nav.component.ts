@@ -140,18 +140,6 @@ import { NotificationManagerService } from '../services/notification-manager.ser
           </div>
 
           <!-- Other items -->
-          <a routerLink="/dashboard/workflow" routerLinkActive="bg-indigo-500/10 text-indigo-400" class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all">
-            Automation
-          </a>
-          
-          <a routerLink="/dashboard/analytics" routerLinkActive="bg-indigo-500/10 text-indigo-400" class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all">
-            Analytics
-          </a>
-
-          <a routerLink="/invoice-builder" class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all">
-            Invoicing
-          </a>
-
           <a routerLink="/marketplace" class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all">
             Marketplace
           </a>
@@ -160,13 +148,35 @@ import { NotificationManagerService } from '../services/notification-manager.ser
             Documentation
           </a>
 
-          <a routerLink="/dashboard/billing" routerLinkActive="bg-indigo-500/10 text-indigo-400" class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all">
-            Billing
-          </a>
-
-          <a routerLink="/dashboard/settings" routerLinkActive="bg-indigo-500/10 text-indigo-400" class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all">
-            Settings
-          </a>
+          <!-- Operations Dropdown -->
+          <div class="relative group">
+            <button class="px-3 py-2 text-xs font-bold text-app-muted hover:text-app-text rounded-lg transition-all flex items-center gap-1 focus:outline-none">
+              Operations
+              <mat-icon class="text-xs w-3 h-3 leading-none transition-transform group-hover:rotate-180">keyboard_arrow_down</mat-icon>
+            </button>
+            <div class="absolute right-0 mt-1 w-48 bg-app-card border border-app-border rounded-2xl shadow-xl p-2.5 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 backdrop-blur-lg bg-opacity-95">
+              <a routerLink="/dashboard/workflow" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
+                <mat-icon class="text-sm">alt_route</mat-icon>
+                <span>Automation</span>
+              </a>
+              <a routerLink="/dashboard/analytics" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
+                <mat-icon class="text-sm">insights</mat-icon>
+                <span>Analytics</span>
+              </a>
+              <a routerLink="/invoice-builder" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
+                <mat-icon class="text-sm">receipt_long</mat-icon>
+                <span>Invoicing</span>
+              </a>
+              <a routerLink="/dashboard/billing" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
+                <mat-icon class="text-sm">payment</mat-icon>
+                <span>Billing</span>
+              </a>
+              <a routerLink="/dashboard/settings" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
+                <mat-icon class="text-sm">settings</mat-icon>
+                <span>Settings</span>
+              </a>
+            </div>
+          </div>
         </div>
 
         <!-- Right: Actions & User Details -->

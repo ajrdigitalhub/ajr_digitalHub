@@ -30,4 +30,14 @@ router.post('/admin/config', requireAuth, requireRole('admin'), notificationCont
 router.put('/admin/config/:id', requireAuth, requireRole('admin'), notificationController.updateConfig);
 router.delete('/admin/config/:id', requireAuth, requireRole('admin'), notificationController.deleteConfig);
 
+// Admin Manual Notification Center endpoints
+router.get('/templates', requireAuth, requireRole('admin'), notificationController.getTemplates);
+router.post('/send', requireAuth, requireRole('admin'), notificationController.sendNotification);
+router.post('/test', requireAuth, requireRole('admin'), notificationController.testManualNotification);
+router.get('/dashboard', requireAuth, requireRole('admin'), notificationController.getDashboardStats);
+router.post('/quick-send', requireAuth, requireRole('admin'), notificationController.quickSendNotification);
+router.get('/customer-by-project/:projectId', requireAuth, requireRole('admin'), notificationController.getCustomerByProject);
+router.get('/customer-by-id/:customerId', requireAuth, requireRole('admin'), notificationController.getCustomerById);
+router.get('/history/:customerId', requireAuth, requireRole('admin'), notificationController.getCustomerNotificationHistory);
+
 export default router;

@@ -8,11 +8,15 @@ dotenv.config(); // Fallback for standard .env
 import app from './app';
 import { isPostgresEnabled, pool } from '../config/db';
 import { firebaseApp } from '../config/firebase';
+import { billingCronService } from '../services/billing-cron.service';
 
 const PORT = Number(process.env.PORT || process.env['DB_BACKEND_PORT'] || 4000);
 
 async function bootstrap() {
   console.log('🚀 Starting Backend Server Development...');
+
+  // Start Billing Cron Scheduler
+  billingCronService.start();
 
   // 1. Check Database Connection
   if (isPostgresEnabled && pool) {

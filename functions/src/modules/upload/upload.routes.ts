@@ -26,9 +26,9 @@ const busboyUpload = (req: Request, res: Response, next: NextFunction) => {
     bb.on('file', (name, file, info) => {
       const { filename, mimeType } = info;
       
-      if (!mimeType.startsWith('image/')) {
+      if (!mimeType.startsWith('image/') && mimeType !== 'application/pdf') {
         file.resume();
-        uploadError = new Error('Only images are allowed');
+        uploadError = new Error('Only images and PDF documents are allowed');
         return;
       }
 
@@ -55,7 +55,7 @@ const busboyUpload = (req: Request, res: Response, next: NextFunction) => {
         return next(uploadError);
       }
       if (!fileUploaded) {
-        return res.status(400).json({ error: 'No image provided' });
+        return res.status(400).json({ error: 'No file provided' });
       }
       next();
     });

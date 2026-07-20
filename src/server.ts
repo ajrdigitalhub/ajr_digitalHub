@@ -106,11 +106,19 @@ interface PurchaseRecord {
 interface ProductRecord {
   id: string;
   title: string;
+  name?: string;
   description: string;
   price: number;
   category: string;
   image: string;
   html_content: string;
+  css_content?: string;
+  css?: string;
+  js?: string;
+  meta?: any;
+  version?: string;
+  createdAt?: string;
+  created_at?: string;
   status: 'active' | 'draft' | 'archived';
 }
 

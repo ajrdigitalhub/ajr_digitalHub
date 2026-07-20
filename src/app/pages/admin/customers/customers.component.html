@@ -32,7 +32,7 @@
         </thead>
         <tbody class="divide-y divide-app-border/40">
           @for (cust of customers(); track cust.id) {
-            <tr class="hover:bg-app-card/25 transition-colors">
+            <tr (click)="selectCustomer(cust)" class="hover:bg-app-card/25 transition-colors cursor-pointer" [class.bg-indigo-600/5]="selectedCustomer()?.id === cust.id">
               <td class="py-3.5 px-4 font-bold text-app-text">
                 {{ cust.name }}
                 <span class="block text-[10px] text-app-muted font-normal font-sans" *ngIf="cust.website">{{ cust.website }}</span>
@@ -54,7 +54,7 @@
                 </span>
               </td>
               <td class="py-3.5 px-4 text-center flex items-center justify-center gap-2">
-                <button (click)="toggleCustomerStatus(cust)" class="px-2.5 py-1 bg-app-bg border border-app-border text-[10px] font-bold rounded-lg text-app-text hover:bg-app-card transition cursor-pointer">
+                <button (click)="$event.stopPropagation(); toggleCustomerStatus(cust)" class="px-2.5 py-1 bg-app-bg border border-app-border text-[10px] font-bold rounded-lg text-app-text hover:bg-app-card transition cursor-pointer">
                   {{ cust.status === 'active' ? 'Suspend' : 'Activate' }}
                 </button>
               </td>
@@ -66,6 +66,128 @@
           }
         </tbody>
       </table>
+    </div>
+  }
+
+  <!-- Slide-Over Drawer -->
+  @if (selectedCustomer()) {
+    <div class="fixed inset-0 z-50 overflow-hidden animate-in fade-in duration-200" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+      <div class="absolute inset-0 overflow-hidden">
+        <!-- Backdrop -->
+        <div (click)="closeDrawer()" class="absolute inset-0 bg-app-bg/60 backdrop-blur-sm transition-opacity duration-300"></div>
+
+        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+          <!-- Slide-over panel -->
+          <div class="pointer-events-auto w-screen max-w-md transform bg-app-card/95 backdrop-blur-md border-l border-app-border p-6 shadow-2xl transition-all duration-300 animate-in slide-in-from-right duration-300 flex flex-col h-full text-app-text">
+            
+            <!-- Header -->
+            <div class="flex items-start justify-between border-b border-app-border pb-4 mb-5">
+              <div>
+                <h2 class="text-base font-bold text-app-text" id="slide-over-title">
+                  {{ selectedCustomer()?.name }}
+                </h2>
+                <p class="text-[10px] text-app-muted mt-0.5 font-mono uppercase tracking-wider">
+                  {{ selectedCustomer()?.plan }} Plan • {{ selectedCustomer()?.billing_cycle }}
+                </p>
+              </div>
+              <button (click)="closeDrawer()" class="rounded-lg p-1.5 text-app-muted hover:text-app-text hover:bg-app-bg/50 transition-colors">
+                <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
+              </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-1">
+              <!-- Customer Profile Overview Card -->
+              <div class="glass p-4 rounded-xl border border-app-border space-y-3 bg-app-bg/30">
+                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">business</mat-icon> Profile Details
+                </h3>
+
+                <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-xs">
+                  <div>
+                    <span class="block text-[9px] text-app-muted uppercase font-bold">GSTIN Registration</span>
+                    <span class="font-mono text-app-text font-bold">{{ selectedCustomer()?.gst_number || 'N/A' }}</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-app-muted uppercase font-bold">PAN</span>
+                    <span class="font-mono text-app-text font-bold">{{ selectedCustomer()?.pan || 'N/A' }}</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-app-muted uppercase font-bold">Industry Sector</span>
+                    <span class="text-app-text font-semibold">{{ selectedCustomer()?.industry || 'General' }}</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-app-muted uppercase font-bold">Location</span>
+                    <span class="text-app-text font-semibold">{{ selectedCustomer()?.city || 'N/A' }}, {{ selectedCustomer()?.country || 'India' }}</span>
+                  </div>
+                  <div class="col-span-2">
+                    <span class="block text-[9px] text-app-muted uppercase font-bold">Primary Website</span>
+                    <a [href]="'https://' + selectedCustomer()?.website" target="_blank" class="text-indigo-400 font-mono hover:underline truncate block" *ngIf="selectedCustomer()?.website">{{ selectedCustomer()?.website }}</a>
+                    <span class="text-app-muted font-mono" *ngIf="!selectedCustomer()?.website">N/A</span>
+                  </div>
+                </div>
+
+                <!-- Notify Client Trigger Button -->
+                <div class="pt-2">
+                  <button (click)="notifyClient(selectedCustomer()?.id)" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10">
+                    <mat-icon class="!text-[14px] !w-3.5 !h-3.5">notifications_active</mat-icon>
+                    <span>Notify Client (Manual Center)</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Notification Delivery Timeline -->
+              <div class="space-y-4">
+                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-app-border/40 pb-2">
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">history</mat-icon> Notification Dispatch History
+                </h3>
+
+                @if (loadingHistory()) {
+                  <div class="flex justify-center py-8">
+                    <div class="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                } @else {
+                  <div class="relative pl-4 border-l-2 border-app-border/60 ml-2 space-y-6">
+                    @for (log of notificationHistory(); track log.id) {
+                      <div class="relative space-y-1">
+                        <!-- Timeline Dot -->
+                        <div class="absolute -left-[23px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-app-card"
+                          [ngClass]="log.status === 'read' || log.status === 'delivered' ? 'bg-emerald-400' :
+                                    log.status === 'sent' ? 'bg-indigo-400' :
+                                    log.status === 'pending' ? 'bg-amber-400' : 'bg-rose-500'"></div>
+                        
+                        <div class="flex justify-between items-center text-[10px]">
+                          <span class="font-bold text-app-text uppercase tracking-wider flex items-center gap-1">
+                            <span class="px-1.5 py-0.5 rounded text-[8px] font-black" [ngClass]="log.channel === 'whatsapp' ? 'bg-teal-500/10 text-teal-400' : 'bg-sky-500/10 text-sky-400'">{{ log.channel }}</span>
+                            {{ log.event_type }}
+                          </span>
+                          <span class="font-mono text-[9px] text-app-muted">{{ log.created_at | date:'short' }}</span>
+                        </div>
+
+                        <!-- Details snippet -->
+                        <div class="text-[11px] text-app-muted leading-relaxed">
+                          Recipient: <span class="font-mono text-app-text">{{ log.recipient }}</span>
+                          @if (log.meta_message_id) {
+                            <span class="block text-[9px] text-app-muted mt-0.5 font-mono">Meta ID: {{ log.meta_message_id }}</span>
+                          }
+                          @if (log.firebase_message_id) {
+                            <span class="block text-[9px] text-app-muted mt-0.5 font-mono">FCM ID: {{ log.firebase_message_id }}</span>
+                          }
+                          @if (log.error_details) {
+                            <span class="block text-[9px] text-rose-400 mt-1 bg-rose-500/5 p-1.5 rounded font-mono border border-rose-500/10">Error: {{ log.error_details }}</span>
+                          }
+                        </div>
+                      </div>
+                    } @empty {
+                      <p class="text-xs text-app-muted text-center py-6 font-semibold">No notification dispatch logs recorded for this client.</p>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   }
 </div>

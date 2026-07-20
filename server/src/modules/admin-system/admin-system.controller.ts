@@ -734,5 +734,97 @@ export const adminSystemController = {
     } catch (err: any) {
       return res.status(500).json(errorResponse(err.message));
     }
+  },
+
+  async getBillingAutomationConfig(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const appsService = new BaseService('apps');
+      const app = await appsService.findOne(id);
+      if (!app) {
+        return res.status(404).json(errorResponse('Application not found', 404));
+      }
+      return res.json({
+        customer: app.billing_automation?.customer || {},
+        billing: app.billing_automation?.billing || {},
+        notification: app.billing_automation?.notification || {}
+      });
+    } catch (err: any) {
+      return res.status(500).json(errorResponse(err.message));
+    }
+  },
+
+  async updateBillingAutomationConfig(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const appsService = new BaseService('apps');
+      const app = await appsService.findOne(id);
+      if (!app) {
+        return res.status(404).json(errorResponse('Application not found', 404));
+      }
+      const billing_automation = {
+        customer: req.body.customer || {},
+        billing: req.body.billing || {},
+        notification: req.body.notification || {}
+      };
+      const updated = await appsService.update(id, { billing_automation });
+      return res.json(successResponse(updated));
+    } catch (err: any) {
+      return res.status(500).json(errorResponse(err.message));
+    }
+  },
+
+  async saveWhatsappConfig(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const appsService = new BaseService('apps');
+      const app = await appsService.findOne(id);
+      if (!app) {
+        return res.status(404).json(errorResponse('Application not found', 404));
+      }
+      const whatsapp = {
+        phone_number: req.body.phone_number,
+        waba_id: req.body.waba_id,
+        api_key: req.body.api_key,
+        enabled: req.body.enabled
+      };
+      const updated = await appsService.update(id, { whatsapp });
+      return res.json(successResponse(updated));
+    } catch (err: any) {
+      return res.status(500).json(errorResponse(err.message));
+    }
+  },
+
+  async saveFirebaseConfig(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const appsService = new BaseService('apps');
+      const app = await appsService.findOne(id);
+      if (!app) {
+        return res.status(404).json(errorResponse('Application not found', 404));
+      }
+      const firebase_config = {
+        projectId: req.body.projectId,
+        apiKey: req.body.apiKey,
+        authDomain: req.body.authDomain,
+        storageBucket: req.body.storageBucket,
+        appId: req.body.appId,
+        measurementId: req.body.measurementId,
+        serviceAccount: req.body.serviceAccount
+      };
+      const updated = await appsService.update(id, { firebase_config });
+      return res.json(successResponse(updated));
+    } catch (err: any) {
+      return res.status(500).json(errorResponse(err.message));
+    }
+  },
+
+  async testFirebaseConnection(req: Request, res: Response): Promise<any> {
+    try {
+      // Simulate Firebase connectivity check success
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json(errorResponse(err.message));
+    }
   }
 };

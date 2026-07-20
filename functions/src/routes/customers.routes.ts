@@ -7,6 +7,7 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/', customersController.getCustomers);
+router.get('/search', customersController.searchCustomers);
 router.get('/:id', customersController.getCustomerById);
 router.post('/', customersController.createCustomer);
 router.put('/:id', customersController.updateCustomer);

@@ -249,3 +249,4 @@ app.get('/health', (req, res) => res.json({ status: 'UP', service: 'AJR Digital 
 export default app;
 export { billingService } from './services/billingService';
 export { analyticsService } from './services/analytics.service';
+export { notificationService } from './services/notification.service';

@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 
 @Component({
@@ -13,8 +14,15 @@ import { ApiService } from '../../../services/api.service';
 })
 export class AdminCustomersComponent implements OnInit {
   private api = inject(ApiService);
+  private router = inject(Router);
+
   loading = signal<boolean>(false);
   customers = signal<any[]>([]);
+
+  // Drawer & History state signals
+  selectedCustomer = signal<any | null>(null);
+  notificationHistory = signal<any[]>([]);
+  loadingHistory = signal<boolean>(false);
 
   ngOnInit() {
     this.loadCustomers();
@@ -33,6 +41,33 @@ export class AdminCustomersComponent implements OnInit {
     }
   }
 
+  selectCustomer(cust: any) {
+    this.selectedCustomer.set(cust);
+    this.loadNotificationHistory(cust.id);
+  }
+
+  closeDrawer() {
+    this.selectedCustomer.set(null);
+    this.notificationHistory.set([]);
+  }
+
+  async loadNotificationHistory(customerId: string) {
+    this.loadingHistory.set(true);
+    try {
+      const { firstValueFrom } = await import('rxjs');
+      const history = await firstValueFrom(this.api.get<any[]>(`/notifications/history/${customerId}`));
+      this.notificationHistory.set(history || []);
+    } catch (err) {
+      console.error('Failed to load customer notification history:', err);
+    } finally {
+      this.loadingHistory.set(false);
+    }
+  }
+
+  notifyClient(customerId: string) {
+    this.router.navigate(['/admin/notification-center'], { queryParams: { customerId } });
+  }
+
   async toggleCustomerStatus(customer: any) {
     const nextStatus = customer.status === 'active' ? 'suspended' : 'active';
     try {
@@ -40,6 +75,9 @@ export class AdminCustomersComponent implements OnInit {
       await firstValueFrom(this.api.put(`/customers/${customer.id}`, { status: nextStatus }));
       alert(`Customer status updated to ${nextStatus}`);
       this.loadCustomers();
+      if (this.selectedCustomer()?.id === customer.id) {
+        this.selectedCustomer.set({ ...customer, status: nextStatus });
+      }
     } catch (e: any) {
       alert('Failed to update status: ' + e.message);
     }

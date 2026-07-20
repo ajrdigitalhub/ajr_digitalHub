@@ -107,10 +107,21 @@ export class MarketplaceConfigComponent implements OnInit {
     this.isSaving.set(true);
     const payload = {
       ...item,
+      title: item.title || item.name || 'Unnamed Asset',
+      name: item.title || item.name || 'Unnamed Asset',
+      description: item.description || '',
+      price: parseFloat(item.price as any) || 0,
+      category: item.category || 'Uncategorized',
       html: item.html_content || '',
       html_content: item.html_content || '',
+      css: item.css_content || '',
+      css_content: item.css_content || '',
+      js: item.js || '',
+      meta: item.meta || {},
+      version: item.version || '1.0.0',
       image: item.image || item.image_url || 'https://picsum.photos/seed/placeholder/800/600',
-      image_url: item.image || item.image_url || 'https://picsum.photos/seed/placeholder/800/600'
+      image_url: item.image || item.image_url || 'https://picsum.photos/seed/placeholder/800/600',
+      status: item.status || 'active'
     };
 
     if (item.id) {

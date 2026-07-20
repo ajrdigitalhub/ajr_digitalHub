@@ -863,11 +863,21 @@ CREATE TABLE IF NOT EXISTS google_ads_usage (
 CREATE TABLE IF NOT EXISTS notification_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
-    channel VARCHAR(50) CHECK (channel IN ('whatsapp', 'email', 'in-app', 'push')),
+    app_id UUID REFERENCES apps(id) ON DELETE CASCADE,
+    channel VARCHAR(50) CHECK (channel IN ('whatsapp', 'email', 'in-app', 'push', 'both')),
     event_type VARCHAR(100) NOT NULL,
     recipient VARCHAR(255) NOT NULL,
-    status VARCHAR(50) CHECK (status IN ('sent', 'failed', 'pending')),
+    status VARCHAR(50) CHECK (status IN ('sent', 'failed', 'pending', 'delivered', 'read', 'scheduled')),
     error_details TEXT,
+    meta_message_id VARCHAR(255),
+    firebase_message_id VARCHAR(255),
+    response JSONB DEFAULT '{}'::jsonb,
+    sent_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    scheduled BOOLEAN DEFAULT false,
+    scheduled_time TIMESTAMP WITH TIME ZONE,
+    cron_expression VARCHAR(100),
+    timezone VARCHAR(50),
+    sent_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

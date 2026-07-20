@@ -1,8 +1,10 @@
 import { Component, ChangeDetectionStrategy, input, inject, signal, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 import { ProjectData } from '../../../services/project-detail.service';
 import { ApiService } from '../../../services/api.service';
+import { AdminStoreService } from '../../../services/admin-store.service';
 
 interface SmartInsights {
   insight: string;
@@ -24,7 +26,7 @@ interface SmartInsights {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, MatIconModule],
   template: `
-    <div class="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl space-y-6">
+    <div class="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl space-y-6 pb-12">
       <h2 class="text-2xl font-bold text-app-text tracking-tight flex items-center gap-2">
          <mat-icon class="text-indigo-500">grid_view</mat-icon> Smart Insights & Overview
       </h2>
@@ -49,7 +51,7 @@ interface SmartInsights {
           </p>
         </div>
       </div>
- 
+  
       <!-- Quick Metrics Grid -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <!-- Card 1: Status -->
@@ -120,7 +122,7 @@ interface SmartInsights {
          </div>
          <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-              <mat-icon class="text-indigo-400">payments</mat-icon>
+               <mat-icon class="text-indigo-400">payments</mat-icon>
             </div>
             <div>
               <h3 class="text-base font-bold text-app-text">App Billing &amp; Pricing Overview</h3>
@@ -199,6 +201,51 @@ interface SmartInsights {
           }
         </div>
       }
+
+      <!-- Quick Notify (One-Click Alerts) -->
+      <div class="glass p-6 rounded-2xl border border-app-border space-y-4 animate-in fade-in duration-300">
+         <div class="flex items-center gap-3 border-b border-app-border pb-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center shrink-0">
+               <mat-icon class="text-indigo-400">notifications_active</mat-icon>
+            </div>
+            <div>
+               <h3 class="text-sm font-bold text-app-text">Quick Notify (One-Click Alerts)</h3>
+               <p class="text-xs text-app-muted mt-0.5">Instantly dispatch system template notifications to this project's client.</p>
+            </div>
+         </div>
+         
+         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            <button (click)="triggerQuickAlert('Payment Reminder')" [disabled]="isSendingAlert()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-app-border bg-app-bg/50 hover:bg-indigo-600/10 hover:border-indigo-500/30 transition-all cursor-pointer group text-center h-[90px]">
+               <mat-icon class="text-amber-500 group-hover:scale-110 transition-transform">payment</mat-icon>
+               <span class="text-[10px] font-bold text-app-text mt-2">Payment</span>
+            </button>
+
+            <button (click)="triggerQuickAlert('Invoice Ready')" [disabled]="isSendingAlert()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-app-border bg-app-bg/50 hover:bg-indigo-600/10 hover:border-indigo-500/30 transition-all cursor-pointer group text-center h-[90px]">
+               <mat-icon class="text-emerald-500 group-hover:scale-110 transition-transform">receipt_long</mat-icon>
+               <span class="text-[10px] font-bold text-app-text mt-2">Invoice Ready</span>
+            </button>
+
+            <button (click)="triggerQuickAlert('Project Update')" [disabled]="isSendingAlert()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-app-border bg-app-bg/50 hover:bg-indigo-600/10 hover:border-indigo-500/30 transition-all cursor-pointer group text-center h-[90px]">
+               <mat-icon class="text-indigo-400 group-hover:scale-110 transition-transform">browser_updated</mat-icon>
+               <span class="text-[10px] font-bold text-app-text mt-2">Project Update</span>
+            </button>
+
+            <button (click)="triggerQuickAlert('Maintenance')" [disabled]="isSendingAlert()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-app-border bg-app-bg/50 hover:bg-indigo-600/10 hover:border-indigo-500/30 transition-all cursor-pointer group text-center h-[90px]">
+               <mat-icon class="text-rose-500 group-hover:scale-110 transition-transform">build</mat-icon>
+               <span class="text-[10px] font-bold text-app-text mt-2">Maintenance</span>
+            </button>
+
+            <button (click)="triggerQuickAlert('Subscription Renewal')" [disabled]="isSendingAlert()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-app-border bg-app-bg/50 hover:bg-indigo-600/10 hover:border-indigo-500/30 transition-all cursor-pointer group text-center h-[90px]">
+               <mat-icon class="text-pink-500 group-hover:scale-110 transition-transform">sync</mat-icon>
+               <span class="text-[10px] font-bold text-app-text mt-2">Renewal</span>
+            </button>
+
+            <button (click)="openCustomNotification()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-app-border bg-app-bg/50 hover:bg-indigo-600/10 hover:border-indigo-500/30 transition-all cursor-pointer group text-center h-[90px]">
+               <mat-icon class="text-sky-500 group-hover:scale-110 transition-transform">message</mat-icon>
+               <span class="text-[10px] font-bold text-app-text mt-2">Custom</span>
+            </button>
+         </div>
+      </div>
     </div>
   `
 })
@@ -206,8 +253,11 @@ export class ProjectOverviewComponent implements OnInit {
   project = input.required<ProjectData>();
   apiService = inject(ApiService);
   cdr = inject(ChangeDetectorRef);
+  router = inject(Router);
+  store = inject(AdminStoreService);
  
   isLoading = signal(true);
+  isSendingAlert = signal(false);
 
   getFirebaseCost(): number {
     const hasFirebase = !!this.project().firebase_config;
@@ -224,6 +274,7 @@ export class ProjectOverviewComponent implements OnInit {
   getTotalCost(): number {
     return Math.round((this.getFirebaseCost() + this.getWhatsAppCost()) * 100) / 100;
   }
+
   insights = signal<SmartInsights>({
     insight: 'Loading system metrics...',
     totalHits: 0,
@@ -251,6 +302,28 @@ export class ProjectOverviewComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  triggerQuickAlert(alertType: string) {
+    this.isSendingAlert.set(true);
+    const projectId = this.project().id;
+    this.apiService.post<any>('/notifications/quick-send', { projectId, alertType }).subscribe({
+      next: (res) => {
+        this.isSendingAlert.set(false);
+        this.store.showToast(`${alertType} notification successfully dispatched!`, 'success');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isSendingAlert.set(false);
+        this.store.showToast(`Dispatch failed: ${err.error?.error || err.message}`, 'error');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  openCustomNotification() {
+    const projectId = this.project().id;
+    this.router.navigate(['/admin/notification-center'], { queryParams: { projectId } });
   }
 
   // Keep legacy methods for backward compatibility

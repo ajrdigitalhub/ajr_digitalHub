@@ -45,4 +45,11 @@ router.get('/apps/:id', authenticate, authorizeAdmin, adminSystemController.getA
 router.put('/apps/:id', authenticate, authorizeAdmin, adminSystemController.updateApp);
 router.delete('/apps/:id', authenticate, authorizeAdmin, adminSystemController.deleteApp);
 
+// App specific configuration subpages
+router.get('/apps/:id/billing-automation-config', authenticate, authorizeAdmin, adminSystemController.getBillingAutomationConfig);
+router.put('/apps/:id/billing-automation-config', authenticate, authorizeAdmin, adminSystemController.updateBillingAutomationConfig);
+router.post('/apps/:id/whatsapp-config', authenticate, authorizeAdmin, adminSystemController.saveWhatsappConfig);
+router.post('/apps/:id/firebase-config', authenticate, authorizeAdmin, adminSystemController.saveFirebaseConfig);
+router.post('/apps/:id/firebase/test-connection', authenticate, authorizeAdmin, adminSystemController.testFirebaseConnection);
+
 export default router;

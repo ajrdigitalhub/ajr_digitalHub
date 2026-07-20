@@ -33,3 +33,15 @@ exports.monthlyBillingCron = onSchedule({
 //         console.error('analyticsService is not exported in the server bundle');
 //     }
 // });
+
+exports.processScheduledNotificationsCron = onSchedule({
+    schedule: '* * * * *', // Every minute to trigger scheduled/cron notifications
+    timeoutSeconds: 60,
+    memory: '256MiB'
+}, async (event) => {
+    if (mod.notificationService) {
+        await mod.notificationService.processScheduledNotifications();
+    } else {
+        console.error('notificationService is not exported in the server bundle');
+    }
+});

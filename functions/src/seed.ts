@@ -458,6 +458,23 @@ export const seedDatabase = async () => {
         ALTER TABLE notification_configuration ADD COLUMN IF NOT EXISTS push_enabled BOOLEAN DEFAULT true;
         ALTER TABLE notification_configuration ADD COLUMN IF NOT EXISTS preferences JSONB DEFAULT '{}'::jsonb;
 
+        -- Manual Notification Center extensions
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS meta_message_id VARCHAR(255);
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS firebase_message_id VARCHAR(255);
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS response JSONB DEFAULT '{}'::jsonb;
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS sent_by UUID REFERENCES users(id) ON DELETE SET NULL;
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS scheduled BOOLEAN DEFAULT false;
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS scheduled_time TIMESTAMP WITH TIME ZONE;
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS cron_expression VARCHAR(100);
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS timezone VARCHAR(50);
+        ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS sent_at TIMESTAMP WITH TIME ZONE;
+
+        ALTER TABLE notification_logs DROP CONSTRAINT IF EXISTS notification_logs_status_check;
+        ALTER TABLE notification_logs ADD CONSTRAINT notification_logs_status_check CHECK (status IN ('sent', 'failed', 'pending', 'delivered', 'read', 'scheduled'));
+
+        ALTER TABLE notification_logs DROP CONSTRAINT IF EXISTS notification_logs_channel_check;
+        ALTER TABLE notification_logs ADD CONSTRAINT notification_logs_channel_check CHECK (channel IN ('whatsapp', 'email', 'in-app', 'push', 'both'));
+
         CREATE INDEX IF NOT EXISTS idx_customer_profiles_app ON customer_profiles(app_id);
         CREATE INDEX IF NOT EXISTS idx_billing_config_app ON billing_configuration(app_id);
         CREATE INDEX IF NOT EXISTS idx_notification_config_app ON notification_configuration(app_id);

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { query } from '../db';
 import { firebaseMessagingService } from '../services/firebase-messaging.service';
+import { notificationService } from '../services/notification.service';
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-cbc';
@@ -485,6 +486,148 @@ export const notificationController = {
       const { id } = req.params;
       await query('DELETE FROM notification_events_config WHERE id = $1', [id]);
       res.json({ success: true, message: 'Configuration event deleted' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getTemplates(req: Request, res: Response) {
+    try {
+      const appId = req.query.appId as string;
+      const templates = await notificationService.getMetaTemplates(appId);
+      res.json(templates);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async sendNotification(req: Request, res: Response) {
+    try {
+      const adminUserId = (req as any).user?.id;
+      const ipAddress = req.ip || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+
+      const result = await notificationService.queueNotification(
+        req.body,
+        adminUserId,
+        ipAddress,
+        userAgent
+      );
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async testManualNotification(req: Request, res: Response) {
+    try {
+      const { customerId, channel } = req.body;
+      const adminUserId = (req as any).user?.id;
+      const ipAddress = req.ip || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+
+      // Set up a standard test payload
+      const testPayload = {
+        customerId,
+        channel: channel || 'both',
+        template: 'kall_me_deliveryalert',
+        components: ['Test Customer', 'TEST-INV-001', '$100.00', 'https://ajrdigitalhub.com'],
+        pushPayload: {
+          title: 'AJR Digital Test Alert',
+          body: 'This is a test notification from the AJR Digital Hub Admin NOC.',
+          priority: 'high' as const,
+          ttl: 3600
+        }
+      };
+
+      const result = await notificationService.queueNotification(
+        testPayload,
+        adminUserId,
+        ipAddress,
+        userAgent
+      );
+      res.json({ success: true, message: 'Test notification queued', result });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getDashboardStats(req: Request, res: Response) {
+    try {
+      const stats = await notificationService.getDashboardStats();
+      res.json(stats);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async quickSendNotification(req: Request, res: Response) {
+    try {
+      const adminUserId = (req as any).user?.id;
+      const ipAddress = req.ip || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+
+      const result = await notificationService.sendQuickSendNotification(
+        req.body,
+        adminUserId,
+        ipAddress,
+        userAgent
+      );
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getCustomerByProject(req: Request, res: Response) {
+    try {
+      const { projectId } = req.params;
+      const result = await query(
+        `SELECT cp.id as customer_id, cp.customer_name, cp.company_name, cp.primary_email, cp.whatsapp_number, cp.mobile_number, cp.app_id, a.name as project_name,
+                (SELECT COUNT(*)::integer FROM firebase_notification_tokens WHERE application_id = cp.app_id) as push_token_count
+         FROM customer_profiles cp
+         LEFT JOIN apps a ON cp.app_id = a.id
+         WHERE cp.app_id = $1`,
+        [projectId]
+      );
+      if (result.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
+      res.json(result.rows[0]);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getCustomerById(req: Request, res: Response) {
+    try {
+      const { customerId } = req.params;
+      const result = await query(
+        `SELECT cp.id as customer_id, cp.customer_name, cp.company_name, cp.primary_email, cp.whatsapp_number, cp.mobile_number, cp.app_id, a.name as project_name,
+                (SELECT COUNT(*)::integer FROM firebase_notification_tokens WHERE application_id = cp.app_id) as push_token_count
+         FROM customer_profiles cp
+         LEFT JOIN apps a ON cp.app_id = a.id
+         WHERE cp.id = $1`,
+        [customerId]
+      );
+      if (result.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
+      res.json(result.rows[0]);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  async getCustomerNotificationHistory(req: Request, res: Response) {
+    try {
+      const { customerId } = req.params;
+      const history = await query(
+        `SELECT nl.*, cp.customer_name, a.name as project_name 
+         FROM notification_logs nl
+         LEFT JOIN customer_profiles cp ON nl.customer_id = cp.id
+         LEFT JOIN apps a ON nl.app_id = a.id
+         WHERE nl.customer_id = $1
+         ORDER BY nl.created_at DESC`,
+        [customerId]
+      );
+      res.json(history.rows);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

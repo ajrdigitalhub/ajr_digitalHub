@@ -59,6 +59,11 @@ export const routes: Routes = [
     canActivate: [AdminGuard]
   },
   {
+    path: 'admin/notification-center',
+    loadComponent: () => import('./pages/admin/notification-center/notification-center.component').then(m => m.NotificationCenterComponent),
+    canActivate: [AdminGuard]
+  },
+  {
     path: 'admin/documentation',
     loadComponent: () => import('./pages/admin/documentation/documentation-admin.component').then(m => m.AdminDocsComponent),
     canActivate: [AdminGuard]
@@ -90,6 +95,7 @@ export const routes: Routes = [
       { path: 'settings', loadComponent: () => import('./pages/dashboard/clients/clients.component').then(m => m.ClientManagementComponent) }
     ]
   },
+  { path: 'billing/:invoiceId', loadComponent: () => import('./pages/billing-details/billing-details.component').then(m => m.BillingDetailsComponent), canActivate: [authGuard] },
   { path: 'form/:id', component: PublicForm },
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }

@@ -357,5 +357,25 @@ export const customersController = {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  },
+
+  async searchCustomers(req: Request, res: Response) {
+    try {
+      const qStr = req.query.q as string || '';
+      const queryVal = `%${qStr}%`;
+
+      const result = await query(
+        `SELECT cp.id as customer_id, cp.customer_name, cp.company_name, cp.primary_email, cp.whatsapp_number, cp.mobile_number, cp.app_id, a.name as project_name,
+                (SELECT COUNT(*)::integer FROM firebase_notification_tokens WHERE application_id = cp.app_id) as push_token_count
+         FROM customer_profiles cp
+         LEFT JOIN apps a ON cp.app_id = a.id
+         WHERE cp.customer_name ILIKE $1 OR cp.company_name ILIKE $1 OR cp.primary_email ILIKE $1 OR cp.whatsapp_number ILIKE $1 OR cp.mobile_number ILIKE $1
+         LIMIT 20`,
+        [queryVal]
+      );
+      res.json(result.rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   }
 };

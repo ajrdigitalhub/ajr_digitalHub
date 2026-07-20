@@ -153,5 +153,83 @@ export const whatsappService = {
       console.error('whatsappService send error:', err.message);
       throw new Error(`Failed to send WhatsApp message: ${err.message}`);
     }
+  },
+
+  async sendTemplateNotification(
+    phone: string,
+    templateName: string,
+    languageCode: string,
+    parameters: any[],
+    attachmentUrl?: string,
+    attachmentFilename?: string,
+    appId?: string
+  ) {
+    const templateData: any = {
+      templateName,
+      languageCode,
+      parameters
+    };
+    if (attachmentUrl) {
+      templateData.documentUrl = attachmentUrl;
+      templateData.documentFilename = attachmentFilename || 'document.pdf';
+    }
+    return this.sendWhatsAppMessage(phone, templateData, appId);
+  },
+
+  async sendBillingReminder(
+    phone: string,
+    customerName: string,
+    invoiceNumber: string,
+    amount: string,
+    paymentLink: string,
+    attachmentUrl?: string,
+    appId?: string
+  ) {
+    const parameters = [customerName, invoiceNumber, amount, paymentLink];
+    return this.sendTemplateNotification(
+      phone,
+      'billing_reminder',
+      'en',
+      parameters,
+      attachmentUrl,
+      'invoice.pdf',
+      appId
+    );
+  },
+
+  async sendProjectReminder(
+    phone: string,
+    customerName: string,
+    projectName: string,
+    updateDetails: string,
+    appId?: string
+  ) {
+    const parameters = [customerName, projectName, updateDetails];
+    return this.sendTemplateNotification(
+      phone,
+      'project_update',
+      'en',
+      parameters,
+      undefined,
+      undefined,
+      appId
+    );
+  },
+
+  async sendCustomTemplate(
+    phone: string,
+    templateName: string,
+    params: string[],
+    appId?: string
+  ) {
+    return this.sendTemplateNotification(
+      phone,
+      templateName,
+      'en',
+      params,
+      undefined,
+      undefined,
+      appId
+    );
   }
 };

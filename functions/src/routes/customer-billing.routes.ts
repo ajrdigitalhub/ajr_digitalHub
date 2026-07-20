@@ -7,6 +7,7 @@ const router = Router();
 
 router.use(requireAuth);
 
+router.get('/:invoiceId', billingController.getInvoiceDetail);
 router.get('/invoices', billingController.getCustomerInvoices);
 router.get('/stats', billingController.getBillingStats);
 router.get('/firebase-stats', firebaseNotificationController.getDashboard);

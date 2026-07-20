@@ -13,10 +13,12 @@ import settingsRoutes from '../modules/settings/settings.routes';
 import shopsRoutes from '../modules/shops/shops.routes';
 import adminSystemRoutes from '../modules/admin-system/admin-system.routes';
 import invoiceRoutes from '../modules/invoice/invoice.routes';
+import billingRoutes from '../modules/billing/billing.routes';
 import { broadcastToSse } from '../modules/admin-system/admin-system.controller';
 import { BaseService } from './base.service';
 
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 const app = express();
 const logService = new BaseService('logs');
@@ -226,6 +228,12 @@ app.use('/api/admin/analytics', analyticsRoutes);
 // Unified dynamic real-time administrative system APIs
 app.use('/api/admin', adminSystemRoutes);
 app.use('/api/invoice', invoiceRoutes);
+
+// Serve static invoices PDF
+app.use('/public', express.static(path.join(__dirname, '../../../public')));
+
+// Specific Billing Routes
+app.use('/api', billingRoutes);
 
 // Shared aliases
 app.use('/api', dynamicRoutes);

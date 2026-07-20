@@ -1,21 +1,29 @@
 import { Request, Response } from 'express';
 import { BaseService } from '../../core/base.service';
+import { compileTailwind } from '../../utils/tailwind-compiler';
 
 const marketplaceService = new BaseService('marketplace');
 
 export function mapItemToUI(item: any) {
   return {
     id: item.id,
-    title: item.title,
-    description: item.description,
+    title: item.title || item.name || '',
+    name: item.name || item.title || '',
+    description: item.description || '',
     price: parseFloat(item.price as any) || 0,
     category: item.category || 'Uncategorized',
     html_content: item.html || item.html_content || '',
     html: item.html || item.html_content || '',
+    css_content: item.css || item.css_content || '',
+    css: item.css || item.css_content || '',
+    js: item.js || '',
+    meta: item.meta || {},
+    version: item.version || '1.0.0',
     image_url: item.image || item.image_url || 'https://picsum.photos/seed/placeholder/800/600',
     image: item.image || item.image_url || 'https://picsum.photos/seed/placeholder/800/600',
     status: item.status || 'active',
-    created_at: item.created_at || item.createdAt || new Date().toISOString()
+    created_at: item.created_at || item.createdAt || new Date().toISOString(),
+    createdAt: item.created_at || item.createdAt || new Date().toISOString()
   };
 }
 
@@ -92,14 +100,28 @@ export const marketplaceController = {
   async createAdmin(req: Request, res: Response): Promise<any> {
     try {
       const body = req.body;
+      const htmlCode = body.html || body.html_content || '';
+      const customCss = body.css || body.css_content || '';
+      const compiledCss = compileTailwind(htmlCode, customCss);
+
       const itemData = {
-        title: body.title,
-        description: body.description,
+        title: body.title || body.name || 'Unnamed Asset',
+        name: body.name || body.title || 'Unnamed Asset',
+        description: body.description || '',
         price: parseFloat(body.price as any) || 0,
         category: body.category || 'Uncategorized',
-        html: body.html || body.html_content || '',
+        html: htmlCode,
+        html_content: htmlCode,
+        css: compiledCss,
+        css_content: compiledCss,
+        js: body.js || '',
+        meta: body.meta || {},
+        version: body.version || '1.0.0',
         image: body.image || body.image_url || 'https://picsum.photos/seed/placeholder/800/600',
-        status: body.status || 'active'
+        image_url: body.image || body.image_url || 'https://picsum.photos/seed/placeholder/800/600',
+        status: body.status || 'active',
+        created_at: body.created_at || body.createdAt || new Date().toISOString(),
+        createdAt: body.created_at || body.createdAt || new Date().toISOString()
       };
 
       const result = await marketplaceService.create(itemData);
@@ -116,14 +138,27 @@ export const marketplaceController = {
     try {
       const id = req.params['id'] as string;
       const body = req.body;
+      const htmlCode = body.html || body.html_content || '';
+      const customCss = body.css || body.css_content || '';
+      const compiledCss = compileTailwind(htmlCode, customCss);
+
       const itemData = {
-        title: body.title,
-        description: body.description,
+        title: body.title || body.name || 'Unnamed Asset',
+        name: body.name || body.title || 'Unnamed Asset',
+        description: body.description || '',
         price: parseFloat(body.price as any) || 0,
         category: body.category || 'Uncategorized',
-        html: body.html || body.html_content || '',
+        html: htmlCode,
+        html_content: htmlCode,
+        css: compiledCss,
+        css_content: compiledCss,
+        js: body.js || '',
+        meta: body.meta || {},
+        version: body.version || '1.0.0',
         image: body.image || body.image_url || 'https://picsum.photos/seed/placeholder/800/600',
-        status: body.status || 'active'
+        image_url: body.image || body.image_url || 'https://picsum.photos/seed/placeholder/800/600',
+        status: body.status || 'active',
+        updated_at: new Date().toISOString()
       };
 
       const result = await marketplaceService.update(id, itemData);

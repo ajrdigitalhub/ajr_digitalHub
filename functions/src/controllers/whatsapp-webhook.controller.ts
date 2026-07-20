@@ -96,6 +96,20 @@ export const whatsappWebhookController = {
 
                 console.log(`[WhatsApp Webhook Status] msgId: ${messageId} | status: ${newStatus} | waba: ${wabaId} | app: ${resolvedAppId}`);
 
+                // Update manual notification logs if matching meta_message_id is found
+                try {
+                  await query(
+                    `UPDATE notification_logs 
+                     SET status = $1, 
+                         sent_at = CASE WHEN $1 IN ('sent', 'delivered', 'read') THEN CURRENT_TIMESTAMP ELSE sent_at END,
+                         response = jsonb_set(COALESCE(response, '{}'::jsonb), '{webhook_events}', COALESCE(response->'webhook_events', '[]'::jsonb) || $2::jsonb)
+                     WHERE meta_message_id = $3`,
+                    [newStatus, JSON.stringify(status), messageId]
+                  );
+                } catch (dbErr: any) {
+                  console.error('[Webhook Notification Logs update error]:', dbErr.message);
+                }
+
                 // Update Firestore logs
                 if (firestore) {
                   try {
