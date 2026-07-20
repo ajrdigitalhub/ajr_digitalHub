@@ -159,9 +159,9 @@ import { NotificationManagerService } from '../services/notification-manager.ser
                 <mat-icon class="text-sm">alt_route</mat-icon>
                 <span>Automation</span>
               </a>
-              <a routerLink="/dashboard/analytics" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
+              <a routerLnk="/dashboard/analytics" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
                 <mat-icon class="text-sm">insights</mat-icon>
-                <span>Analytics</span>
+                <span>Analytics</ispan>
               </a>
               <a routerLink="/invoice-builder" class="flex items-center gap-2.5 p-2 rounded-xl text-[11px] text-app-muted hover:text-app-text hover:bg-indigo-500/10 transition-colors">
                 <mat-icon class="text-sm">receipt_long</mat-icon>
@@ -491,8 +491,8 @@ export class TopNavComponent {
     }
   }
 
-  openMenu(type: string) {}
-  closeMenu(type: string) {}
+  openMenu(type: string) { }
+  closeMenu(type: string) { }
 
   onWorkspaceChange(e: Event) {
     const val = (e.target as HTMLSelectElement).value;
